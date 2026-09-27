@@ -21,15 +21,12 @@
 #include "pico/util/queue.h"
 #include "hardware/gpio.h"
 
-#ifdef ENABLE_BLUETOOTH_HID
 #include "pico/flash.h"
 #include "pico/sem.h"
 static semaphore_t mouse_core_ready;
-#endif
 
 #define AQM_MOTION_QUEUE_DEPTH 32
 #define AQM_WHEEL_QUEUE_DEPTH 16
-#define AQM_STEP_INTERVAL_US 300
 #define AQM_WHEEL_STEP_US 4
 #define AQM_WHEEL_HOLD_US 40
 #define AQM_WHEEL_RESPONSE_TIMEOUT_US 2000
@@ -55,6 +52,10 @@ static volatile uint16_t wheel_queued;
 static volatile uint16_t wheel_requests;
 static volatile uint16_t wheel_responses;
 volatile uint8_t motion_divider = 2;
+static volatile uint32_t step_interval_us = 300;
+static volatile bool wheel_enabled = true;
+static bool wheel_reverse;
+static volatile bool input_captured;
 
 enum _mouse_pin_state { LOW, HIGH };
 
@@ -298,17 +299,26 @@ void amiga_quad_mouse_init()
     queue_init(&motion_queue, sizeof(aqm_motion_t), AQM_MOTION_QUEUE_DEPTH);
     queue_init(&wheel_queue, sizeof(uint8_t), AQM_WHEEL_QUEUE_DEPTH);
 
-    // Bluetooth can write pairing data as soon as its stack is initialized.
-    // Wait until core1 can be paused safely during those flash writes.
-#ifdef ENABLE_BLUETOOTH_HID
+    // Both runtime settings and Bluetooth can write flash. Wait until core1
+    // can be paused safely, including in USB-only builds.
     sem_init(&mouse_core_ready, 0, 1);
-#endif
 
     // start the mouse motion loop on core1
     multicore_launch_core1(amiga_quad_mouse_motion);
-#ifdef ENABLE_BLUETOOTH_HID
     sem_acquire_blocking(&mouse_core_ready);
-#endif
+}
+
+void amiga_quad_mouse_configure(uint16_t step_us, bool enabled, bool reverse)
+{
+    if (step_us == 300 || step_us == 200 || step_us == 150 || step_us == 100)
+        step_interval_us = step_us;
+    wheel_enabled = enabled;
+    wheel_reverse = reverse;
+}
+
+void amiga_quad_mouse_capture(bool capture)
+{
+    input_captured = capture;
 }
 
 void amiga_quad_mouse_button(enum amiga_quad_mouse_buttons button, bool pressed)
@@ -334,17 +344,20 @@ void amiga_quad_mouse_wheel(int8_t wheel)
 {
     dbgcons_mouse_wheel(wheel);
 
-    if (button_pressed[AQM_LEFT] || button_pressed[AQM_MIDDLE] || button_pressed[AQM_RIGHT])
+    if (!wheel_enabled || input_captured ||
+        button_pressed[AQM_LEFT] || button_pressed[AQM_MIDDLE] || button_pressed[AQM_RIGHT])
         return;
 
-    while (wheel > 0) {
+    // Promote before negating: a HID wheel report can contain -128.
+    int16_t delta = wheel_reverse ? -(int16_t)wheel : wheel;
+    while (delta > 0) {
         _aqm_wheel_enqueue(AQM_TANKMOUSE_WHEEL_UP);
-        wheel--;
+        delta--;
     }
 
-    while (wheel < 0) {
+    while (delta < 0) {
         _aqm_wheel_enqueue(AQM_TANKMOUSE_WHEEL_DOWN);
-        wheel++;
+        delta++;
     }
 }
 
@@ -370,11 +383,9 @@ void amiga_quad_mouse_set_motion(int16_t in_x, int16_t in_y)
 
 void amiga_quad_mouse_motion()
 {
-#ifdef ENABLE_BLUETOOTH_HID
     if (!flash_safe_execute_core_init())
         panic("Mouse core flash lockout initialization failed");
     sem_release(&mouse_core_ready);
-#endif
 
     // ahprintf("[aqm] hello from core1, mouse motion output loop starting\n");
     aqm_motion_t motion;
@@ -403,7 +414,19 @@ void amiga_quad_mouse_motion()
     while (1) {
         bool mmb_state = _aqm_gpio_active(QM1_AMIGA_B3);
 
-        if (mmb_state && !last_mmb_state)
+        if (input_captured) {
+            while (queue_try_remove(&motion_queue, &motion))
+                ;
+            uint8_t wheel;
+            while (queue_try_remove(&wheel_queue, &wheel))
+                ;
+            out_x = out_y = x_residue = y_residue = 0;
+            last_mmb_state = mmb_state;
+            tight_loop_contents();
+            continue;
+        }
+
+        if (wheel_enabled && mmb_state && !last_mmb_state)
             _aqm_handle_tankmouse_request(&quad_mx_state, &quad_my_state, &quad_mx_phase, &quad_my_phase);
         last_mmb_state = mmb_state;
 
@@ -457,6 +480,6 @@ void amiga_quad_mouse_motion()
         if (out_y < 0) out_y++;
         if (out_y > 0) out_y--;
 
-        next_motion_at = time_us_64() + AQM_STEP_INTERVAL_US;
+        next_motion_at = time_us_64() + step_interval_us;
     }
 }

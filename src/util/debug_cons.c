@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include "pico/time.h"
 
 #ifdef ENABLE_BLUETOOTH_HID
 #include "hardware/sync.h"
@@ -19,6 +20,7 @@
 #include "debug_cons.h"
 #include "display/disp_ssd.h"
 #include "firmware_version.h"
+#include "settings.h"
 #include "output.h"
 
 #define DBGCONS_OLED_COLS 21
@@ -204,83 +206,50 @@ void dbgcons_amiga_mod(uint8_t outcode, char updown)
 void dbgcons_hid_status(uint8_t dev_addr, uint8_t instance, uint8_t hid_protocol, bool receive_ok, uint8_t report_count, bool mounted)
 {
 #ifdef DEBUG_HID_STATUS
-    char linebuf[32] = "";
-
-    snprintf(
-        linebuf,
-        sizeof(linebuf),
-        "hid %c a%02x i%02x p%02x r%u",
-        mounted ? '+' : '-',
-        dev_addr,
-        instance,
-        hid_protocol,
-        report_count
-    );
-
-    ahprintf(
-        VT_CUP_POS VT_EL_LIN
-        "[hid] %s addr:%02x inst:%02x proto:%02x reports:%u rx:%s\n",
-        5, 1,
-        mounted ? "mount" : "umount",
-        dev_addr,
-        instance,
-        hid_protocol,
-        report_count,
-        receive_ok ? "ok" : "fail"
-    );
-
-    disp_write(0, 2, linebuf);
-
-    snprintf(
-        linebuf,
-        sizeof(linebuf),
-        "rx %s",
-        receive_ok ? "ok" : "fail"
-    );
-    disp_write(17, 2, linebuf);
-#else
-    (void)dev_addr;
-    (void)instance;
-    (void)hid_protocol;
-    (void)receive_ok;
-    (void)report_count;
-    (void)mounted;
+    ahprintf("[hid] %s addr:%02x inst:%02x proto:%02x reports:%u rx:%s\n",
+        mounted ? "mount" : "umount", dev_addr, instance, hid_protocol, report_count, receive_ok ? "ok" : "fail");
 #endif
+    if (settings_get()->display != SETTINGS_DISPLAY_HID)
+        return;
+    char linebuf[22];
+    snprintf(linebuf, sizeof(linebuf), "hid%c a%02x i%02x p%02x %s",
+        mounted ? '+' : '-', dev_addr, instance, hid_protocol, receive_ok ? "ok" : "err");
+    disp_write(0, 2, "                     ");
+    disp_write(0, 2, linebuf);
 }
 
 void dbgcons_mouse_report(int16_t x, int16_t y, uint8_t buttons)
 {
 #ifdef DEBUG_MOUSE
-    char linebuf[32] = "";
-
-    snprintf(
-        linebuf,
-        sizeof(linebuf),
-        "m x%+04d y%+04d b%02x",
-        x,
-        y,
-        buttons
-    );
-
-    ahprintf(
-        VT_CUP_POS VT_EL_LIN
-        "[mouse] x:%d y:%d buttons:%02x\n",
-        6, 1,
-        x,
-        y,
-        buttons
-    );
-
-#ifdef ENABLE_BLUETOOTH_HID
-    if (!bt_passkey_active)
-        disp_write(0, 3, linebuf);
-#else
-    disp_write(0, 3, linebuf);
+    ahprintf("[mouse] x:%d y:%d buttons:%02x\n", x, y, buttons);
 #endif
-#else
-    (void)x;
-    (void)y;
-    (void)buttons;
+    if (settings_get()->display != SETTINGS_DISPLAY_MOUSE)
+        return;
+#ifdef ENABLE_BLUETOOTH_HID
+    if (bt_passkey_active)
+        return;
+#endif
+    // Diagnostics should not enqueue a display frame for every HID packet.
+    static uint64_t next_update;
+    uint64_t now = time_us_64();
+    if (now < next_update)
+        return;
+    next_update = now + 100000;
+    char linebuf[32];
+    snprintf(linebuf, sizeof(linebuf), "m x%+04d y%+04d b%02x", x, y, buttons);
+    disp_write(0, 3, linebuf);
+}
+
+void dbgcons_settings_changed(void)
+{
+    disp_write(0, 2, "                     ");
+    disp_write(0, 3, "                     ");
+#ifdef ENABLE_BLUETOOTH_HID
+    uint32_t irq_state = save_and_disable_interrupts();
+    bt_pending_dirty[0] = true;
+    bt_pending_dirty[1] = true;
+    restore_interrupts(irq_state);
+    dbgcons_task();
 #endif
 }
 

@@ -24,6 +24,8 @@ typedef struct
 
 void input_bridge_reset(uint8_t slot);
 void input_bridge_disconnect(uint8_t slot);
+// Release routed input while the local settings menu owns the keyboard.
+void input_bridge_capture(bool capture);
 void input_bridge_handle_keyboard(uint8_t slot, hid_keyboard_report_t const *report,
     input_bridge_keyboard_sink_t const *sink);
 void input_bridge_handle_mouse(uint8_t slot, hid_mouse_report_t const *report);

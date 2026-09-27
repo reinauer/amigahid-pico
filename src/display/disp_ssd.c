@@ -129,6 +129,10 @@ static int tx_chan = -1,
 static uint8_t display_command[1 + ((SSD_WIDTH * SSD_HEIGHT) / 8)];
 // the above buffer has a write command (0x40) followed by the framebuffer; point to the start of the framebuffer
 static uint8_t *framebuffer = &display_command[1];
+// Keep status/pairing updates while a menu is visible or the display is blank.
+static uint8_t status_framebuffer[(SSD_WIDTH * SSD_HEIGHT) / 8];
+static bool menu_overlay;
+static bool status_enabled = true;
 
 // ugui's instance
 static UG_GUI gui;
@@ -598,8 +602,13 @@ void _real_disp_write(uint8_t x, uint8_t y, char *message)
     UG_S16 px = x * 5,
            py = y * 14;
 
+    framebuffer = status_framebuffer;
     UG_PutString(px, py, message);
-    disp_ssd_update();
+    framebuffer = &display_command[1];
+    if (!menu_overlay && status_enabled) {
+        memcpy(framebuffer, status_framebuffer, sizeof(status_framebuffer));
+        disp_ssd_update();
+    }
 }
 
 // Keep the firmware identity visible below the four status/pairing lines.
@@ -608,9 +617,55 @@ void disp_ssd_version(char *version)
 {
     if (display_failed)
         return;
+    framebuffer = status_framebuffer;
     UG_FontSelect(&FONT_5X8);
     UG_PutString(0, 56, version);
     UG_FontSelect(&FONT_5X12);
+    framebuffer = &display_command[1];
+    if (!menu_overlay && status_enabled) {
+        memcpy(framebuffer, status_framebuffer, sizeof(status_framebuffer));
+        disp_ssd_update();
+    }
+}
+
+bool disp_ssd_available(void)
+{
+    return !display_failed && disp_write == _real_disp_write;
+}
+
+static void restore_status(void)
+{
+    if (!disp_ssd_available() || menu_overlay)
+        return;
+    if (status_enabled)
+        memcpy(framebuffer, status_framebuffer, sizeof(status_framebuffer));
+    else
+        memset(framebuffer, 0, sizeof(status_framebuffer));
+    disp_ssd_update();
+}
+
+void disp_ssd_set_enabled(bool enabled)
+{
+    status_enabled = enabled;
+    restore_status();
+}
+
+void disp_ssd_set_overlay(bool active)
+{
+    menu_overlay = active;
+    restore_status();
+}
+
+void disp_ssd_menu(char const *heading, char const *item, char const *value, char const *hint)
+{
+    if (!disp_ssd_available() || !menu_overlay)
+        return;
+    char const *lines[] = {heading, item, value, hint};
+    UG_FillScreen(C_BLACK);
+    for (unsigned row = 0; row < 4; row++)
+        UG_PutString(0, row * 14, (char *)lines[row]);
+    // The last framebuffer page holds the firmware version at y=56..63.
+    memcpy(framebuffer + SSD_WIDTH * 7, status_framebuffer + SSD_WIDTH * 7, SSD_WIDTH);
     disp_ssd_update();
 }
 

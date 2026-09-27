@@ -20,6 +20,8 @@
 
 #include "config.h"
 #include "tusb_config.h"
+#include "settings.h"
+#include "runtime_menu.h"
 
 #ifdef ENABLE_BLUETOOTH_HID
 #include "bt_hid.h"
@@ -33,6 +35,7 @@ int main(void)
 {
     // tinyusb board init; led, uart, button, usb
     board_init();
+    settings_init();
 
     // initialise the i2c controller and send the init sequence to the display
     disp_ssd_init();
@@ -57,6 +60,7 @@ int main(void)
 #ifdef ENABLE_BLUETOOTH_HID
     bt_hid_init();
 #endif
+    runtime_menu_init();
 
     while (1) {
         // run host mode jobs (hotplug events, packet io callbacks)
@@ -68,10 +72,12 @@ int main(void)
 
         // amiga keyboard service routine
         amiga_service();
+        runtime_menu_task();
 
         // Render deferred Bluetooth status and reclaim completed OLED DMA buffers.
         dbgcons_task();
         disp_ssd_task();
+        runtime_menu_watchdog_task();
     }
 
     return 0;
