@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        board: [BOARD_HIDPICO_REV2, BOARD_HIDPICO_REV4]
+        board: [BOARD_HIDPICO_REV2, BOARD_HIDPICO_REV4, BOARD_HIDPICO_REV5]
         build-type: [Release, Debug]
 
     steps:

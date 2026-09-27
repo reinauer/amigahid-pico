@@ -1,5 +1,6 @@
 /* Runtime settings for AmigaHID-Pico. SPDX-License-Identifier: EPL-2.0 */
 #include "settings.h"
+#include "config.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -18,7 +19,7 @@
  * valid record intact. The linker also reserves this 16 KiB region. */
 #define SETTINGS_FLASH_OFFSET (PICO_FLASH_SIZE_BYTES - 4u * FLASH_SECTOR_SIZE)
 #define SETTINGS_MAGIC 0x41484346u
-#define SETTINGS_SCHEMA 2u
+#define SETTINGS_SCHEMA 3u
 #define SETTINGS_V1_SIZE 8u
 
 typedef struct {
@@ -32,6 +33,7 @@ typedef struct {
 
 _Static_assert(FLASH_SECTOR_SIZE == 4096, "Update settings_flash.ld reservation");
 _Static_assert(offsetof(settings_t, port_mode) == SETTINGS_V1_SIZE, "Preserve v1 migration layout");
+_Static_assert(offsetof(settings_t, joystick_port2) == 9, "Preserve v2 migration layout");
 _Static_assert(sizeof(settings_t) == 12, "Update settings schema");
 _Static_assert(sizeof(settings_record_t) == 32, "Unexpected record padding");
 _Static_assert(sizeof(settings_record_t) <= FLASH_PAGE_SIZE, "Settings exceed one flash page");
@@ -56,6 +58,9 @@ void settings_defaults(settings_t *settings)
         .display = SETTINGS_DISPLAY_STATUS,
         .watchdog = 0,
         .port_mode = SETTINGS_PORT_MOUSE,
+#ifdef HAS_JOYSTICK_PORT2
+        .joystick_port2 = 1,
+#endif
     };
 }
 
@@ -65,8 +70,8 @@ bool settings_valid(settings_t const *settings)
         settings->menu_entry < SETTINGS_MENU_ENTRY_COUNT && settings->right_gui < SETTINGS_GUI_COUNT &&
         settings->wheel_enabled <= 1 && settings->wheel_reverse <= 1 && settings->mouse_speed < 4 &&
         settings->display < SETTINGS_DISPLAY_COUNT && settings->watchdog < 3 &&
-        settings->port_mode < SETTINGS_PORT_COUNT && !settings->reserved[0] &&
-        !settings->reserved[1] && !settings->reserved[2];
+        settings->port_mode < SETTINGS_PORT_COUNT && settings->joystick_port2 <= 1 &&
+        !settings->reserved[0] && !settings->reserved[1];
 }
 
 static uint32_t record_crc(settings_record_t const *record)
@@ -91,7 +96,7 @@ static bool record_decode(settings_record_t const *record, settings_t *settings)
 {
     if (record->magic != SETTINGS_MAGIC ||
         !((record->schema == 1 && record->length == SETTINGS_V1_SIZE) ||
-          (record->schema == SETTINGS_SCHEMA && record->length == sizeof(settings_t))))
+          ((record->schema == 2 || record->schema == SETTINGS_SCHEMA) && record->length == sizeof(settings_t))))
         return false;
     uint32_t crc;
     memcpy(&crc, (uint8_t const *)&record->values + record->length, sizeof(crc));
@@ -100,7 +105,14 @@ static bool record_decode(settings_record_t const *record, settings_t *settings)
     // Version 1 stored the same first eight fields. New options use defaults;
     // upgrading firmware never silently drops an existing watchdog setting.
     settings_defaults(settings);
+    uint8_t port2_default = settings->joystick_port2;
     memcpy(settings, &record->values, record->length);
+    if (record->schema == 2) {
+        // This byte was reserved (and required to be zero) in schema 2.
+        if (settings->joystick_port2 != 0)
+            return false;
+        settings->joystick_port2 = port2_default;
+    }
     return settings_valid(settings);
 }
 

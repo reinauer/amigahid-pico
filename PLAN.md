@@ -15,8 +15,8 @@ Implemented in the first runtime-configuration milestone:
 - The watchdog feeds only after the main-loop services return; it is off by
   default. USB-only builds also initialize core1's flash lockout support.
 
-Hardware check on Pico W/REV4: the menu works, and a saved 5-second watchdog
-setting survives power loss. Recovery and an actual watchdog-triggered restart
+Hardware check on Pico W/REV5 (initially using the REV4 firmware): the menu works,
+and a saved 5-second watchdog setting survives power loss. Recovery and an actual watchdog-triggered restart
 still need hardware validation.
 
 Usage and validation notes: [doc/runtime-configuration.md](doc/runtime-configuration.md).
@@ -26,11 +26,13 @@ Implemented in the next digital-joystick milestone; hardware validation pending:
 - USB HID gamepad/joystick hat switches, discrete D-pad inputs and absolute X/Y
   fields, with Button 1 as fire. Reports are decoded from their descriptors,
   including report IDs. X/Y uses a central deadzone and digital output.
-- A saved Mouse/USB joystick mode for the existing Amiga controller connector.
-  Core1 owns the output pins; menu entry, mode changes and disconnects release
-  controls. Opposing directions from multiple controllers cancel.
-- Settings schema 2 migrates schema 1, preserving the existing options and
-  defaulting the new controller mode to Mouse.
+- A dedicated REV5 build defaults to mouse on controller port 1 and USB joystick
+  on port 2 simultaneously. Port 1 can still select joystick; port 2 has an Off
+  option. REV2/REV4 retain port 1 only. Core1 owns output pins; menu entry, mode
+  changes and disconnects release controls. Opposing directions cancel.
+- Settings schema 3 migrates schema 1 and 2, preserving existing settings and
+  enabling the new port 2 option by default on REV5. A saved port 1 joystick
+  selection is retained; change it to Mouse for the two-port arrangement.
 
 Usage and supported formats: [doc/joystick.md](doc/joystick.md).
 

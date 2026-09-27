@@ -9,6 +9,7 @@
  */
 
 #include "input_bridge.h"
+#include "config.h"
 
 #include <stdbool.h>
 #include <string.h>
@@ -32,11 +33,12 @@ typedef struct
 static input_bridge_state_t bridge_state[INPUT_BRIDGE_MAX_SLOTS];
 static bool input_captured;
 static bool joystick_mode;
+static bool joystick_port2;
 
 static void _ib_sync_gamepads(void)
 {
     uint8_t state = 0;
-    if (joystick_mode && !input_captured)
+    if ((joystick_mode || joystick_port2) && !input_captured)
         for (unsigned slot = 0; slot < INPUT_BRIDGE_MAX_SLOTS; slot++)
             state |= bridge_state[slot].gamepad;
     // Opposing directions cancel, including across separate controllers.
@@ -155,18 +157,22 @@ void input_bridge_capture(bool capture)
     _ib_sync_gamepads();
 }
 
-void input_bridge_set_port_mode(bool joystick)
+void input_bridge_set_port_modes(bool joystick1, bool joystick2)
 {
-    if (joystick_mode == joystick)
+#ifndef HAS_JOYSTICK_PORT2
+    joystick2 = false;
+#endif
+    if (joystick_mode == joystick1 && joystick_port2 == joystick2)
         return;
-    joystick_mode = joystick;
+    joystick_mode = joystick1;
+    joystick_port2 = joystick2;
     for (unsigned slot = 0; slot < INPUT_BRIDGE_MAX_SLOTS; slot++) {
         memset(&bridge_state[slot].mouse, 0, sizeof(bridge_state[slot].mouse));
         bridge_state[slot].mouse_quarantine = true;
         bridge_state[slot].gamepad = 0;
         bridge_state[slot].gamepad_quarantine = true;
     }
-    amiga_quad_mouse_set_joystick_mode(joystick);
+    amiga_quad_mouse_set_joystick_ports(joystick1, joystick2);
     _ib_sync_gamepads();
 }
 

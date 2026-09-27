@@ -1,7 +1,7 @@
 # Runtime configuration
 
 The `features` branch adds a settings menu to the existing USB and Bluetooth
-firmware. It works with the OLED on REV2 and REV4 boards. Board selection and
+firmware. It works with the OLED on REV2, REV4 and REV5 boards. Board selection and
 GPIO wiring remain build-time options.
 
 ## Open and use the menu
@@ -30,16 +30,20 @@ version stays visible, and normal status/pairing text is restored on exit.
 | Mouse step interval | 300, 200, 150, 100 microseconds | 300 |
 | Display | Status, HID diagnostics, mouse diagnostics, off | Status |
 | Watchdog | Off, 2 seconds, 5 seconds | Off |
-| Controller port | Mouse, USB joystick | Mouse |
+| Controller port 1 | Mouse, USB joystick | Mouse |
+| Controller port 2 (REV5 only) | Off, USB joystick | USB joystick |
 
 The selected menu key is reserved for configuration while a working OLED is
 present. The Right GUI setting affects the right Windows/Command modifier;
 Application/Menu retains its existing Right Amiga mapping unless selected as
 the menu key. The default Amiga reset chord is unchanged.
 
-Controller port selects what the existing Amiga mouse/controller connector
-emulates. USB joystick uses a supported USB HID controller's stick/D-pad and Button 1;
-mouse input is inactive in that mode, while keyboard input continues normally.
+On REV5, mouse on port 1 and joystick on port 2 work simultaneously by default.
+USB joystick uses a supported USB HID controller's stick/D-pad and Button 1.
+Port 2 can be disabled with its own setting. Selecting USB joystick on port 1
+disables mouse input; if both ports are set to joystick, they mirror the same
+combined controller state. Keyboard input continues normally in all modes.
+REV2/REV4 builds expose only the port 1 setting and do not drive port 2.
 Release the gamepad controls and mouse buttons after changing modes. See
 [USB joystick mode](joystick.md) for supported formats and testing instructions.
 
@@ -73,7 +77,7 @@ itself has failed, the firmware continues using saved settings without a menu.
 
 ## Storage and validation
 
-Settings use schema version 2 and a CRC32. Two alternating 4 KiB sectors keep
+Settings use schema version 3 and a CRC32. Two alternating 4 KiB sectors keep
 the previous valid record intact while a new record is erased/programmed. On
 boot, the newest valid record is selected, including across sequence rollover.
 Unchanged saves do not erase flash. Failed saves leave the menu open and do not
@@ -85,14 +89,17 @@ builds use the same layout. Settings writes run through the SDK's flash-safe
 execution API with core1 registered for lockout. Normal UF2 updates below this
 region preserve settings; erasing the entire flash removes them.
 
-Schema 1 records from the first runtime-configuration firmware are migrated in
-RAM, preserving all eight existing settings, including the watchdog timeout.
-The new controller mode defaults to Mouse. The next explicit save writes schema
-2. Unknown schemas are rejected, falling back to a compatible record or defaults.
+Schema 1 and 2 records are migrated in RAM, preserving existing settings,
+including the watchdog timeout and any saved port 1 choice. Port 1 defaults to
+Mouse when migrating schema 1, which had no port setting. The new port 2 option
+defaults to USB joystick on REV5 and Off on other revisions. If an earlier trial
+saved port 1 as USB joystick, change that setting to Mouse for simultaneous
+mouse/joystick use. The next explicit save writes schema 3. Unknown schemas are
+rejected, falling back to a compatible record or defaults.
 
 Temporary native checks cover CRC/schema validation, interrupted writes and
 erases, sequence rollover, schema migration, save/cancel, menu capture and held-key
 release, recovery, display caching and watchdog control. The menu and persistence
-of a saved 5-second watchdog timeout have been confirmed on Pico W/REV4 across
-power loss. Recovery, an actual watchdog-triggered restart, and the new joystick
+of a saved 5-second watchdog timeout have been confirmed on Pico W/REV5 across
+power loss (using the earlier REV4 firmware). Recovery, an actual watchdog-triggered restart, and the new joystick
 mode still need hardware validation. No new tests are checked into the repository.
