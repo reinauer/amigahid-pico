@@ -18,8 +18,10 @@
 
 // other includes
 #include <stdint.h>
+#include <string.h>
 
 #include "input_bridge.h"
+#include "hid_gamepad.h"
 #include "platform/amiga/keyboard_serial_io.h"
 #include "tusb_config.h"
 #include "util/output.h"
@@ -29,8 +31,7 @@
 // maximum number of reports per hid device
 #define MAX_REPORT 4
 
-// textual representations of attached devices
-const uint8_t hid_protocol_type[] = { AP_H_UNKNOWN, AP_H_KEYBOARD, AP_H_MOUSE };
+_Static_assert(CFG_TUH_HID_EPIN_BUFSIZE >= GAMEPAD_MAX_REPORT_BYTES, "Gamepad reports exceed host buffer");
 
 typedef struct
 {
@@ -38,7 +39,9 @@ typedef struct
     uint8_t dev_addr;
     uint8_t instance;
     uint8_t report_count;
+    enum debug_plug_types device_type;
     tuh_hid_report_info_t report_info[MAX_REPORT];
+    hid_gamepad_t gamepad;
 } usb_hid_slot_t;
 
 typedef struct
@@ -54,8 +57,8 @@ static int8_t usb_hid_allocate_slot(uint8_t dev_addr, uint8_t instance);
 static void usb_hid_set_keyboard_leds(void *ctx, uint8_t led_report);
 static void process_report(uint8_t slot, uint8_t dev_addr, uint8_t instance, uint8_t const *report, uint16_t len);
 static void handle_event_keyboard(uint8_t slot, uint8_t dev_addr, uint8_t instance,
-    hid_keyboard_report_t const *report);
-static void handle_event_mouse(uint8_t slot, hid_mouse_report_t const *report);
+    uint8_t const *report, uint16_t len);
+static void handle_event_mouse(uint8_t slot, uint8_t const *report, uint16_t len);
 
 void hid_app_task(void)
 {
@@ -135,19 +138,19 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *desc_re
     int8_t slot = usb_hid_allocate_slot(dev_addr, instance);
     bool receive_ok;
 
-    dbgcons_plug(hid_protocol_type[hid_protocol]);
-
     if (slot < 0)
         return;
 
-    // this part doesn't entirely make sense to me; hid devices come in two modes, boot protocol and report;
-    // as i understand it, boot proto is intended for simplistic software such as bios which don't want to
-    // implement a full stack. so if we're not in boot proto mode, display... something?
-    // this might be number of interfaces on a device (think wireless kbd+mouse receiver). maybe. speculation.
+    hid_info[slot].device_type = hid_protocol == HID_ITF_PROTOCOL_KEYBOARD ? AP_H_KEYBOARD :
+        hid_protocol == HID_ITF_PROTOCOL_MOUSE ? AP_H_MOUSE : AP_H_UNKNOWN;
+    memset(&hid_info[slot].gamepad, 0, sizeof(hid_info[slot].gamepad));
+    // Non-boot interfaces describe report IDs and layouts in their descriptor.
     if (hid_protocol == HID_ITF_PROTOCOL_NONE) {
         hid_info[slot].report_count = tuh_hid_parse_report_descriptor(hid_info[slot].report_info, MAX_REPORT, desc_report, desc_len);
-        // ahprintf("[PLUG] %02x report(s)\n", hid_info[instance].report_count);
+        if (hid_gamepad_parse(&hid_info[slot].gamepad, desc_report, desc_len))
+            hid_info[slot].device_type = AP_H_CONTROLLER;
     }
+    dbgcons_plug(hid_info[slot].device_type);
 
     receive_ok = tuh_hid_receive_report(dev_addr, instance);
     dbgcons_hid_status(dev_addr, instance, hid_protocol, receive_ok, hid_info[slot].report_count, true);
@@ -164,10 +167,10 @@ void tuh_hid_umount_cb(uint8_t dev_addr, uint8_t instance)
     uint8_t hid_protocol = tuh_hid_interface_protocol(dev_addr, instance);
     int8_t slot = usb_hid_find_slot(dev_addr, instance);
 
-    dbgcons_unplug(hid_protocol_type[hid_protocol]);
     dbgcons_hid_status(dev_addr, instance, hid_protocol, true, slot >= 0 ? hid_info[slot].report_count : 0, false);
 
     if (slot >= 0) {
+        dbgcons_unplug(hid_info[slot].device_type);
         input_bridge_disconnect((uint8_t)slot);
         hid_info[slot].mounted = false;
     }
@@ -186,18 +189,18 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
     uint8_t const hid_protocol = tuh_hid_interface_protocol(dev_addr, instance);
     int8_t slot = usb_hid_find_slot(dev_addr, instance);
 
-    if (slot < 0) {
+    if (slot < 0 || report == NULL || len == 0) {
         tuh_hid_receive_report(dev_addr, instance);
         return;
     }
 
     switch (hid_protocol) {
         case HID_ITF_PROTOCOL_KEYBOARD:
-            handle_event_keyboard((uint8_t)slot, dev_addr, instance, (hid_keyboard_report_t const *)report);
+            handle_event_keyboard((uint8_t)slot, dev_addr, instance, report, len);
             break;
 
         case HID_ITF_PROTOCOL_MOUSE:
-            handle_event_mouse((uint8_t)slot, (hid_mouse_report_t const *)report);
+            handle_event_mouse((uint8_t)slot, report, len);
             break;
 
         default:
@@ -232,6 +235,13 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
  */
 static void process_report(uint8_t slot, uint8_t dev_addr, uint8_t instance, uint8_t const *report, uint16_t len)
 {
+    if (report == NULL || len == 0)
+        return;
+    uint8_t gamepad;
+    if (hid_gamepad_decode(&hid_info[slot].gamepad, report, len, &gamepad)) {
+        input_bridge_handle_gamepad(slot, gamepad);
+        return;
+    }
     uint8_t const report_count = hid_info[slot].report_count;
     tuh_hid_report_info_t *report_info_arr = hid_info[slot].report_info;
     tuh_hid_report_info_t *report_info = NULL;
@@ -267,12 +277,12 @@ static void process_report(uint8_t slot, uint8_t dev_addr, uint8_t instance, uin
         switch (report_info->usage) {
             case HID_USAGE_DESKTOP_KEYBOARD:
                 // keyboard event; let's hope it appears as a boot proto event or else this will break
-                handle_event_keyboard(slot, dev_addr, instance, (hid_keyboard_report_t const *)report);
+                handle_event_keyboard(slot, dev_addr, instance, report, len);
                 break;
 
             case HID_USAGE_DESKTOP_MOUSE:
                 // mouse event
-                handle_event_mouse(slot, (hid_mouse_report_t const *)report);
+                handle_event_mouse(slot, report, len);
                 break;
 
             default:
@@ -288,9 +298,14 @@ static void process_report(uint8_t slot, uint8_t dev_addr, uint8_t instance, uin
  * @param instance  Instance number of reporting device
  * @param report    Address of hid_mouse_report_t structure of current mouse event
  */
-static void handle_event_mouse(uint8_t slot, hid_mouse_report_t const *report)
+static void handle_event_mouse(uint8_t slot, uint8_t const *report, uint16_t len)
 {
-    input_bridge_handle_mouse(slot, report);
+    // Wheel and pan are optional in boot mouse reports.
+    if (len < 3)
+        return;
+    hid_mouse_report_t decoded = {0};
+    memcpy(&decoded, report, len < sizeof(decoded) ? len : sizeof(decoded));
+    input_bridge_handle_mouse(slot, &decoded);
 }
 
 /**
@@ -302,10 +317,14 @@ static void handle_event_mouse(uint8_t slot, hid_mouse_report_t const *report)
  * @param report    Address of hid_keyboard_report_t structure of current keyboard event (boot proto?)
  */
 static void handle_event_keyboard(uint8_t slot, uint8_t dev_addr, uint8_t instance,
-    hid_keyboard_report_t const *report)
+    uint8_t const *report, uint16_t len)
 {
+    if (len < sizeof(hid_keyboard_report_t))
+        return;
+    hid_keyboard_report_t decoded;
+    memcpy(&decoded, report, sizeof(decoded));
     usb_keyboard_led_ctx_t led_ctx = { dev_addr, instance };
     input_bridge_keyboard_sink_t sink = { usb_hid_set_keyboard_leds, &led_ctx };
 
-    input_bridge_handle_keyboard(slot, report, &sink);
+    input_bridge_handle_keyboard(slot, &decoded, &sink);
 }

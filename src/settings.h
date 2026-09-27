@@ -9,6 +9,7 @@ enum settings_menu_key { SETTINGS_MENU_F12, SETTINGS_MENU_F11, SETTINGS_MENU_APP
 enum settings_menu_entry { SETTINGS_MENU_HOLD, SETTINGS_MENU_BOOT, SETTINGS_MENU_ENTRY_COUNT };
 enum settings_right_gui { SETTINGS_GUI_AMIGA, SETTINGS_GUI_MENU, SETTINGS_GUI_OFF, SETTINGS_GUI_COUNT };
 enum settings_display { SETTINGS_DISPLAY_STATUS, SETTINGS_DISPLAY_HID, SETTINGS_DISPLAY_MOUSE, SETTINGS_DISPLAY_OFF, SETTINGS_DISPLAY_COUNT };
+enum settings_port_mode { SETTINGS_PORT_MOUSE, SETTINGS_PORT_JOYSTICK, SETTINGS_PORT_COUNT };
 
 /* Persist fixed-width fields, never compiler-dependent enums or pointers.
  * Changing this layout requires a new on-flash schema version. */
@@ -21,6 +22,8 @@ typedef struct {
     uint8_t mouse_speed;      /* step interval: 300, 200, 150, 100 us */
     uint8_t display;
     uint8_t watchdog;         /* off, 2 seconds, 5 seconds */
+    uint8_t port_mode;
+    uint8_t reserved[3];
 } settings_t;
 
 void settings_defaults(settings_t *settings);

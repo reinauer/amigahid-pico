@@ -1,4 +1,5 @@
 add_executable(amigahid-pico
+  hid_gamepad.c
   input_bridge.c
   main.c
   settings.c
