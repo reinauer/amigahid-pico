@@ -22,8 +22,9 @@ typedef struct {
     uint8_t mouse_speed;      /* step interval: 300, 200, 150, 100 us */
     uint8_t display;
     uint8_t watchdog;         /* off, 2 seconds, 5 seconds */
-    uint8_t port_mode;
-    uint8_t reserved[3];
+    uint8_t port_mode;        /* port 1: mouse or USB joystick */
+    uint8_t joystick_port2;   /* port 2: off or USB joystick; REV5 only */
+    uint8_t reserved[2];
 } settings_t;
 
 void settings_defaults(settings_t *settings);

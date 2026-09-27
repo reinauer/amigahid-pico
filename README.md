@@ -12,7 +12,7 @@ it currently supports keyboards and mice and provides connection via the interna
 
 ## **important note**
 
-* current kicad files are for r5 pcb, pin mappings are not yet in the source tree! i have not yet generated this board as a pcb, but it is mostly identical to r4. the keyboard and controller port 1 are correct at time of writing, and will be fixed for the second controller port when the next prototype arrives.
+* current kicad files are for r5 pcb. on the `features` branch, select `BOARD_HIDPICO_REV5` to enable both controller ports: port 1 defaults to mouse and port 2 to USB joystick. REV4 firmware supports the same keyboard and first port, but leaves the second port unused. see [USB joystick mode](./doc/joystick.md).
 
 * **always read the [errata](./doc/errata.md) section for the current pcb layout before deciding whether or not to build.**
 

@@ -26,7 +26,7 @@ void input_bridge_reset(uint8_t slot);
 void input_bridge_disconnect(uint8_t slot);
 // Release routed input while the local settings menu owns the keyboard.
 void input_bridge_capture(bool capture);
-void input_bridge_set_port_mode(bool joystick);
+void input_bridge_set_port_modes(bool joystick1, bool joystick2);
 void input_bridge_handle_gamepad(uint8_t slot, uint8_t state);
 void input_bridge_handle_keyboard(uint8_t slot, hid_keyboard_report_t const *report,
     input_bridge_keyboard_sink_t const *sink);

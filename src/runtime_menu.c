@@ -1,5 +1,6 @@
 /* Local configuration UI. SPDX-License-Identifier: EPL-2.0 */
 #include "runtime_menu.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -17,7 +18,11 @@
 #define BOOT_MENU_US 10000000u
 
 enum menu_item { MENU_KEY, MENU_ENTRY, MENU_RIGHT_GUI, MENU_WHEEL, MENU_REVERSE,
-    MENU_SPEED, MENU_DISPLAY, MENU_WATCHDOG, MENU_PORT, MENU_SAVE, MENU_DEFAULTS, MENU_CANCEL, MENU_ITEM_COUNT };
+    MENU_SPEED, MENU_DISPLAY, MENU_WATCHDOG, MENU_PORT,
+#ifdef HAS_JOYSTICK_PORT2
+    MENU_PORT2,
+#endif
+    MENU_SAVE, MENU_DEFAULTS, MENU_CANCEL, MENU_ITEM_COUNT };
 
 static hid_keyboard_report_t keyboards[INPUT_BRIDGE_MAX_SLOTS];
 static bool quarantine[INPUT_BRIDGE_MAX_SLOTS];
@@ -50,7 +55,7 @@ static bool report_empty(hid_keyboard_report_t const *report)
 static void apply_settings(void)
 {
     settings_t const *settings = settings_get();
-    input_bridge_set_port_mode(settings->port_mode == SETTINGS_PORT_JOYSTICK);
+    input_bridge_set_port_modes(settings->port_mode == SETTINGS_PORT_JOYSTICK, settings->joystick_port2 != 0);
     amiga_quad_mouse_configure(settings_mouse_interval_us(), settings->wheel_enabled, settings->wheel_reverse);
     dbgcons_settings_changed();
     disp_ssd_set_enabled(settings->display != SETTINGS_DISPLAY_OFF);
@@ -94,7 +99,11 @@ static void close_menu(void)
 static void render_menu(void)
 {
     static char const *const names[] = {"Menu key", "Menu entry", "Right GUI key", "Mouse wheel",
-        "Wheel direction", "Mouse step interval", "Display", "Watchdog", "Controller port", "Save and exit", "Factory defaults", "Cancel changes"};
+        "Wheel direction", "Mouse step interval", "Display", "Watchdog", "Controller port 1",
+#ifdef HAS_JOYSTICK_PORT2
+        "Controller port 2",
+#endif
+        "Save and exit", "Factory defaults", "Cancel changes"};
     static char const *const keys[] = {"F12", "F11", "Application/Menu"};
     static char const *const entry[] = {"Hold for 1 second", "Boot only"};
     static char const *const gui[] = {"Right Amiga", "Hold to open menu", "Disabled"};
@@ -113,6 +122,9 @@ static void render_menu(void)
         case MENU_DISPLAY: value = display[edited.display]; break;
         case MENU_WATCHDOG: value = watchdog[edited.watchdog]; break;
         case MENU_PORT: value = edited.port_mode == SETTINGS_PORT_MOUSE ? "Mouse" : "USB joystick"; break;
+#ifdef HAS_JOYSTICK_PORT2
+        case MENU_PORT2: value = edited.joystick_port2 ? "USB joystick" : "Off"; break;
+#endif
         default: break;
     }
     snprintf(heading, sizeof(heading), "Settings %u/%u", item + 1, MENU_ITEM_COUNT);
@@ -134,6 +146,9 @@ static void change_value(int direction)
         case MENU_DISPLAY: value = &edited.display; count = SETTINGS_DISPLAY_COUNT; break;
         case MENU_WATCHDOG: value = &edited.watchdog; count = 3; break;
         case MENU_PORT: value = &edited.port_mode; count = SETTINGS_PORT_COUNT; break;
+#ifdef HAS_JOYSTICK_PORT2
+        case MENU_PORT2: value = &edited.joystick_port2; count = 2; break;
+#endif
         default: return;
     }
     *value = (uint8_t)((*value + count + direction) % count);

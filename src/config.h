@@ -40,7 +40,7 @@
 #  define QM1_AMIGA_B1  22
 #  define QM1_AMIGA_B2  26
 #  define QM1_AMIGA_B3  27
-#elif defined(BOARD_HIDPICO_REV4)
+#elif defined(BOARD_HIDPICO_REV4) || defined(BOARD_HIDPICO_REV5)
 #  define HAS_SCREEN
 #  define HAS_KEYBOARD
 #  define HAS_PORT1
@@ -62,6 +62,19 @@
 #  define QM1_AMIGA_B1  11
 #  define QM1_AMIGA_B2  12
 #  define QM1_AMIGA_B3  13
+
+#  if defined(BOARD_HIDPICO_REV5)
+// REV5 fixes port 2's Down connection to RUN on REV4. Never enable this
+// mapping for an unmodified REV4 board; RUN is not a programmable GPIO.
+#    define HAS_JOYSTICK_PORT2
+#    define QM2_AMIGA_HQ 21
+#    define QM2_AMIGA_VQ 22
+#    define QM2_AMIGA_H  26
+#    define QM2_AMIGA_V  27
+#    define QM2_AMIGA_B1 20
+#    define QM2_AMIGA_B2 19
+#    define QM2_AMIGA_B3 18
+#  endif
 #else
 #  error Board type has not been defined; check cmake command line
 #endif
