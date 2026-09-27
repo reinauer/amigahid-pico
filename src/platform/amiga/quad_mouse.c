@@ -12,6 +12,7 @@
 #include "quad_mouse.h"
 #include "util/debug_cons.h"
 #include "util/output.h"
+#include "hid_gamepad.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -56,6 +57,8 @@ static volatile uint32_t step_interval_us = 300;
 static volatile bool wheel_enabled = true;
 static bool wheel_reverse;
 static volatile bool input_captured;
+static volatile bool joystick_mode;
+static volatile uint8_t joystick_state;
 
 enum _mouse_pin_state { LOW, HIGH };
 
@@ -321,6 +324,41 @@ void amiga_quad_mouse_capture(bool capture)
     input_captured = capture;
 }
 
+void amiga_quad_mouse_set_joystick_mode(bool joystick)
+{
+    for (unsigned i = 0; i < 3; i++)
+        button_pressed[i] = false;
+    joystick_state = 0;
+    joystick_mode = joystick;
+}
+
+void amiga_quad_mouse_joystick(uint8_t state)
+{
+    joystick_state = state;
+}
+
+static void _aqm_release_port(void)
+{
+    _aqm_gpio_set(QM1_AMIGA_H, HIGH);
+    _aqm_gpio_set(QM1_AMIGA_V, HIGH);
+    _aqm_gpio_set(QM1_AMIGA_HQ, HIGH);
+    _aqm_gpio_set(QM1_AMIGA_VQ, HIGH);
+    _aqm_gpio_set(QM1_AMIGA_B1, HIGH);
+    _aqm_gpio_set(QM1_AMIGA_B2, HIGH);
+    _aqm_gpio_set(QM1_AMIGA_B3, HIGH);
+}
+
+static void _aqm_joystick_output(uint8_t state)
+{
+    // Amiga DE-9: pin 1 V/up, 2 H/down, 3 VQ/left, 4 HQ/right, 6 fire.
+    // Use the same open-drain convention as the mouse output.
+    _aqm_gpio_set(QM1_AMIGA_V, state & GAMEPAD_UP ? LOW : HIGH);
+    _aqm_gpio_set(QM1_AMIGA_H, state & GAMEPAD_DOWN ? LOW : HIGH);
+    _aqm_gpio_set(QM1_AMIGA_VQ, state & GAMEPAD_LEFT ? LOW : HIGH);
+    _aqm_gpio_set(QM1_AMIGA_HQ, state & GAMEPAD_RIGHT ? LOW : HIGH);
+    _aqm_gpio_set(QM1_AMIGA_B1, state & GAMEPAD_FIRE ? LOW : HIGH);
+}
+
 void amiga_quad_mouse_button(enum amiga_quad_mouse_buttons button, bool pressed)
 {
     // ahprintf("[aqm] button %s state %s\n",
@@ -330,21 +368,16 @@ void amiga_quad_mouse_button(enum amiga_quad_mouse_buttons button, bool pressed)
     //     pressed ? "down" : "up"
     // );
 
-    button_pressed[button] = pressed;
-
-    switch (button) {
-        case AQM_LEFT:      _aqm_gpio_set(QM1_AMIGA_B1, pressed ? LOW : HIGH); break;
-        case AQM_MIDDLE:    _aqm_gpio_set(QM1_AMIGA_B3, pressed ? LOW : HIGH); break;
-        case AQM_RIGHT:     _aqm_gpio_set(QM1_AMIGA_B2, pressed ? LOW : HIGH); break;
-        // default:            ahprintf("[aqm] unhandled button press!\n");
-    }
+    // Core1 owns every controller-port pin, including mode transitions.
+    if (!joystick_mode && (unsigned)button < 3)
+        button_pressed[button] = pressed;
 }
 
 void amiga_quad_mouse_wheel(int8_t wheel)
 {
     dbgcons_mouse_wheel(wheel);
 
-    if (!wheel_enabled || input_captured ||
+    if (!wheel_enabled || input_captured || joystick_mode ||
         button_pressed[AQM_LEFT] || button_pressed[AQM_MIDDLE] || button_pressed[AQM_RIGHT])
         return;
 
@@ -363,6 +396,8 @@ void amiga_quad_mouse_wheel(int8_t wheel)
 
 void amiga_quad_mouse_set_motion(int16_t in_x, int16_t in_y)
 {
+    if (joystick_mode || input_captured)
+        return;
     aqm_motion_t motion = { in_x, in_y };
 
     if (!queue_try_add(&motion_queue, &motion)) {
@@ -394,6 +429,8 @@ void amiga_quad_mouse_motion()
     uint8_t quad_mx_state = 1, quad_my_state = 1;
     uint8_t quad_mx_phase = 0, quad_my_phase = 0;
     uint8_t divider;
+    bool previous_mode = false;
+    uint8_t previous_joystick = 0xff, previous_buttons = 0xff;
     bool last_mmb_state = _aqm_gpio_active(QM1_AMIGA_B3);
     // This deadline stays unchanged while idle. A signed 32-bit comparison
     // would treat it as a future deadline after about 36 minutes of inactivity.
@@ -412,6 +449,36 @@ void amiga_quad_mouse_motion()
      */
 
     while (1) {
+        bool joystick = joystick_mode;
+        if (joystick != previous_mode) {
+            _aqm_release_port();
+            while (queue_try_remove(&motion_queue, &motion))
+                ;
+            _aqm_wheel_clear();
+            out_x = out_y = x_residue = y_residue = 0;
+            quad_mx_state = quad_my_state = 1;
+            quad_mx_phase = quad_my_phase = 0;
+            previous_joystick = previous_buttons = 0xff;
+            previous_mode = joystick;
+            last_mmb_state = _aqm_gpio_active(QM1_AMIGA_B3);
+        }
+        if (joystick) {
+            uint8_t state = input_captured ? 0 : joystick_state;
+            if (state != previous_joystick) {
+                _aqm_joystick_output(state);
+                previous_joystick = state;
+            }
+            tight_loop_contents();
+            continue;
+        }
+        uint8_t buttons = (button_pressed[AQM_LEFT] ? 1u : 0u) |
+            (button_pressed[AQM_MIDDLE] ? 2u : 0u) | (button_pressed[AQM_RIGHT] ? 4u : 0u);
+        if (buttons != previous_buttons) {
+            _aqm_gpio_set(QM1_AMIGA_B1, buttons & 1u ? LOW : HIGH);
+            _aqm_gpio_set(QM1_AMIGA_B3, buttons & 2u ? LOW : HIGH);
+            _aqm_gpio_set(QM1_AMIGA_B2, buttons & 4u ? LOW : HIGH);
+            previous_buttons = buttons;
+        }
         bool mmb_state = _aqm_gpio_active(QM1_AMIGA_B3);
 
         if (input_captured) {

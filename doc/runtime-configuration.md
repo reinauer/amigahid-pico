@@ -14,9 +14,10 @@ settings to flash and applies them. **Esc** or **Cancel changes** discards edits
 Factory defaults changes the values in the editor; select Save and exit to
 apply and preserve them. Values are not previewed while editing.
 
-While the menu is open, keyboard and mouse input is captured locally. Previously
-forwarded keys and buttons are released, and queued mouse motion is discarded.
-After closing, release held keys/buttons before using them again. The firmware
+While the menu is open, keyboard, mouse and joystick input is captured locally.
+Previously forwarded keys, buttons and directions are released, and queued mouse
+motion is discarded. After closing, release held keys/buttons and centre the
+gamepad before using them again. The firmware
 version stays visible, and normal status/pairing text is restored on exit.
 
 | Setting | Choices | Default |
@@ -29,11 +30,18 @@ version stays visible, and normal status/pairing text is restored on exit.
 | Mouse step interval | 300, 200, 150, 100 microseconds | 300 |
 | Display | Status, HID diagnostics, mouse diagnostics, off | Status |
 | Watchdog | Off, 2 seconds, 5 seconds | Off |
+| Controller port | Mouse, USB joystick | Mouse |
 
 The selected menu key is reserved for configuration while a working OLED is
 present. The Right GUI setting affects the right Windows/Command modifier;
 Application/Menu retains its existing Right Amiga mapping unless selected as
 the menu key. The default Amiga reset chord is unchanged.
+
+Controller port selects what the existing Amiga mouse/controller connector
+emulates. USB joystick uses a supported USB HID controller's stick/D-pad and Button 1;
+mouse input is inactive in that mode, while keyboard input continues normally.
+Release the gamepad controls and mouse buttons after changing modes. See
+[USB joystick mode](joystick.md) for supported formats and testing instructions.
 
 Faster mouse intervals change the rate at which queued movement is emitted,
 not mouse sensitivity. They require testing with the connected Amiga. The
@@ -65,7 +73,7 @@ itself has failed, the firmware continues using saved settings without a menu.
 
 ## Storage and validation
 
-Settings use schema version 1 and a CRC32. Two alternating 4 KiB sectors keep
+Settings use schema version 2 and a CRC32. Two alternating 4 KiB sectors keep
 the previous valid record intact while a new record is erased/programmed. On
 boot, the newest valid record is selected, including across sequence rollover.
 Unchanged saves do not erase flash. Failed saves leave the menu open and do not
@@ -77,12 +85,14 @@ builds use the same layout. Settings writes run through the SDK's flash-safe
 execution API with core1 registered for lockout. Normal UF2 updates below this
 region preserve settings; erasing the entire flash removes them.
 
-This first schema has no older settings format to migrate. Unknown schemas are
-rejected, falling back to a compatible record or defaults. Future schema changes
-must explicitly define migration.
+Schema 1 records from the first runtime-configuration firmware are migrated in
+RAM, preserving all eight existing settings, including the watchdog timeout.
+The new controller mode defaults to Mouse. The next explicit save writes schema
+2. Unknown schemas are rejected, falling back to a compatible record or defaults.
 
 Temporary native checks cover CRC/schema validation, interrupted writes and
-erases, sequence rollover, save/cancel, menu capture and held-key release,
-recovery, display caching and watchdog control. The first firmware still needs
-on-device validation of the menu, flash saves across a power cycle, and continued
-USB/Bluetooth input. No new tests are checked into the repository.
+erases, sequence rollover, schema migration, save/cancel, menu capture and held-key
+release, recovery, display caching and watchdog control. The menu and persistence
+of a saved 5-second watchdog timeout have been confirmed on Pico W/REV4 across
+power loss. Recovery, an actual watchdog-triggered restart, and the new joystick
+mode still need hardware validation. No new tests are checked into the repository.

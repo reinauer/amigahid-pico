@@ -17,6 +17,7 @@
 #include "platform/amiga/quad_mouse.h"
 #include "util/debug_cons.h"
 #include "runtime_menu.h"
+#include "hid_gamepad.h"
 
 typedef struct
 {
@@ -24,10 +25,27 @@ typedef struct
     hid_mouse_report_t mouse;
     uint8_t led_report;
     bool mouse_quarantine;
+    uint8_t gamepad;
+    bool gamepad_quarantine;
 } input_bridge_state_t;
 
 static input_bridge_state_t bridge_state[INPUT_BRIDGE_MAX_SLOTS];
 static bool input_captured;
+static bool joystick_mode;
+
+static void _ib_sync_gamepads(void)
+{
+    uint8_t state = 0;
+    if (joystick_mode && !input_captured)
+        for (unsigned slot = 0; slot < INPUT_BRIDGE_MAX_SLOTS; slot++)
+            state |= bridge_state[slot].gamepad;
+    // Opposing directions cancel, including across separate controllers.
+    if ((state & (GAMEPAD_UP | GAMEPAD_DOWN)) == (GAMEPAD_UP | GAMEPAD_DOWN))
+        state &= ~(GAMEPAD_UP | GAMEPAD_DOWN);
+    if ((state & (GAMEPAD_LEFT | GAMEPAD_RIGHT)) == (GAMEPAD_LEFT | GAMEPAD_RIGHT))
+        state &= ~(GAMEPAD_LEFT | GAMEPAD_RIGHT);
+    amiga_quad_mouse_joystick(state);
+}
 
 static inline bool _ib_key_pressed(hid_keyboard_report_t const *report, uint8_t keycode)
 {
@@ -98,6 +116,7 @@ void input_bridge_reset(uint8_t slot)
 
     memset(&bridge_state[slot], 0, sizeof(bridge_state[slot]));
     runtime_menu_disconnect(slot);
+    _ib_sync_gamepads();
 }
 
 void input_bridge_disconnect(uint8_t slot)
@@ -112,6 +131,7 @@ void input_bridge_disconnect(uint8_t slot)
     _ib_release_mouse_buttons(&bridge_state[slot].mouse);
     memset(&bridge_state[slot], 0, sizeof(bridge_state[slot]));
     runtime_menu_disconnect(slot);
+    _ib_sync_gamepads();
 }
 
 void input_bridge_capture(bool capture)
@@ -127,9 +147,44 @@ void input_bridge_capture(bool capture)
             memset(&state->keyboard, 0, sizeof(state->keyboard));
             memset(&state->mouse, 0, sizeof(state->mouse));
             state->mouse_quarantine = true;
+            state->gamepad = 0;
+            state->gamepad_quarantine = true;
         }
     }
     amiga_quad_mouse_capture(capture);
+    _ib_sync_gamepads();
+}
+
+void input_bridge_set_port_mode(bool joystick)
+{
+    if (joystick_mode == joystick)
+        return;
+    joystick_mode = joystick;
+    for (unsigned slot = 0; slot < INPUT_BRIDGE_MAX_SLOTS; slot++) {
+        memset(&bridge_state[slot].mouse, 0, sizeof(bridge_state[slot].mouse));
+        bridge_state[slot].mouse_quarantine = true;
+        bridge_state[slot].gamepad = 0;
+        bridge_state[slot].gamepad_quarantine = true;
+    }
+    amiga_quad_mouse_set_joystick_mode(joystick);
+    _ib_sync_gamepads();
+}
+
+void input_bridge_handle_gamepad(uint8_t slot, uint8_t state)
+{
+    if (slot >= INPUT_BRIDGE_MAX_SLOTS)
+        return;
+    input_bridge_state_t *source = &bridge_state[slot];
+    if (input_captured) {
+        source->gamepad = 0;
+        source->gamepad_quarantine = true;
+    } else if (source->gamepad_quarantine) {
+        if (state == 0)
+            source->gamepad_quarantine = false;
+    } else {
+        source->gamepad = state;
+    }
+    _ib_sync_gamepads();
 }
 
 void input_bridge_handle_keyboard(uint8_t slot, hid_keyboard_report_t const *report,
@@ -176,7 +231,7 @@ void input_bridge_handle_mouse(uint8_t slot, hid_mouse_report_t const *report)
 
     state = &bridge_state[slot];
 
-    if (input_captured) {
+    if (input_captured || joystick_mode) {
         // Also covers a mouse connected after the menu was opened.
         state->mouse_quarantine = true;
         return;

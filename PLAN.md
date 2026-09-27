@@ -2,8 +2,7 @@
 
 Based on `bluetooth` at `b437643`. The existing Bluetooth PR is unchanged.
 
-Implemented in the first runtime-configuration milestone; hardware validation
-is still pending:
+Implemented in the first runtime-configuration milestone:
 
 - Versioned settings with CRC validation, defaults, and two alternating flash
   records. Settings storage is separate from Bluetooth pairing data.
@@ -16,18 +15,39 @@ is still pending:
 - The watchdog feeds only after the main-loop services return; it is off by
   default. USB-only builds also initialize core1's flash lockout support.
 
+Hardware check on Pico W/REV4: the menu works, and a saved 5-second watchdog
+setting survives power loss. Recovery and an actual watchdog-triggered restart
+still need hardware validation.
+
 Usage and validation notes: [doc/runtime-configuration.md](doc/runtime-configuration.md).
+
+Implemented in the next digital-joystick milestone; hardware validation pending:
+
+- USB HID gamepad/joystick hat switches, discrete D-pad inputs and absolute X/Y
+  fields, with Button 1 as fire. Reports are decoded from their descriptors,
+  including report IDs. X/Y uses a central deadzone and digital output.
+- A saved Mouse/USB joystick mode for the existing Amiga controller connector.
+  Core1 owns the output pins; menu entry, mode changes and disconnects release
+  controls. Opposing directions from multiple controllers cancel.
+- Settings schema 2 migrates schema 1, preserving the existing options and
+  defaulting the new controller mode to Mouse.
+
+Usage and supported formats: [doc/joystick.md](doc/joystick.md).
+
+Competition Pro Extra (`0079:181c`) input checked on Linux: its digital stick uses
+X/Y values 0/128/255, with the advertised hat unused. Native decoding checks pass
+using the actual descriptor and captured axis values. All four buttons produced
+events. Pico-to-Amiga joystick output still needs hardware testing.
 
 Still to implement or validate:
 
 - Measure input latency and validate the faster mouse timing presets on hardware.
 - Earlier HID rearming and GPIO timing instrumentation.
 - Keyboard PIO; consider mouse PIO only after measurement.
-- Joystick/gamepad input, keyboard-as-joystick, and CD32 output.
-- Full key remapping/layout presets, controller modes, Bluetooth configuration,
+- Validate USB digital joystick output on hardware; add configurable deadzones
+  and button mappings, Bluetooth gamepads, keyboard-as-joystick, and CD32 output.
+- Full key remapping/layout presets, further controller modes, Bluetooth configuration,
   and the optional Amiga preference tool.
-- Migration from a future settings schema; this first version rejects unknown
-  schemas and uses a valid older record or factory defaults.
 
 The sections below retain the design and acceptance criteria for these phases.
 
@@ -228,6 +248,10 @@ paths, starting with the simplest and most compatible target.
   just plain digital joystick inputs and need separate handling.
 
 ## Phase 1: HID Joystick to Digital Joystick
+
+USB hat/D-pad, absolute X/Y and Button 1 support is implemented on `features`;
+Pico-to-Amiga hardware testing and configurable thresholds remain outstanding.
+See [doc/joystick.md](doc/joystick.md).
 
 - Add a controller backend that drives one Amiga controller port as:
   - up

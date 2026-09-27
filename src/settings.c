@@ -18,7 +18,8 @@
  * valid record intact. The linker also reserves this 16 KiB region. */
 #define SETTINGS_FLASH_OFFSET (PICO_FLASH_SIZE_BYTES - 4u * FLASH_SECTOR_SIZE)
 #define SETTINGS_MAGIC 0x41484346u
-#define SETTINGS_SCHEMA 1u
+#define SETTINGS_SCHEMA 2u
+#define SETTINGS_V1_SIZE 8u
 
 typedef struct {
     uint32_t magic;
@@ -30,8 +31,9 @@ typedef struct {
 } settings_record_t;
 
 _Static_assert(FLASH_SECTOR_SIZE == 4096, "Update settings_flash.ld reservation");
-_Static_assert(sizeof(settings_t) == 8, "Update settings schema");
-_Static_assert(sizeof(settings_record_t) == 28, "Unexpected record padding");
+_Static_assert(offsetof(settings_t, port_mode) == SETTINGS_V1_SIZE, "Preserve v1 migration layout");
+_Static_assert(sizeof(settings_t) == 12, "Update settings schema");
+_Static_assert(sizeof(settings_record_t) == 32, "Unexpected record padding");
 _Static_assert(sizeof(settings_record_t) <= FLASH_PAGE_SIZE, "Settings exceed one flash page");
 #ifdef ENABLE_BLUETOOTH_HID
 _Static_assert(SETTINGS_FLASH_OFFSET + 2u * FLASH_SECTOR_SIZE <= PICO_FLASH_BANK_STORAGE_OFFSET,
@@ -53,6 +55,7 @@ void settings_defaults(settings_t *settings)
         .mouse_speed = 0,
         .display = SETTINGS_DISPLAY_STATUS,
         .watchdog = 0,
+        .port_mode = SETTINGS_PORT_MOUSE,
     };
 }
 
@@ -61,14 +64,17 @@ bool settings_valid(settings_t const *settings)
     return settings != NULL && settings->menu_key < SETTINGS_MENU_KEY_COUNT &&
         settings->menu_entry < SETTINGS_MENU_ENTRY_COUNT && settings->right_gui < SETTINGS_GUI_COUNT &&
         settings->wheel_enabled <= 1 && settings->wheel_reverse <= 1 && settings->mouse_speed < 4 &&
-        settings->display < SETTINGS_DISPLAY_COUNT && settings->watchdog < 3;
+        settings->display < SETTINGS_DISPLAY_COUNT && settings->watchdog < 3 &&
+        settings->port_mode < SETTINGS_PORT_COUNT && !settings->reserved[0] &&
+        !settings->reserved[1] && !settings->reserved[2];
 }
 
 static uint32_t record_crc(settings_record_t const *record)
 {
     uint8_t const *bytes = (uint8_t const *)record;
     uint32_t crc = UINT32_MAX;
-    for (size_t i = 0; i < offsetof(settings_record_t, crc); i++) {
+    size_t length = offsetof(settings_record_t, values) + record->length;
+    for (size_t i = 0; i < length; i++) {
         crc ^= bytes[i];
         for (unsigned bit = 0; bit < 8; bit++)
             crc = (crc >> 1) ^ ((crc & 1u) ? 0xedb88320u : 0);
@@ -81,11 +87,21 @@ static settings_record_t const *bank_record(unsigned bank)
     return (settings_record_t const *)(XIP_BASE + SETTINGS_FLASH_OFFSET + bank * FLASH_SECTOR_SIZE);
 }
 
-static bool record_valid(settings_record_t const *record)
+static bool record_decode(settings_record_t const *record, settings_t *settings)
 {
-    return record->magic == SETTINGS_MAGIC && record->schema == SETTINGS_SCHEMA &&
-        record->length == sizeof(settings_t) && settings_valid(&record->values) &&
-        record->crc == record_crc(record);
+    if (record->magic != SETTINGS_MAGIC ||
+        !((record->schema == 1 && record->length == SETTINGS_V1_SIZE) ||
+          (record->schema == SETTINGS_SCHEMA && record->length == sizeof(settings_t))))
+        return false;
+    uint32_t crc;
+    memcpy(&crc, (uint8_t const *)&record->values + record->length, sizeof(crc));
+    if (crc != record_crc(record))
+        return false;
+    // Version 1 stored the same first eight fields. New options use defaults;
+    // upgrading firmware never silently drops an existing watchdog setting.
+    settings_defaults(settings);
+    memcpy(settings, &record->values, record->length);
+    return settings_valid(settings);
 }
 
 void settings_init(void)
@@ -95,11 +111,12 @@ void settings_init(void)
     current_sequence = 0;
     for (unsigned bank = 0; bank < 2; bank++) {
         settings_record_t const *record = bank_record(bank);
-        if (record_valid(record) && (current_bank < 0 ||
+        settings_t decoded;
+        if (record_decode(record, &decoded) && (current_bank < 0 ||
             (int32_t)(record->sequence - current_sequence) > 0)) {
             current_bank = (int)bank;
             current_sequence = record->sequence;
-            active = record->values;
+            active = decoded;
         }
     }
 }
@@ -133,8 +150,10 @@ bool settings_save(settings_t const *settings)
 {
     if (!settings_valid(settings))
         return false;
-    if (current_bank >= 0 && record_valid(bank_record(current_bank)) &&
-        memcmp(settings, &bank_record(current_bank)->values, sizeof(*settings)) == 0)
+    settings_t previous;
+    if (current_bank >= 0 && bank_record(current_bank)->schema == SETTINGS_SCHEMA &&
+        record_decode(bank_record(current_bank), &previous) &&
+        memcmp(settings, &previous, sizeof(*settings)) == 0)
         return true;
 
     unsigned bank = current_bank == 0 ? 1 : 0;
@@ -154,7 +173,7 @@ bool settings_save(settings_t const *settings)
      * function is called only on core0, from the menu task, never an IRQ. */
     int result = flash_safe_execute(write_record, &write, 500);
     settings_record_t const *stored = bank_record(bank);
-    if (result != PICO_OK || !record_valid(stored) || memcmp(stored, &record, sizeof(record)) != 0)
+    if (result != PICO_OK || !record_decode(stored, &previous) || memcmp(stored, &record, sizeof(record)) != 0)
         return false;
     current_bank = (int)bank;
     current_sequence = record.sequence;
