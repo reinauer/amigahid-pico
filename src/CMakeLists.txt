@@ -1,6 +1,8 @@
 add_executable(amigahid-pico
   input_bridge.c
   main.c
+  settings.c
+  runtime_menu.c
   usb_hid.c
 )
 
@@ -38,6 +40,9 @@ target_link_libraries(amigahid-pico PUBLIC
   pico_stdlib
   pico_util
   pico_multicore
+  pico_flash
+  hardware_flash
+  hardware_watchdog
   hardware_dma
   hardware_gpio
   hardware_i2c
@@ -45,6 +50,11 @@ target_link_libraries(amigahid-pico PUBLIC
   tinyusb_host
   tinyusb_board
 )
+
+target_link_options(amigahid-pico PRIVATE
+  "LINKER:--script=${CMAKE_SOURCE_DIR}/cmake/settings_flash.ld"
+)
+set_property(TARGET amigahid-pico APPEND PROPERTY LINK_DEPENDS "${CMAKE_SOURCE_DIR}/cmake/settings_flash.ld")
 
 if (ENABLE_BLUETOOTH_HID)
   target_compile_options(amigahid-pico PRIVATE

@@ -30,6 +30,7 @@ enum debug_plug_types { AP_H_UNKNOWN, AP_H_KEYBOARD, AP_H_MOUSE, AP_H_CONTROLLER
 
 void dbgcons_init();
 void dbgcons_task(void);
+void dbgcons_settings_changed(void);
 
 void dbgcons_print_counters();
 

@@ -50,6 +50,10 @@ tracked firmware, build or dependency files; unrelated pcb edits do not affect i
 checkouts without reachable tags show only the commit hash; source archives without
 git metadata show `unknown`. the same version is printed in the uart startup banner.
 
+on the `features` branch, hold F12 for one second to open the OLED settings menu.
+see [runtime configuration](runtime-configuration.md) for settings, saving and
+the F12+Esc recovery gesture.
+
 for usb and bluetooth input on a pico w, enable the bluetooth host explicitly:
 
 ```shell

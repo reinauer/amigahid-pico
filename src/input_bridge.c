@@ -16,15 +16,18 @@
 #include "platform/amiga/keyboard_serial_io.h"
 #include "platform/amiga/quad_mouse.h"
 #include "util/debug_cons.h"
+#include "runtime_menu.h"
 
 typedef struct
 {
     hid_keyboard_report_t keyboard;
     hid_mouse_report_t mouse;
     uint8_t led_report;
+    bool mouse_quarantine;
 } input_bridge_state_t;
 
 static input_bridge_state_t bridge_state[INPUT_BRIDGE_MAX_SLOTS];
+static bool input_captured;
 
 static inline bool _ib_key_pressed(hid_keyboard_report_t const *report, uint8_t keycode)
 {
@@ -94,6 +97,7 @@ void input_bridge_reset(uint8_t slot)
         return;
 
     memset(&bridge_state[slot], 0, sizeof(bridge_state[slot]));
+    runtime_menu_disconnect(slot);
 }
 
 void input_bridge_disconnect(uint8_t slot)
@@ -107,6 +111,25 @@ void input_bridge_disconnect(uint8_t slot)
     _ib_sync_keyboard_modifiers(&bridge_state[slot].keyboard, &empty_keyboard);
     _ib_release_mouse_buttons(&bridge_state[slot].mouse);
     memset(&bridge_state[slot], 0, sizeof(bridge_state[slot]));
+    runtime_menu_disconnect(slot);
+}
+
+void input_bridge_capture(bool capture)
+{
+    static const hid_keyboard_report_t empty = {0};
+    input_captured = capture;
+    if (capture) {
+        for (unsigned slot = 0; slot < INPUT_BRIDGE_MAX_SLOTS; slot++) {
+            input_bridge_state_t *state = &bridge_state[slot];
+            _ib_sync_keyboard_keys(&state->keyboard, &empty);
+            _ib_sync_keyboard_modifiers(&state->keyboard, &empty);
+            _ib_release_mouse_buttons(&state->mouse);
+            memset(&state->keyboard, 0, sizeof(state->keyboard));
+            memset(&state->mouse, 0, sizeof(state->mouse));
+            state->mouse_quarantine = true;
+        }
+    }
+    amiga_quad_mouse_capture(capture);
 }
 
 void input_bridge_handle_keyboard(uint8_t slot, hid_keyboard_report_t const *report,
@@ -119,10 +142,20 @@ void input_bridge_handle_keyboard(uint8_t slot, hid_keyboard_report_t const *rep
 
     state = &bridge_state[slot];
 
-    _ib_sync_keyboard_keys(&state->keyboard, report);
-    _ib_sync_keyboard_modifiers(&state->keyboard, report);
+    // Rollover/error reports do not describe released keys or menu actions.
+    for (unsigned i = 0; i < 6; i++)
+        if (report->keycode[i] >= 1 && report->keycode[i] <= 3)
+            return;
+    if (runtime_menu_keyboard(slot, report)) {
+        _ib_update_keyboard_leds(state, sink);
+        return;
+    }
+    hid_keyboard_report_t filtered = *report;
+    runtime_menu_filter_keyboard(&filtered);
+    _ib_sync_keyboard_keys(&state->keyboard, &filtered);
+    _ib_sync_keyboard_modifiers(&state->keyboard, &filtered);
     _ib_update_keyboard_leds(state, sink);
-    state->keyboard = *report;
+    state->keyboard = filtered;
 }
 
 void input_bridge_handle_keyboard_boot(uint8_t slot, uint8_t modifier, uint8_t const keycode[6])
@@ -142,6 +175,17 @@ void input_bridge_handle_mouse(uint8_t slot, hid_mouse_report_t const *report)
         return;
 
     state = &bridge_state[slot];
+
+    if (input_captured) {
+        // Also covers a mouse connected after the menu was opened.
+        state->mouse_quarantine = true;
+        return;
+    }
+    if (state->mouse_quarantine) {
+        if (report->buttons == 0)
+            state->mouse_quarantine = false;
+        return;
+    }
 
     if ((report->buttons & MOUSE_BUTTON_LEFT) && !(state->mouse.buttons & MOUSE_BUTTON_LEFT))
         amiga_quad_mouse_button(AQM_LEFT, true);
