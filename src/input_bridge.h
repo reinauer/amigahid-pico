@@ -22,6 +22,14 @@ typedef struct
     void *ctx;
 } input_bridge_keyboard_sink_t;
 
+typedef struct {
+    uint8_t state, ports;
+    bool waiting;
+} input_bridge_gamepad_status_t;
+
+// Combined state submitted to the output core, not an electrical readback.
+input_bridge_gamepad_status_t input_bridge_gamepad_status(uint8_t slot);
+
 void input_bridge_reset(uint8_t slot);
 void input_bridge_disconnect(uint8_t slot);
 // Release routed input while the local settings menu owns the keyboard.

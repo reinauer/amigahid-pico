@@ -34,6 +34,17 @@ static input_bridge_state_t bridge_state[INPUT_BRIDGE_MAX_SLOTS];
 static bool input_captured;
 static bool joystick_mode;
 static bool joystick_port2;
+static uint8_t gamepad_output;
+
+input_bridge_gamepad_status_t input_bridge_gamepad_status(uint8_t slot)
+{
+    return (input_bridge_gamepad_status_t) {
+        .state = gamepad_output,
+        .ports = (joystick_mode ? 1u : 0u) | (joystick_port2 ? 2u : 0u),
+        .waiting = input_captured ||
+            (slot < INPUT_BRIDGE_MAX_SLOTS && bridge_state[slot].gamepad_quarantine),
+    };
+}
 
 static void _ib_sync_gamepads(void)
 {
@@ -46,6 +57,7 @@ static void _ib_sync_gamepads(void)
         state &= ~(GAMEPAD_UP | GAMEPAD_DOWN);
     if ((state & (GAMEPAD_LEFT | GAMEPAD_RIGHT)) == (GAMEPAD_LEFT | GAMEPAD_RIGHT))
         state &= ~(GAMEPAD_LEFT | GAMEPAD_RIGHT);
+    gamepad_output = state;
     amiga_quad_mouse_joystick(state);
 }
 
