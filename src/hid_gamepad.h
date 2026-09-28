@@ -1,4 +1,4 @@
-/* Bounded USB HID gamepad decoding. SPDX-License-Identifier: EPL-2.0 */
+/* Bounded HID gamepad decoding. SPDX-License-Identifier: EPL-2.0 */
 #ifndef AMIGAHID_HID_GAMEPAD_H
 #define AMIGAHID_HID_GAMEPAD_H
 

@@ -15,6 +15,7 @@
 
 #ifdef ENABLE_BLUETOOTH_HID
 #include "hardware/sync.h"
+#include "bt_hid.h"
 #endif
 
 #include "debug_cons.h"
@@ -96,6 +97,21 @@ static void dbgcons_gamepad_line(unsigned row, char const *message)
     }
 }
 
+static void dbgcons_gamepad_output(uint8_t slot, bool decoded, uint8_t state)
+{
+#ifdef ENABLE_BLUETOOTH_HID
+    if (bt_passkey_active)
+        return;
+#endif
+    input_bridge_gamepad_status_t output = input_bridge_gamepad_status(slot);
+    char input[3] = "--", line[32];
+    if (decoded)
+        snprintf(input, sizeof(input), "%02x", state);
+    snprintf(line, sizeof(line), "in%s out%02x p%u%s", input, output.state,
+        output.ports, output.waiting ? " wait" : "");
+    dbgcons_gamepad_line(1, line);
+}
+
 static void dbgcons_gamepad_task(void)
 {
     if (settings_get()->display != SETTINGS_DISPLAY_HID)
@@ -107,7 +123,23 @@ static void dbgcons_gamepad_task(void)
 
     usb_hid_gamepad_status_t usb;
     if (!usb_hid_gamepad_status(&usb)) {
+#ifdef ENABLE_BLUETOOTH_HID
+        bt_hid_gamepad_status_t bt;
+        if (bt_hid_gamepad_status(&bt)) {
+            char line[32];
+            gamepad_visible = true;
+            snprintf(line, sizeof(line), "b%04x l%02u/%02u d%c", bt.reports,
+                bt.length, bt.expected_length, bt.decoded ? '+' : '-');
+            dbgcons_gamepad_line(0, line);
+            dbgcons_gamepad_output(bt.slot, bt.decoded, bt.state);
+            return;
+        }
+#endif
         if (gamepad_visible) {
+            // Preserve a newer USB connect/disconnect message, which clears
+            // this cache. Otherwise remove stale Bluetooth diagnostics.
+            if (gamepad_lines[0][0])
+                dbgcons_gamepad_line(0, "");
 #ifdef ENABLE_BLUETOOTH_HID
             if (!bt_passkey_active)
 #endif
@@ -117,7 +149,6 @@ static void dbgcons_gamepad_task(void)
         return;
     }
     gamepad_visible = true;
-    input_bridge_gamepad_status_t output = input_bridge_gamepad_status(usb.slot);
     char line[32];
     snprintf(line, sizeof(line), "j%04x l%02u/%02u d%c r%c", usb.reports,
         usb.length, usb.expected_length, usb.decoded ? '+' : '-', usb.receive_ok ? '+' : '-');
@@ -133,12 +164,7 @@ static void dbgcons_gamepad_task(void)
         dbgcons_gamepad_line(1, line);
         return;
     }
-    char input[3] = "--";
-    if (usb.decoded)
-        snprintf(input, sizeof(input), "%02x", usb.state);
-    snprintf(line, sizeof(line), "in%s out%02x p%u%s", input, output.state,
-        output.ports, output.waiting ? " wait" : "");
-    dbgcons_gamepad_line(1, line);
+    dbgcons_gamepad_output(usb.slot, usb.decoded, usb.state);
 }
 
 void dbgcons_init()

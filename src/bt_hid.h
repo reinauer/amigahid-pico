@@ -11,7 +11,18 @@
 #ifndef _BT_HID_H
 #define _BT_HID_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
+typedef struct {
+    uint16_t reports, length;
+    uint8_t slot, expected_length, state;
+    bool decoded;
+} bt_hid_gamepad_status_t;
+
 void bt_hid_init(void);
 void bt_hid_task(void);
+// Main-context snapshot of the LE gamepad; false if none is ready.
+bool bt_hid_gamepad_status(bt_hid_gamepad_status_t *status);
 
 #endif // _BT_HID_H

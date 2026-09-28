@@ -121,9 +121,9 @@ static void render_menu(void)
         case MENU_SPEED: value = speed[edited.mouse_speed]; break;
         case MENU_DISPLAY: value = display[edited.display]; break;
         case MENU_WATCHDOG: value = watchdog[edited.watchdog]; break;
-        case MENU_PORT: value = edited.port_mode == SETTINGS_PORT_MOUSE ? "Mouse" : "USB joystick"; break;
+        case MENU_PORT: value = edited.port_mode == SETTINGS_PORT_MOUSE ? "Mouse" : "Joystick"; break;
 #ifdef HAS_JOYSTICK_PORT2
-        case MENU_PORT2: value = edited.joystick_port2 ? "USB joystick" : "Off"; break;
+        case MENU_PORT2: value = edited.joystick_port2 ? "Joystick" : "Off"; break;
 #endif
         default: break;
     }
