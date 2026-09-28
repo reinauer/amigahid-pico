@@ -21,7 +21,7 @@ still need hardware validation.
 
 Usage and validation notes: [doc/runtime-configuration.md](doc/runtime-configuration.md).
 
-Implemented in the next digital-joystick milestone; hardware validation pending:
+Implemented in the digital-joystick milestone:
 
 - USB HID gamepad/joystick hat switches, discrete D-pad inputs and absolute X/Y
   fields, with Button 1 as fire. Reports are decoded from their descriptors,
@@ -45,17 +45,34 @@ HID diagnostics now expose USB report count/length, decoding, routed controls
 and waiting for neutral. On direct USB connection, the stick showed zero received
 reports and an advertised 49-byte layout instead of Linux's 9-byte layout.
 A PS3 startup trial now matches `054c:0268` plus the 49-byte report ID 1 layout
-before enabling input, and maps PS3 face buttons to fire. Hardware confirmation
-of the identity and fix is pending; diagnostics show the identity/startup status
-until reports arrive.
+before enabling input, and maps PS3 face buttons to fire. The user confirmed that
+`0.3.0-dev-12-g4da9d14` works on REV5 by playing Great Giana Sisters. The controller's
+USB identity was not read back directly; the successful initialization supports
+the PS3-mode explanation. Detailed unplug/menu/diagonal checks remain outstanding.
+
+Implemented in the Bluetooth LE gamepad milestone; hardware validation pending:
+
+- Active LE scanning includes scan responses. Devices without keyboard/mouse boot
+  reports use BTstack's HIDS host to discover report maps and subscribe to input.
+- Standard HID gamepad reports feed the existing digital joystick path. The Stadia
+  Bluetooth descriptor has native coverage for D-pad, left stick and A/fire.
+- The Bluetooth queue preserves the latest gamepad state on overflow and releases
+  controls on disconnect. OLED status identifies an accepted LE gamepad, with
+  report/decoding/output diagnostics when no USB joystick is connected.
+- Controller menus now say Joystick because the same mode accepts USB and LE
+  input. Existing saved settings and the REV5 mouse/joystick defaults are preserved.
+- Stadia is the first hardware target. PS4/Classic gamepads and controller-specific
+  Xbox behavior remain follow-ups. Keyboard-as-joystick is deferred at the user's
+  request; Bluetooth gamepads take priority.
 
 Still to implement or validate:
 
 - Measure input latency and validate the faster mouse timing presets on hardware.
 - Earlier HID rearming and GPIO timing instrumentation.
 - Keyboard PIO; consider mouse PIO only after measurement.
-- Validate USB digital joystick output on hardware; add configurable deadzones
-  and button mappings, Bluetooth gamepads, keyboard-as-joystick, and CD32 output.
+- Validate LE gamepad pairing/reconnect and complete USB joystick lifecycle checks;
+  add configurable deadzones and button mappings, more Bluetooth controllers,
+  keyboard-as-joystick, and CD32 output.
 - Full key remapping/layout presets, further controller modes, Bluetooth configuration,
   and the optional Amiga preference tool.
 
@@ -259,8 +276,9 @@ paths, starting with the simplest and most compatible target.
 
 ## Phase 1: HID Joystick to Digital Joystick
 
-USB hat/D-pad, absolute X/Y and Button 1 support is implemented on `features`;
-Pico-to-Amiga hardware testing and configurable thresholds remain outstanding.
+USB and LE HID hat/D-pad, absolute X/Y and Button 1 support is implemented on
+`features`. Competition Pro USB gameplay works on REV5; LE gamepads, complete
+lifecycle testing and configurable thresholds remain outstanding.
 See [doc/joystick.md](doc/joystick.md).
 
 - Add a controller backend that drives one Amiga controller port as:

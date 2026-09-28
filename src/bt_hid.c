@@ -22,11 +22,13 @@
 #include "hardware/sync.h"
 
 #include "input_bridge_bt.h"
+#include "hid_gamepad.h"
 #include "util/debug_cons.h"
 #include "util/output.h"
 
 #define BT_HID_QUEUE_DEPTH 64
 #define BT_CLASSIC_DESCRIPTOR_STORAGE_SIZE 512
+#define BT_LE_DESCRIPTOR_STORAGE_SIZE 1024
 #define BT_HID_LOCAL_NAME "AmigaHID Pico"
 
 #define HID_USAGE_DESKTOP_X     0x30
@@ -38,6 +40,7 @@ typedef enum
     BT_HID_QUEUE_DISCONNECT = 0,
     BT_HID_QUEUE_KEYBOARD,
     BT_HID_QUEUE_MOUSE,
+    BT_HID_QUEUE_GAMEPAD,
 } bt_hid_queue_type_t;
 
 typedef struct
@@ -64,6 +67,7 @@ typedef struct
     {
         bt_hid_keyboard_report_t keyboard;
         bt_hid_mouse_report_t mouse;
+        uint8_t gamepad;
     };
 } bt_hid_queue_entry_t;
 
@@ -84,7 +88,9 @@ typedef enum
     BT_LE_STATE_CHARACTERISTIC_QUERY,
     BT_LE_STATE_ENABLE_KEYBOARD,
     BT_LE_STATE_ENABLE_MOUSE,
+    BT_LE_STATE_ENABLE_GAMEPAD,
     BT_LE_STATE_READY,
+    BT_LE_STATE_DISCONNECTING,
 } bt_le_state_t;
 
 static queue_t bt_hid_queue;
@@ -95,8 +101,10 @@ typedef struct
     bool disconnect;
     bool keyboard_pending;
     bool mouse_pending;
+    bool gamepad_pending;
     bt_hid_keyboard_report_t keyboard;
     bt_hid_mouse_report_t mouse;
+    uint8_t gamepad;
 } bt_hid_overflow_t;
 
 static bool bt_hid_queue_resync;
@@ -123,6 +131,12 @@ static gatt_client_notification_t bt_le_mouse_notifications;
 static bool bt_le_has_protocol_mode;
 static bool bt_le_has_boot_keyboard;
 static bool bt_le_has_boot_mouse;
+static uint16_t bt_le_hids_cid;
+static uint8_t bt_le_descriptor_storage[BT_LE_DESCRIPTOR_STORAGE_SIZE];
+static hid_gamepad_t bt_le_gamepads[MAX_NUM_HID_SERVICES];
+static uint8_t bt_le_gamepad_states[MAX_NUM_HID_SERVICES];
+static bool bt_le_has_gamepad;
+static bt_hid_gamepad_status_t bt_le_gamepad_status;
 
 static uint8_t bt_classic_connected_count(void)
 {
@@ -163,8 +177,14 @@ static char const *bt_le_state_name(bt_le_state_t state)
         case BT_LE_STATE_ENABLE_MOUSE:
             return "mouse";
 
+        case BT_LE_STATE_ENABLE_GAMEPAD:
+            return "pad";
+
         case BT_LE_STATE_READY:
             return "ready";
+
+        case BT_LE_STATE_DISCONNECTING:
+            return "disc";
     }
 
     return "?";
@@ -174,8 +194,8 @@ static void bt_hid_update_status(void)
 {
     char linebuf[32] = "";
 
-    snprintf(linebuf, sizeof(linebuf), "bt c%u le:%s",
-        bt_classic_connected_count(), bt_le_state_name(bt_le_state));
+    snprintf(linebuf, sizeof(linebuf), "bt c%u le:%s%s",
+        bt_classic_connected_count(), bt_le_state_name(bt_le_state), bt_le_has_gamepad ? " j1" : "");
     dbgcons_bt_status(linebuf);
 }
 
@@ -201,6 +221,18 @@ static inline uint8_t bt_classic_input_slot(uint8_t classic_slot)
 static inline uint8_t bt_le_input_slot(void)
 {
     return INPUT_BRIDGE_BT_LE_SLOT_BASE;
+}
+
+bool bt_hid_gamepad_status(bt_hid_gamepad_status_t *status)
+{
+    if (status == NULL)
+        return false;
+    uint32_t interrupts = save_and_disable_interrupts();
+    bool available = bt_le_has_gamepad && bt_le_state == BT_LE_STATE_READY;
+    if (available)
+        *status = bt_le_gamepad_status;
+    restore_interrupts(interrupts);
+    return available;
 }
 
 static int8_t bt_hid_clamp_i8(int32_t value)
@@ -245,6 +277,10 @@ static void bt_hid_enqueue(bt_hid_queue_entry_t const *entry)
             pending->mouse = entry->mouse;
             pending->mouse_pending = true;
             break;
+        case BT_HID_QUEUE_GAMEPAD:
+            pending->gamepad = entry->gamepad;
+            pending->gamepad_pending = true;
+            break;
     }
 
     restore_interrupts(interrupts);
@@ -275,6 +311,10 @@ static bool bt_hid_dequeue(bt_hid_queue_entry_t *entry)
             pending->mouse_pending = false;
             entry->type = BT_HID_QUEUE_MOUSE;
             entry->mouse = pending->mouse;
+        } else if (pending->gamepad_pending) {
+            pending->gamepad_pending = false;
+            entry->type = BT_HID_QUEUE_GAMEPAD;
+            entry->gamepad = pending->gamepad;
         } else {
             continue;
         }
@@ -329,6 +369,16 @@ static void bt_hid_append_keycode(bt_hid_keyboard_report_t *report, uint8_t keyc
             return;
         }
     }
+}
+
+static void bt_hid_enqueue_gamepad(uint8_t slot, uint8_t state)
+{
+    bt_hid_queue_entry_t entry = {
+        .slot = slot,
+        .type = BT_HID_QUEUE_GAMEPAD,
+        .gamepad = state,
+    };
+    bt_hid_enqueue(&entry);
 }
 
 static int8_t bt_classic_find_slot(uint16_t hid_cid)
@@ -568,6 +618,11 @@ static void bt_le_clear_characteristics(void)
     bt_le_has_protocol_mode = false;
     bt_le_has_boot_keyboard = false;
     bt_le_has_boot_mouse = false;
+    bt_le_hids_cid = 0;
+    memset(bt_le_gamepads, 0, sizeof(bt_le_gamepads));
+    memset(bt_le_gamepad_states, 0, sizeof(bt_le_gamepad_states));
+    memset(&bt_le_gamepad_status, 0, sizeof(bt_le_gamepad_status));
+    bt_le_has_gamepad = false;
 }
 
 static bool bt_le_adv_event_contains_hid_service(uint8_t const *packet)
@@ -586,7 +641,8 @@ static void bt_le_start_scan(void)
     bt_le_clear_characteristics();
     dbgcons_bt_passkey_clear();
     bt_le_set_state(BT_LE_STATE_SCANNING);
-    gap_set_scan_parameters(0, 48, 48);
+    // Some LE controllers put their HID service UUID in the scan response.
+    gap_set_scan_parameters(1, 48, 48);
     gap_start_scan();
 }
 
@@ -600,10 +656,104 @@ static void bt_le_restart_scan(void)
 
 static void bt_le_disconnect_and_restart(void)
 {
-    if (bt_le_connection_handle != HCI_CON_HANDLE_INVALID)
+    if (bt_le_connection_handle != HCI_CON_HANDLE_INVALID) {
+        bt_le_set_state(BT_LE_STATE_DISCONNECTING);
         gap_disconnect(bt_le_connection_handle);
-    else
+    } else {
         bt_le_restart_scan();
+    }
+}
+
+static void bt_le_gamepad_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
+{
+    // HIDS uses HCI_EVENT_PACKET for connection events and
+    // HCI_EVENT_GATTSERVICE_META for notifications. Inspect the event itself.
+    UNUSED(packet_type);
+    UNUSED(channel);
+    if (size < 5 || hci_event_packet_get_type(packet) != HCI_EVENT_GATTSERVICE_META || !bt_le_hids_cid)
+        return;
+    if (little_endian_read_16(packet, 3) != bt_le_hids_cid)
+        return;
+
+    switch (hci_event_gattservice_meta_get_subevent_code(packet)) {
+        case GATTSERVICE_SUBEVENT_HID_SERVICE_CONNECTED: {
+            if (size < 8 || bt_le_state != BT_LE_STATE_ENABLE_GAMEPAD)
+                break;
+            uint8_t status = gattservice_subevent_hid_service_connected_get_status(packet);
+            if (status != ERROR_CODE_SUCCESS) {
+                ahprintf("[btle] gamepad discovery failed: 0x%02x\n", status);
+                bt_le_disconnect_and_restart();
+                break;
+            }
+            uint8_t services = gattservice_subevent_hid_service_connected_get_num_instances(packet);
+            for (unsigned i = 0; i < services && i < MAX_NUM_HID_SERVICES; i++) {
+                uint8_t const *descriptor = hids_host_descriptor_storage_get_descriptor_data(bt_le_hids_cid, i);
+                uint16_t length = hids_host_descriptor_storage_get_descriptor_len(bt_le_hids_cid, i);
+                if (hid_gamepad_parse(&bt_le_gamepads[i], descriptor, length)) {
+                    if (!bt_le_has_gamepad) {
+                        hid_gamepad_t const *pad = &bt_le_gamepads[i];
+                        bt_le_gamepad_status.expected_length =
+                            (pad->reports[0].bits + 7u) / 8u + (pad->report_ids ? 1u : 0u);
+                    }
+                    bt_le_has_gamepad = true;
+                }
+            }
+            if (!bt_le_has_gamepad) {
+                ahprintf("[btle] no supported gamepad report map\n");
+                bt_le_disconnect_and_restart();
+                break;
+            }
+            bt_le_gamepad_status.slot = bt_le_input_slot();
+            dbgcons_bt_passkey_clear();
+            bt_le_set_state(BT_LE_STATE_READY);
+            break;
+        }
+
+        case GATTSERVICE_SUBEVENT_HID_REPORT: {
+            if (size < 10 || bt_le_state != BT_LE_STATE_READY || !bt_le_has_gamepad)
+                break;
+            uint8_t service = gattservice_subevent_hid_report_get_service_index(packet);
+            if (service >= MAX_NUM_HID_SERVICES || !bt_le_gamepads[service].field_count)
+                break;
+            uint8_t const *report = gattservice_subevent_hid_report_get_report(packet);
+            uint16_t length = gattservice_subevent_hid_report_get_report_len(packet);
+            if (length == 0 || length > size - 9u)
+                break;
+            hid_gamepad_t *pad = &bt_le_gamepads[service];
+            // HIDS always inserts the Report Reference ID, even for ID zero.
+            if (!pad->report_ids) {
+                if (*report != 0)
+                    break;
+                report++;
+                length--;
+            }
+            bt_le_gamepad_status.reports++;
+            bt_le_gamepad_status.length = length;
+            bt_le_gamepad_status.expected_length = 0;
+            for (unsigned i = 0; i < pad->report_count; i++) {
+                if (pad->reports[i].id == (pad->report_ids && length ? report[0] : 0))
+                    bt_le_gamepad_status.expected_length =
+                        (pad->reports[i].bits + 7u) / 8u + (pad->report_ids ? 1u : 0u);
+            }
+            bt_le_gamepad_status.decoded = hid_gamepad_decode(pad, report, length, &bt_le_gamepad_states[service]);
+            if (!bt_le_gamepad_status.decoded)
+                break;
+            uint8_t combined = 0;
+            for (unsigned i = 0; i < MAX_NUM_HID_SERVICES; i++)
+                combined |= bt_le_gamepad_states[i];
+            bt_le_gamepad_status.state = combined;
+            bt_hid_enqueue_gamepad(bt_le_input_slot(), combined);
+            break;
+        }
+
+        case GATTSERVICE_SUBEVENT_HID_SERVICE_DISCONNECTED:
+            // The HCI disconnection handler releases input and restarts scanning.
+            bt_le_has_gamepad = false;
+            break;
+
+        default:
+            break;
+    }
 }
 
 static void bt_le_ready(void)
@@ -740,7 +890,15 @@ static void bt_le_gatt_client_handler(uint8_t packet_type, uint16_t channel, uin
                             bt_le_connection_handle, &bt_le_boot_mouse_characteristic,
                             GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION);
                     } else {
-                        bt_le_disconnect_and_restart();
+                        // Gamepads such as Stadia have no boot reports. Let
+                        // HIDS discover Report Maps, Report References and CCCs.
+                        bt_le_set_state(BT_LE_STATE_ENABLE_GAMEPAD);
+                        uint8_t status = hids_host_connect(bt_le_connection_handle,
+                            &bt_le_gamepad_handler, HID_PROTOCOL_MODE_REPORT, &bt_le_hids_cid);
+                        if (status != ERROR_CODE_SUCCESS) {
+                            ahprintf("[btle] gamepad discovery could not start: 0x%02x\n", status);
+                            bt_le_disconnect_and_restart();
+                        }
                     }
                     break;
 
@@ -877,6 +1035,9 @@ static void bt_le_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8
             break;
 
         case SM_EVENT_PAIRING_COMPLETE:
+            if (sm_event_pairing_complete_get_handle(packet) != bt_le_connection_handle ||
+                bt_le_state != BT_LE_STATE_ENCRYPTING)
+                break;
             if (sm_event_pairing_complete_get_status(packet) == ERROR_CODE_SUCCESS)
                 connect_to_service = true;
             else
@@ -884,7 +1045,13 @@ static void bt_le_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8
             break;
 
         case SM_EVENT_REENCRYPTION_COMPLETE:
-            connect_to_service = true;
+            if (sm_event_reencryption_complete_get_handle(packet) != bt_le_connection_handle ||
+                bt_le_state != BT_LE_STATE_ENCRYPTING)
+                break;
+            if (sm_event_reencryption_complete_get_status(packet) == ERROR_CODE_SUCCESS)
+                connect_to_service = true;
+            else
+                bt_le_disconnect_and_restart();
             break;
 
         default:
@@ -930,6 +1097,7 @@ void bt_hid_init(void)
     sm_set_io_capabilities(IO_CAPABILITY_DISPLAY_ONLY);
     sm_set_authentication_requirements(SM_AUTHREQ_SECURE_CONNECTION | SM_AUTHREQ_BONDING);
     gatt_client_init();
+    hids_host_init(bt_le_descriptor_storage, sizeof(bt_le_descriptor_storage));
 
     hid_host_init(bt_classic_descriptor_storage, sizeof(bt_classic_descriptor_storage));
     hid_host_register_packet_handler(&bt_classic_packet_handler);
@@ -978,6 +1146,10 @@ void bt_hid_task(void)
             case BT_HID_QUEUE_MOUSE:
                 input_bridge_handle_mouse_boot(entry.slot, entry.mouse.buttons, entry.mouse.x, entry.mouse.y,
                     entry.mouse.wheel);
+                break;
+
+            case BT_HID_QUEUE_GAMEPAD:
+                input_bridge_handle_gamepad(entry.slot, entry.gamepad);
                 break;
         }
     }

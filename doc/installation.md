@@ -41,7 +41,7 @@ $ cmake -B build/ -S . -DBOARD_TYPE=BOARD_HIDPICO_REV5
 
 supported targets are revision 2, revision 4 and revision 5. choose the revision
 printed on the carrier PCB, separately from the Pico/Pico W module. REV5 defaults
-to mouse on controller port 1 and USB joystick on controller port 2. REV4 has a
+to mouse on controller port 1 and joystick on controller port 2. REV4 has a
 port-2 wiring error, so its firmware leaves that port unused; see the
 [errata](errata.md#board-revision-4).
 
@@ -70,8 +70,9 @@ for usb and bluetooth input on a pico w, enable the bluetooth host explicitly:
 $ cmake -B build/ -S . -DPICO_BOARD=pico_w -DBOARD_TYPE=BOARD_HIDPICO_REV4 -DENABLE_BLUETOOTH_HID=ON
 ```
 
-use `-DBOARD_TYPE=BOARD_HIDPICO_REV5` instead for a REV5 carrier. Bluetooth currently
-supports keyboards and mice; joystick input is USB-only.
+use `-DBOARD_TYPE=BOARD_HIDPICO_REV5` instead for a REV5 carrier. Bluetooth supports
+keyboards and mice, plus an initial LE HID gamepad implementation targeting Stadia.
+See [joystick setup and validation status](joystick.md#bluetooth-le-gamepad-trial).
 
 bluetooth builds apply the patches in `cmake/patches/` to dependency copies under the build directory. these retain btstack's report-to-boot protocol fallback and fix cyw43 debug format strings with the dependency versions selected here. the upstream submodule checkouts are left unchanged. alternate btstack or cyw43 checkouts must also accept these patches.
 

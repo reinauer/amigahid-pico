@@ -30,8 +30,8 @@ version stays visible, and normal status/pairing text is restored on exit.
 | Mouse step interval | 300, 200, 150, 100 microseconds | 300 |
 | Display | Status, HID diagnostics, mouse diagnostics, off | Status |
 | Watchdog | Off, 2 seconds, 5 seconds | Off |
-| Controller port 1 | Mouse, USB joystick | Mouse |
-| Controller port 2 (REV5 only) | Off, USB joystick | USB joystick |
+| Controller port 1 | Mouse, Joystick | Mouse |
+| Controller port 2 (REV5 only) | Off, Joystick | Joystick |
 
 The selected menu key is reserved for configuration while a working OLED is
 present. The Right GUI setting affects the right Windows/Command modifier;
@@ -39,13 +39,14 @@ Application/Menu retains its existing Right Amiga mapping unless selected as
 the menu key. The default Amiga reset chord is unchanged.
 
 On REV5, mouse on port 1 and joystick on port 2 work simultaneously by default.
-USB joystick uses a supported USB HID controller's stick/D-pad and Button 1.
-Port 2 can be disabled with its own setting. Selecting USB joystick on port 1
+Joystick uses a supported USB or Bluetooth LE HID controller's stick/D-pad and
+Button 1. See [joystick setup](joystick.md) for controller support and validation.
+Port 2 can be disabled with its own setting. Selecting Joystick on port 1
 disables mouse input; if both ports are set to joystick, they mirror the same
 combined controller state. Keyboard input continues normally in all modes.
 REV2/REV4 builds expose only the port 1 setting and do not drive port 2.
 Release the gamepad controls and mouse buttons after changing modes. See
-[USB joystick mode](joystick.md) for supported formats and testing instructions.
+[joystick mode](joystick.md) for supported formats and testing instructions.
 
 Faster mouse intervals change the rate at which queued movement is emitted,
 not mouse sensitivity. They require testing with the connected Amiga. The
@@ -95,7 +96,7 @@ region preserve settings; erasing the entire flash removes them.
 Schema 1 and 2 records are migrated in RAM, preserving existing settings,
 including the watchdog timeout and any saved port 1 choice. Port 1 defaults to
 Mouse when migrating schema 1, which had no port setting. The new port 2 option
-defaults to USB joystick on REV5 and Off on other revisions. If an earlier trial
+defaults to Joystick on REV5 and Off on other revisions. If an earlier trial
 saved port 1 as USB joystick, change that setting to Mouse for simultaneous
 mouse/joystick use. The next explicit save writes schema 3. Unknown schemas are
 rejected, falling back to a compatible record or defaults.
