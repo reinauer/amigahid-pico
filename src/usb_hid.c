@@ -63,7 +63,28 @@ static void handle_event_mouse(uint8_t slot, uint8_t const *report, uint16_t len
 
 void hid_app_task(void)
 {
-    // null function to satisfy stack
+    // PS3 USB controllers wait for this feature report before sending input.
+    // Keep the payload alive until the asynchronous control transfer completes.
+    static uint8_t enable_reports[] = {0x42, 0x0c, 0x00, 0x00};
+    for (uint8_t slot = 0; slot < CFG_TUH_HID; slot++) {
+        usb_hid_slot_t *hid = &hid_info[slot];
+        if (hid->mounted && hid->gamepad_status.initialization == USB_GAMEPAD_INIT_PENDING) {
+            if (tuh_hid_set_report(hid->dev_addr, hid->instance, 0xf4,
+                    HID_REPORT_TYPE_FEATURE, enable_reports, sizeof(enable_reports)))
+                hid->gamepad_status.initialization = USB_GAMEPAD_INIT_WAITING;
+        }
+    }
+}
+
+void tuh_hid_set_report_complete_cb(uint8_t dev_addr, uint8_t instance,
+    uint8_t report_id, uint8_t report_type, uint16_t len)
+{
+    int8_t slot = usb_hid_find_slot(dev_addr, instance);
+    if (slot < 0 || report_id != 0xf4 || report_type != HID_REPORT_TYPE_FEATURE)
+        return;
+    usb_hid_gamepad_status_t *status = &hid_info[slot].gamepad_status;
+    if (status->initialization == USB_GAMEPAD_INIT_WAITING)
+        status->initialization = len == 4 ? USB_GAMEPAD_INIT_READY : USB_GAMEPAD_INIT_FAILED;
 }
 
 bool usb_hid_gamepad_status(usb_hid_gamepad_status_t *status)
@@ -160,6 +181,9 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *desc_re
         hid_protocol == HID_ITF_PROTOCOL_MOUSE ? AP_H_MOUSE : AP_H_UNKNOWN;
     memset(&hid_info[slot].gamepad, 0, sizeof(hid_info[slot].gamepad));
     memset(&hid_info[slot].gamepad_status, 0, sizeof(hid_info[slot].gamepad_status));
+    usb_hid_gamepad_status_t *status = &hid_info[slot].gamepad_status;
+    if (!tuh_vid_pid_get(dev_addr, &status->vid, &status->pid))
+        status->vid = status->pid = 0;
     // Non-boot interfaces describe report IDs and layouts in their descriptor.
     if (hid_protocol == HID_ITF_PROTOCOL_NONE) {
         hid_info[slot].report_count = tuh_hid_parse_report_descriptor(hid_info[slot].report_info, MAX_REPORT, desc_report, desc_len);
@@ -167,6 +191,13 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *desc_re
             hid_info[slot].device_type = AP_H_CONTROLLER;
             hid_info[slot].gamepad_status.expected_length =
                 (hid_info[slot].gamepad.reports[0].bits + 7u) / 8u + hid_info[slot].gamepad.report_ids;
+            // Some Competition Pro controllers can enumerate as a PS3 pad.
+            // Do not send its vendor-specific startup command to generic HID devices.
+            hid_gamepad_t const *pad = &hid_info[slot].gamepad;
+            if (status->vid == 0x054c && status->pid == 0x0268 &&
+                    pad->report_ids && pad->report_count == 1 &&
+                    pad->reports[0].id == 1 && pad->reports[0].bits == 48 * 8)
+                status->initialization = USB_GAMEPAD_INIT_PENDING;
         }
     }
     dbgcons_plug(hid_info[slot].device_type);
@@ -271,6 +302,17 @@ static void process_report(uint8_t slot, uint8_t dev_addr, uint8_t instance, uin
         return;
     uint8_t gamepad;
     if (hid_gamepad_decode(&hid_info[slot].gamepad, report, len, &gamepad)) {
+        if (hid_info[slot].gamepad_status.initialization != USB_GAMEPAD_INIT_NONE &&
+                len >= 49 && report[0] == 1) {
+            // PS3 Button 1 is Select; use the four face buttons as fire instead.
+            // Competition Pro's physical fire buttons occupy these positions.
+            gamepad &= ~GAMEPAD_FIRE;
+            if (report[3] & 0xf0) gamepad |= GAMEPAD_FIRE;
+            if (report[2] & 0x10) gamepad |= GAMEPAD_UP;
+            if (report[2] & 0x20) gamepad |= GAMEPAD_RIGHT;
+            if (report[2] & 0x40) gamepad |= GAMEPAD_DOWN;
+            if (report[2] & 0x80) gamepad |= GAMEPAD_LEFT;
+        }
         hid_info[slot].gamepad_status.decoded = true;
         hid_info[slot].gamepad_status.state = gamepad;
         input_bridge_handle_gamepad(slot, gamepad);

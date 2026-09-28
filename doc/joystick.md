@@ -16,8 +16,8 @@ including access to the settings menu.
    second, release it, and use the settings menu. Select **Save and exit** after edits.
 4. Centre the stick/D-pad and release all buttons before testing directions and fire.
 
-The stick/D-pad provides up, down, left, right and diagonals. HID Button 1 provides
-fire; the physical label for that button depends on the controller. The saved
+The stick/D-pad provides up, down, left, right and diagonals. Generic HID Button 1
+provides fire; PS3 USB mode uses the four face buttons instead. The saved
 mode survives power loss. Port 2 can be turned Off independently. If port 1 is
 configured as USB joystick, select Mouse there to restore mouse input.
 
@@ -39,6 +39,12 @@ assignment and mouse on port 2 are not implemented.
   such as the Competition Pro, which reports its switches as X/Y values.
 - HID Button 1 for fire.
 - Report IDs, including directions and fire in separate reports.
+- PS3 USB controllers identifying as `054c:0268` with input report ID 1 and a
+  49-byte report. An asynchronous feature-report command enables input; the
+  D-pad and descriptor-defined X/Y axes supply directions, and the four face
+  buttons supply fire. This includes the PS3 mode used by some Competition Pro
+  controllers. The device identity and report layout must both match before
+  sending the startup command. Other HID devices keep generic handling.
 
 X/Y values in the central half of the descriptor's logical range are neutral;
 values in the outer quarters select a direction. Low X means left, low Y means
@@ -87,12 +93,26 @@ The input diagnostics follow the first mounted controller slot; output includes
 all controllers. Reconnect resets that controller's counters. Updates are limited
 to ten per second and Bluetooth pairing messages take priority on the fourth row.
 
+Before the first report, the fourth row instead shows the USB identity and
+initialization status, for example `usb 054c:0268 s+`. The status is `s-` for a
+generic device needing no startup command, `sp` pending submission, `s?` awaiting
+completion, `s+` completed, or `s!` failed. Completion alone does not prove input
+has started; check that the `j` counter advances when moving the stick.
+
 ## Controller compatibility and references
 
 Competition Pro controllers can expose different USB report formats. The
 Competition Pro Extra (`0079:181c`, identifying as
 `SPEEDLINK COMPETITION PRO Game Controller for Android`) reports its digital
-stick as X/Y values of 0, 128 and 255.
+stick as X/Y values of 0, 128 and 255. PS3-compatible mode uses a different
+report layout and needs the startup command described below. If diagnostics
+show `j0000 l00/49 d- r+`, check the initialization status: a queued receive
+request alone does not mean the controller has started sending input.
+
+The PS3 startup transfer is feature report `f4`, payload `42 0c 00 00`, as used
+by the [USB Host Shield PS3 driver](https://github.com/felis/USB_Host_Shield_2.0/blob/master/PS3USB.cpp#L444).
+A [Competition Pro adapter implementation](https://www.hackster.io/DocSnyderde/connect-usb-joystick-to-commodore-c64-2fb5ba)
+uses that driver and maps the physical fire buttons to the PS3 face buttons.
 
 The parser follows [USB HID 1.11](https://www.usb.org/sites/default/files/hid1_11.pdf)
 and the [HID Usage Tables](https://www.usb.org/sites/default/files/hut1_2.pdf).
