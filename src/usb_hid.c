@@ -42,6 +42,7 @@ typedef struct
     enum debug_plug_types device_type;
     tuh_hid_report_info_t report_info[MAX_REPORT];
     hid_gamepad_t gamepad;
+    usb_hid_gamepad_status_t gamepad_status;
 } usb_hid_slot_t;
 
 typedef struct
@@ -63,6 +64,20 @@ static void handle_event_mouse(uint8_t slot, uint8_t const *report, uint16_t len
 void hid_app_task(void)
 {
     // null function to satisfy stack
+}
+
+bool usb_hid_gamepad_status(usb_hid_gamepad_status_t *status)
+{
+    if (!status)
+        return false;
+    for (uint8_t slot = 0; slot < CFG_TUH_HID; slot++) {
+        if (hid_info[slot].mounted && hid_info[slot].device_type == AP_H_CONTROLLER) {
+            *status = hid_info[slot].gamepad_status;
+            status->slot = slot;
+            return true;
+        }
+    }
+    return false;
 }
 
 void usb_hid_sync_keyboard_leds(void)
@@ -144,15 +159,20 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *desc_re
     hid_info[slot].device_type = hid_protocol == HID_ITF_PROTOCOL_KEYBOARD ? AP_H_KEYBOARD :
         hid_protocol == HID_ITF_PROTOCOL_MOUSE ? AP_H_MOUSE : AP_H_UNKNOWN;
     memset(&hid_info[slot].gamepad, 0, sizeof(hid_info[slot].gamepad));
+    memset(&hid_info[slot].gamepad_status, 0, sizeof(hid_info[slot].gamepad_status));
     // Non-boot interfaces describe report IDs and layouts in their descriptor.
     if (hid_protocol == HID_ITF_PROTOCOL_NONE) {
         hid_info[slot].report_count = tuh_hid_parse_report_descriptor(hid_info[slot].report_info, MAX_REPORT, desc_report, desc_len);
-        if (hid_gamepad_parse(&hid_info[slot].gamepad, desc_report, desc_len))
+        if (hid_gamepad_parse(&hid_info[slot].gamepad, desc_report, desc_len)) {
             hid_info[slot].device_type = AP_H_CONTROLLER;
+            hid_info[slot].gamepad_status.expected_length =
+                (hid_info[slot].gamepad.reports[0].bits + 7u) / 8u + hid_info[slot].gamepad.report_ids;
+        }
     }
     dbgcons_plug(hid_info[slot].device_type);
 
     receive_ok = tuh_hid_receive_report(dev_addr, instance);
+    hid_info[slot].gamepad_status.receive_ok = receive_ok;
     dbgcons_hid_status(dev_addr, instance, hid_protocol, receive_ok, hid_info[slot].report_count, true);
 }
 
@@ -189,31 +209,43 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
     uint8_t const hid_protocol = tuh_hid_interface_protocol(dev_addr, instance);
     int8_t slot = usb_hid_find_slot(dev_addr, instance);
 
-    if (slot < 0 || report == NULL || len == 0) {
-        tuh_hid_receive_report(dev_addr, instance);
-        return;
+    if (slot >= 0 && hid_info[slot].device_type == AP_H_CONTROLLER) {
+        usb_hid_gamepad_status_t *status = &hid_info[slot].gamepad_status;
+        hid_gamepad_t const *pad = &hid_info[slot].gamepad;
+        status->reports++;
+        status->length = len;
+        status->decoded = false;
+        status->expected_length = 0;
+        if (report && len) {
+            uint8_t id = pad->report_ids ? report[0] : 0;
+            for (unsigned i = 0; i < pad->report_count; i++)
+                if (pad->reports[i].id == id)
+                    status->expected_length = (pad->reports[i].bits + 7u) / 8u + pad->report_ids;
+        }
     }
 
-    switch (hid_protocol) {
-        case HID_ITF_PROTOCOL_KEYBOARD:
-            handle_event_keyboard((uint8_t)slot, dev_addr, instance, report, len);
-            break;
+    if (slot >= 0 && report != NULL && len != 0) {
+        switch (hid_protocol) {
+            case HID_ITF_PROTOCOL_KEYBOARD:
+                handle_event_keyboard((uint8_t)slot, dev_addr, instance, report, len);
+                break;
 
-        case HID_ITF_PROTOCOL_MOUSE:
-            handle_event_mouse((uint8_t)slot, report, len);
-            break;
+            case HID_ITF_PROTOCOL_MOUSE:
+                handle_event_mouse((uint8_t)slot, report, len);
+                break;
 
-        default:
-            // if report was not immediately identifiable as a keyboard event, read the usage page;
-            // some reports have a classifier as "desktop" for media keys, power, or are just encapsulated.
-            process_report((uint8_t)slot, dev_addr, instance, report, len);
-            break;
+            default:
+                // if report was not immediately identifiable as a keyboard event, read the usage page;
+                // some reports have a classifier as "desktop" for media keys, power, or are just encapsulated.
+                process_report((uint8_t)slot, dev_addr, instance, report, len);
+                break;
+        }
     }
 
     // continue to request to receive report
-    tuh_hid_receive_report(dev_addr, instance);
-    // if (!tuh_hid_receive_report(dev_addr, instance))
-        // ahprintf("[ERROR] unable to receive hid event report\n");
+    bool receive_ok = tuh_hid_receive_report(dev_addr, instance);
+    if (slot >= 0)
+        hid_info[slot].gamepad_status.receive_ok = receive_ok;
 }
 
 /**
@@ -239,6 +271,8 @@ static void process_report(uint8_t slot, uint8_t dev_addr, uint8_t instance, uin
         return;
     uint8_t gamepad;
     if (hid_gamepad_decode(&hid_info[slot].gamepad, report, len, &gamepad)) {
+        hid_info[slot].gamepad_status.decoded = true;
+        hid_info[slot].gamepad_status.state = gamepad;
         input_bridge_handle_gamepad(slot, gamepad);
         return;
     }

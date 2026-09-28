@@ -20,7 +20,9 @@
 #include "debug_cons.h"
 #include "display/disp_ssd.h"
 #include "firmware_version.h"
+#include "input_bridge.h"
 #include "settings.h"
+#include "usb_hid.h"
 #include "output.h"
 
 #define DBGCONS_OLED_COLS 21
@@ -30,6 +32,11 @@ struct
     uint8_t hid_keyboard, hid_mouse, hid_controller;
     uint8_t plug_events, unplug_events;
 } debug_counters;
+
+static char gamepad_lines[2][DBGCONS_OLED_COLS + 1];
+static bool gamepad_visible;
+static uint64_t gamepad_next_update;
+static void dbgcons_gamepad_task(void);
 
 #ifdef ENABLE_BLUETOOTH_HID
 static bool bt_passkey_active;
@@ -69,10 +76,62 @@ void dbgcons_task(void)
             bt_pending_dirty[slot] = false;
         }
         restore_interrupts(irq_state);
-        if (dirty)
+        if (dirty) {
             disp_write(0, slot == 0 ? 1 : 3, linebuf);
+            if (slot == 1)
+                gamepad_lines[1][0] = '\0';
+        }
     }
 #endif
+    dbgcons_gamepad_task();
+}
+
+static void dbgcons_gamepad_line(unsigned row, char const *message)
+{
+    char line[DBGCONS_OLED_COLS + 1];
+    snprintf(line, sizeof(line), "%-*.*s", DBGCONS_OLED_COLS, DBGCONS_OLED_COLS, message);
+    if (strcmp(line, gamepad_lines[row]) != 0) {
+        memcpy(gamepad_lines[row], line, sizeof(line));
+        disp_write(0, row + 2, line);
+    }
+}
+
+static void dbgcons_gamepad_task(void)
+{
+    if (settings_get()->display != SETTINGS_DISPLAY_HID)
+        return;
+    uint64_t now = time_us_64();
+    if (now < gamepad_next_update)
+        return;
+    gamepad_next_update = now + 100000;
+
+    usb_hid_gamepad_status_t usb;
+    if (!usb_hid_gamepad_status(&usb)) {
+        if (gamepad_visible) {
+#ifdef ENABLE_BLUETOOTH_HID
+            if (!bt_passkey_active)
+#endif
+                dbgcons_gamepad_line(1, "");
+            gamepad_visible = false;
+        }
+        return;
+    }
+    gamepad_visible = true;
+    input_bridge_gamepad_status_t output = input_bridge_gamepad_status(usb.slot);
+    char line[32];
+    snprintf(line, sizeof(line), "j%04x l%02u/%02u d%c r%c", usb.reports,
+        usb.length, usb.expected_length, usb.decoded ? '+' : '-', usb.receive_ok ? '+' : '-');
+    dbgcons_gamepad_line(0, line);
+#ifdef ENABLE_BLUETOOTH_HID
+    if (bt_passkey_active)
+        return;
+#endif
+    char input[3] = "--";
+    if (usb.decoded)
+        snprintf(input, sizeof(input), "%02x", usb.state);
+    snprintf(line, sizeof(line), "in%s out%02x p%u%s", input, output.state,
+        output.ports, output.waiting ? " wait" : "");
+    dbgcons_gamepad_line(1, line);
 }
 
 void dbgcons_init()
@@ -216,6 +275,7 @@ void dbgcons_hid_status(uint8_t dev_addr, uint8_t instance, uint8_t hid_protocol
         mounted ? '+' : '-', dev_addr, instance, hid_protocol, receive_ok ? "ok" : "err");
     disp_write(0, 2, "                     ");
     disp_write(0, 2, linebuf);
+    gamepad_lines[0][0] = '\0';
 }
 
 void dbgcons_mouse_report(int16_t x, int16_t y, uint8_t buttons)
@@ -242,6 +302,9 @@ void dbgcons_mouse_report(int16_t x, int16_t y, uint8_t buttons)
 
 void dbgcons_settings_changed(void)
 {
+    memset(gamepad_lines, 0, sizeof(gamepad_lines));
+    gamepad_visible = false;
+    gamepad_next_update = 0;
     disp_write(0, 2, "                     ");
     disp_write(0, 3, "                     ");
 #ifdef ENABLE_BLUETOOTH_HID

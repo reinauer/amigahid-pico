@@ -55,6 +55,38 @@ modes, centre the gamepad and release buttons before input resumes. Unplugging a
 controller releases its controls; other connected controllers retain their
 state. Opposing directions cancel when multiple controllers are active.
 
+## Diagnosing missing input
+
+Hold F12, select **Display: HID diagnostics**, then **Save and exit**.
+With a supported controller connected, the two diagnostic rows show, for example:
+
+```text
+j002a l09/09 d+ r+
+in01 out01 p2
+```
+
+- `j`: received report count in hexadecimal, wrapping after `ffff`. It resets on
+  reconnect. If it stays at zero while moving the stick, no input packets arrived.
+- `l`: actual/descriptor report length in decimal, including any report ID byte.
+  An unknown report ID shows an expected length of zero.
+- `d+` / `d-`: the latest packet decoded successfully / did not decode. Before
+  the first packet, `d-` and `in--` mean no input has been decoded yet.
+- `r+` / `r-`: the last request for the next USB report succeeded / failed.
+  Success means the transfer was queued; it does not prove packets are arriving.
+- `in`: decoded controls; `--` means the latest packet could not be decoded.
+- `out`: combined controls submitted to the output core after routing and menu
+  capture. This is a software state, not a measurement of the DB9 signals.
+- `p`: enabled joystick ports: `0` none, `1` first, `2` second, `3` both.
+- `wait`: input is captured by the menu or waiting for a neutral report after
+  leaving it. Centre the stick and release all buttons; move it and centre it
+  again if it sends reports only when controls change.
+
+Controls are hexadecimal bit masks: up `01`, down `02`, left `04`, right `08`,
+fire `10`; combinations add together. Neutral is `00`.
+The input diagnostics follow the first mounted controller slot; output includes
+all controllers. Reconnect resets that controller's counters. Updates are limited
+to ten per second and Bluetooth pairing messages take priority on the fourth row.
+
 ## Validation
 
 Temporary native checks cover descriptor parsing, malformed/truncated reports,
@@ -73,6 +105,14 @@ centred. Native checks using its actual descriptor and captured axis values pass
 for neutral, all four directions and all four diagonals. All four physical buttons
 produced input events; the current firmware maps only HID Button 1 to fire.
 This verifies input decoding, not the complete Pico-to-Amiga path.
+
+Hardware testing of `0.3.0-dev-10-g7c4f8fa` detected the Competition Pro (`j:01`),
+but Amiga Test Kit showed no activity on port 2 or on port 1 through the working
+mouse cable with port 1 set to USB joystick. The cause is still unconfirmed.
+The diagnostics above expose report arrival, length, decoding and routing without
+changing the decoder or GPIO behavior. Temporary checks cover short/empty reports,
+report IDs, receive-request failures, reconnects, menu capture, display rate
+limiting and Bluetooth pairing-message priority. No new tests are checked in.
 
 The parser follows [USB HID 1.11](https://www.usb.org/sites/default/files/hid1_11.pdf)
 and the [HID Usage Tables](https://www.usb.org/sites/default/files/hut1_2.pdf).

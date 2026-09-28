@@ -54,7 +54,10 @@ independently detect a stalled mouse core. It starts after normal initialization
 and pauses when a debugger halts the CPU. A watchdog reboot is reported on the
 OLED and UART.
 
-HID diagnostics show mount/receive status on the third line. Mouse diagnostics
+HID diagnostics show mount/receive status on the third line. With a supported USB
+gamepad connected, the third and fourth lines show its report count, packet length,
+decode result and routed controls; see [joystick diagnostics](joystick.md#diagnosing-missing-input).
+Mouse diagnostics
 update the fourth line at most ten times per second; Bluetooth pairing messages
 take precedence. Turning the display off blanks normal status, but the menu
 still appears when invoked. A missing or failed OLED prevents menu capture, so

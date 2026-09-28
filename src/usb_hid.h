@@ -11,6 +11,17 @@
 #ifndef _USB_HID_H
 #define _USB_HID_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
+typedef struct {
+    uint16_t reports, length;
+    uint8_t slot, expected_length, state;
+    bool decoded, receive_ok;
+} usb_hid_gamepad_status_t;
+
 void usb_hid_sync_keyboard_leds(void);
+// Main-context snapshot of the first mounted gamepad; false if none is present.
+bool usb_hid_gamepad_status(usb_hid_gamepad_status_t *status);
 
 #endif // _USB_HID_H

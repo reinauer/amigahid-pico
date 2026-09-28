@@ -39,7 +39,10 @@ Usage and supported formats: [doc/joystick.md](doc/joystick.md).
 Competition Pro Extra (`0079:181c`) input checked on Linux: its digital stick uses
 X/Y values 0/128/255, with the advertised hat unused. Native decoding checks pass
 using the actual descriptor and captured axis values. All four buttons produced
-events. Pico-to-Amiga joystick output still needs hardware testing.
+events. Hardware testing detects the controller, but Amiga Test Kit shows no
+activity on either port, including port 1 through the working mouse cable.
+HID diagnostics now expose USB report count/length, decoding, routed controls
+and waiting for neutral to locate the failure; the cause is not yet confirmed.
 
 Still to implement or validate:
 
