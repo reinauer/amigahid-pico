@@ -16,8 +16,8 @@ including access to the settings menu.
    second, release it, and use the settings menu. Select **Save and exit** after edits.
 4. Centre the stick/D-pad and release all buttons before testing directions and fire.
 
-The stick/D-pad provides up, down, left, right and diagonals. HID Button 1 provides
-fire; the physical label for that button depends on the controller. The saved
+The stick/D-pad provides up, down, left, right and diagonals. Generic HID Button 1
+provides fire; PS3 USB mode uses the four face buttons instead. The saved
 mode survives power loss. Port 2 can be turned Off independently. If an earlier
 trial saved port 1 as USB joystick, select Mouse there to restore mouse input.
 
@@ -39,6 +39,12 @@ assignment and mouse on port 2 are not implemented.
   such as the Competition Pro, which reports its switches as X/Y values.
 - HID Button 1 for fire.
 - Report IDs, including directions and fire in separate reports.
+- PS3 USB controllers identifying as `054c:0268` with input report ID 1 and a
+  49-byte report. An asynchronous feature-report command enables input; the
+  D-pad and descriptor-defined X/Y axes supply directions, and the four face
+  buttons supply fire. This includes the PS3 mode used by some Competition Pro
+  controllers. The device identity and report layout must both match before
+  sending the startup command. Other HID devices keep generic handling.
 
 X/Y values in the central half of the descriptor's logical range are neutral;
 values in the outer quarters select a direction. Low X means left, low Y means
@@ -87,6 +93,12 @@ The input diagnostics follow the first mounted controller slot; output includes
 all controllers. Reconnect resets that controller's counters. Updates are limited
 to ten per second and Bluetooth pairing messages take priority on the fourth row.
 
+Before the first report, the fourth row instead shows the USB identity and
+initialization status, for example `usb 054c:0268 s+`. The status is `s-` for a
+generic device needing no startup command, `sp` pending submission, `s?` awaiting
+completion, `s+` completed, or `s!` failed. Completion alone does not prove input
+has started; check that the `j` counter advances when moving the stick.
+
 ## Validation
 
 Temporary native checks cover descriptor parsing, malformed/truncated reports,
@@ -103,16 +115,29 @@ The connected Competition Pro Extra (`0079:181c`, identifying as
 Its digital stick reports X/Y values of 0, 128 and 255; its advertised hat remained
 centred. Native checks using its actual descriptor and captured axis values pass
 for neutral, all four directions and all four diagonals. All four physical buttons
-produced input events; the current firmware maps only HID Button 1 to fire.
+produced input events; generic HID mode maps only HID Button 1 to fire.
 This verifies input decoding, not the complete Pico-to-Amiga path.
 
 Hardware testing of `0.3.0-dev-10-g7c4f8fa` detected the Competition Pro (`j:01`),
 but Amiga Test Kit showed no activity on port 2 or on port 1 through the working
 mouse cable with port 1 set to USB joystick. The cause is still unconfirmed.
-The diagnostics above expose report arrival, length, decoding and routing without
-changing the decoder or GPIO behavior. Temporary checks cover short/empty reports,
+The diagnostic build then showed `j0000 l00/49 d- r+` even while moving the stick,
+connected directly to the AmigaHID board. No reports arrived, and the advertised
+49-byte layout differs from the 9-byte layout captured on Linux. PS3 startup is
+a candidate explanation, pending confirmation of the USB identity and a hardware
+test of the initialization command.
+
+Temporary checks cover short/empty reports,
 report IDs, receive-request failures, reconnects, menu capture, display rate
-limiting and Bluetooth pairing-message priority. No new tests are checked in.
+limiting and Bluetooth pairing-message priority. Synthetic PS3 reports cover
+identity/layout guards, initialization queue retry, completion/failure, reconnect,
+all stick directions, D-pad inputs and the four face buttons. Hardware validation
+of PS3 initialization and output is still pending. No new tests are checked in.
+
+The PS3 startup transfer is feature report `f4`, payload `42 0c 00 00`, as used
+by the [USB Host Shield PS3 driver](https://github.com/felis/USB_Host_Shield_2.0/blob/master/PS3USB.cpp#L444).
+A [Competition Pro adapter implementation](https://www.hackster.io/DocSnyderde/connect-usb-joystick-to-commodore-c64-2fb5ba)
+uses that driver and maps the physical fire buttons to the PS3 face buttons.
 
 The parser follows [USB HID 1.11](https://www.usb.org/sites/default/files/hid1_11.pdf)
 and the [HID Usage Tables](https://www.usb.org/sites/default/files/hut1_2.pdf).

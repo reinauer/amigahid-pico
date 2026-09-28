@@ -42,7 +42,12 @@ using the actual descriptor and captured axis values. All four buttons produced
 events. Hardware testing detects the controller, but Amiga Test Kit shows no
 activity on either port, including port 1 through the working mouse cable.
 HID diagnostics now expose USB report count/length, decoding, routed controls
-and waiting for neutral to locate the failure; the cause is not yet confirmed.
+and waiting for neutral. On direct USB connection, the stick showed zero received
+reports and an advertised 49-byte layout instead of Linux's 9-byte layout.
+A PS3 startup trial now matches `054c:0268` plus the 49-byte report ID 1 layout
+before enabling input, and maps PS3 face buttons to fire. Hardware confirmation
+of the identity and fix is pending; diagnostics show the identity/startup status
+until reports arrive.
 
 Still to implement or validate:
 

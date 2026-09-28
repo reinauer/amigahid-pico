@@ -22,13 +22,11 @@
 #include "tusb_config.h"
 #include "settings.h"
 #include "runtime_menu.h"
+#include "usb_hid.h"
 
 #ifdef ENABLE_BLUETOOTH_HID
 #include "bt_hid.h"
 #endif
-
-// defined within usb_hid.c
-extern void hid_app_task(void);
 
 // main entry point
 int main(void)
@@ -65,6 +63,7 @@ int main(void)
     while (1) {
         // run host mode jobs (hotplug events, packet io callbacks)
         tuh_task();
+        hid_app_task();
 
 #ifdef ENABLE_BLUETOOTH_HID
         bt_hid_task();

@@ -126,6 +126,13 @@ static void dbgcons_gamepad_task(void)
     if (bt_passkey_active)
         return;
 #endif
+    if (usb.reports == 0 && usb.length == 0) {
+        char const initialization[] = "-p?+!";
+        snprintf(line, sizeof(line), "usb %04x:%04x s%c", usb.vid, usb.pid,
+            usb.initialization < sizeof(initialization) - 1 ? initialization[usb.initialization] : '!');
+        dbgcons_gamepad_line(1, line);
+        return;
+    }
     char input[3] = "--";
     if (usb.decoded)
         snprintf(input, sizeof(input), "%02x", usb.state);

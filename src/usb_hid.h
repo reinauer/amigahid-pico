@@ -14,12 +14,18 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+enum usb_gamepad_initialization {
+    USB_GAMEPAD_INIT_NONE, USB_GAMEPAD_INIT_PENDING, USB_GAMEPAD_INIT_WAITING,
+    USB_GAMEPAD_INIT_READY, USB_GAMEPAD_INIT_FAILED,
+};
+
 typedef struct {
-    uint16_t reports, length;
-    uint8_t slot, expected_length, state;
+    uint16_t reports, length, vid, pid;
+    uint8_t slot, expected_length, state, initialization;
     bool decoded, receive_ok;
 } usb_hid_gamepad_status_t;
 
+void hid_app_task(void);
 void usb_hid_sync_keyboard_leds(void);
 // Main-context snapshot of the first mounted gamepad; false if none is present.
 bool usb_hid_gamepad_status(usb_hid_gamepad_status_t *status);
