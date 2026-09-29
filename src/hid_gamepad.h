@@ -12,6 +12,8 @@ enum gamepad_state {
     GAMEPAD_LEFT = 1u << 2,
     GAMEPAD_RIGHT = 1u << 3,
     GAMEPAD_FIRE = 1u << 4,
+    GAMEPAD_FIRE2 = 1u << 5,
+    GAMEPAD_FIRE3 = 1u << 6,
 };
 
 #define GAMEPAD_MAX_REPORTS 4

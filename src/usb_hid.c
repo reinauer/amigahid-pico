@@ -306,7 +306,9 @@ static void process_report(uint8_t slot, uint8_t dev_addr, uint8_t instance, uin
                 len >= 49 && report[0] == 1) {
             // PS3 Button 1 is Select; use the four face buttons as fire instead.
             // Competition Pro's physical fire buttons occupy these positions.
-            gamepad &= ~GAMEPAD_FIRE;
+            // Preserve this adapter's existing four-buttons-as-fire mapping;
+            // PS3 Button 2/3 are stick clicks, not the extra Amiga buttons.
+            gamepad &= ~(GAMEPAD_FIRE | GAMEPAD_FIRE2 | GAMEPAD_FIRE3);
             if (report[3] & 0xf0) gamepad |= GAMEPAD_FIRE;
             if (report[2] & 0x10) gamepad |= GAMEPAD_UP;
             if (report[2] & 0x20) gamepad |= GAMEPAD_RIGHT;

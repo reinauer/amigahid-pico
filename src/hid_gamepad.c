@@ -11,6 +11,7 @@
 #define FIELD_HAT 0x80u
 #define FIELD_X 0x81u
 #define FIELD_Y 0x82u
+#define FIELD_BUTTON4 0x83u
 #define MAX_USAGES 32u
 #define MAX_DEPTH 8
 
@@ -58,6 +59,9 @@ static uint8_t field_kind(uint32_t usage)
         case USAGE(DESKTOP_PAGE, 0x92): return GAMEPAD_RIGHT;
         case USAGE(DESKTOP_PAGE, 0x93): return GAMEPAD_LEFT;
         case USAGE(BUTTON_PAGE, 1): return GAMEPAD_FIRE;
+        case USAGE(BUTTON_PAGE, 2): return GAMEPAD_FIRE2;
+        case USAGE(BUTTON_PAGE, 3): return GAMEPAD_FIRE3;
+        case USAGE(BUTTON_PAGE, 4): return FIELD_BUTTON4;
         default: return 0;
     }
 }
@@ -182,6 +186,21 @@ static bool parse(hid_gamepad_t *pad, uint8_t const *descriptor, size_t length)
     }
     if (depth || global_depth || local.range || !pad->field_count)
         return false;
+    // Some HID gamepads skip Button 3 (Stadia uses 1=A, 2=B, 4=X).
+    // Prefer Button 3 when present; otherwise use Button 4 as the third fire.
+    bool has_button3 = false;
+    for (unsigned i = 0; i < pad->field_count; i++)
+        has_button3 |= pad->fields[i].kind == GAMEPAD_FIRE3;
+    unsigned fields = 0;
+    for (unsigned i = 0; i < pad->field_count; i++) {
+        gamepad_field_t field = pad->fields[i];
+        if (field.kind == FIELD_BUTTON4) {
+            if (has_button3) continue;
+            field.kind = GAMEPAD_FIRE3;
+        }
+        pad->fields[fields++] = field;
+    }
+    pad->field_count = (uint8_t)fields;
     for (unsigned i = 0; i < pad->report_count; i++)
         if ((pad->report_ids && !pad->reports[i].id) ||
             (pad->reports[i].bits + 7u) / 8u + (pad->report_ids ? 1u : 0u) > GAMEPAD_MAX_REPORT_BYTES)

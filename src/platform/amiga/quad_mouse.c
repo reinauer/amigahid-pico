@@ -342,15 +342,18 @@ static void _aqm_release_port(void)
     _aqm_gpio_set(QM1_AMIGA_B3, HIGH);
 }
 
-static void _aqm_joystick_output(uint8_t state, uint up, uint down, uint left, uint right, uint fire)
+static void _aqm_joystick_output(uint8_t state, uint up, uint down, uint left, uint right,
+    uint fire, uint fire2, uint fire3)
 {
-    // Amiga DE-9: pin 1 V/up, 2 H/down, 3 VQ/left, 4 HQ/right, 6 fire.
+    // Amiga DE-9: pins 1/2/3/4 = up/down/left/right; buttons 1/2/3 = 6/9/5.
     // Use the same open-drain convention as the mouse output.
     _aqm_gpio_set(up, state & GAMEPAD_UP ? LOW : HIGH);
     _aqm_gpio_set(down, state & GAMEPAD_DOWN ? LOW : HIGH);
     _aqm_gpio_set(left, state & GAMEPAD_LEFT ? LOW : HIGH);
     _aqm_gpio_set(right, state & GAMEPAD_RIGHT ? LOW : HIGH);
     _aqm_gpio_set(fire, state & GAMEPAD_FIRE ? LOW : HIGH);
+    _aqm_gpio_set(fire2, state & GAMEPAD_FIRE2 ? LOW : HIGH);
+    _aqm_gpio_set(fire3, state & GAMEPAD_FIRE3 ? LOW : HIGH);
 }
 
 void amiga_quad_mouse_button(enum amiga_quad_mouse_buttons button, bool pressed)
@@ -452,7 +455,8 @@ void amiga_quad_mouse_motion()
         // Port 2 runs alongside mouse quadrature, buttons and wheel on port 1.
         uint8_t state2 = (ports & JOYSTICK_PORT2) && !input_captured ? joystick_state : 0;
         if (state2 != previous_joystick2) {
-            _aqm_joystick_output(state2, QM2_AMIGA_V, QM2_AMIGA_H, QM2_AMIGA_VQ, QM2_AMIGA_HQ, QM2_AMIGA_B1);
+            _aqm_joystick_output(state2, QM2_AMIGA_V, QM2_AMIGA_H, QM2_AMIGA_VQ, QM2_AMIGA_HQ,
+                QM2_AMIGA_B1, QM2_AMIGA_B2, QM2_AMIGA_B3);
             previous_joystick2 = state2;
         }
 #endif
@@ -471,7 +475,8 @@ void amiga_quad_mouse_motion()
         if (joystick) {
             uint8_t state = input_captured ? 0 : joystick_state;
             if (state != previous_joystick) {
-                _aqm_joystick_output(state, QM1_AMIGA_V, QM1_AMIGA_H, QM1_AMIGA_VQ, QM1_AMIGA_HQ, QM1_AMIGA_B1);
+                _aqm_joystick_output(state, QM1_AMIGA_V, QM1_AMIGA_H, QM1_AMIGA_VQ, QM1_AMIGA_HQ,
+                    QM1_AMIGA_B1, QM1_AMIGA_B2, QM1_AMIGA_B3);
                 previous_joystick = state;
             }
             tight_loop_contents();
