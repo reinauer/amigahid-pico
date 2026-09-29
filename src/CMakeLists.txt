@@ -23,6 +23,7 @@ target_include_directories(amigahid-pico PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/ge
 if (ENABLE_BLUETOOTH_HID)
   target_sources(amigahid-pico PRIVATE
     bt_hid.c
+    bt_ds4.c
   )
 endif ()
 

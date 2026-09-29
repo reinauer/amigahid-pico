@@ -71,8 +71,8 @@ $ cmake -B build/ -S . -DPICO_BOARD=pico_w -DBOARD_TYPE=BOARD_HIDPICO_REV4 -DENA
 ```
 
 use `-DBOARD_TYPE=BOARD_HIDPICO_REV5` instead for a REV5 carrier. Bluetooth supports
-keyboards and mice, plus an initial LE HID gamepad implementation targeting Stadia.
-See [joystick setup](joystick.md#stadia-bluetooth).
+keyboards and mice, Stadia LE gamepads, and DualShock 4 Classic Bluetooth
+controllers with touchpad mouse input. See [joystick setup](joystick.md).
 
 bluetooth builds apply the patches in `cmake/patches/` to dependency copies under the build directory. these retain btstack's report-to-boot protocol fallback and fix cyw43 debug format strings with the dependency versions selected here. the upstream submodule checkouts are left unchanged. alternate btstack or cyw43 checkouts must also accept these patches.
 

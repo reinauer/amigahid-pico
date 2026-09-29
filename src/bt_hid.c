@@ -23,11 +23,12 @@
 
 #include "input_bridge_bt.h"
 #include "hid_gamepad.h"
+#include "bt_ds4.h"
 #include "util/debug_cons.h"
 #include "util/output.h"
 
 #define BT_HID_QUEUE_DEPTH 64
-#define BT_CLASSIC_DESCRIPTOR_STORAGE_SIZE 512
+#define BT_CLASSIC_DESCRIPTOR_STORAGE_SIZE 2048
 #define BT_LE_DESCRIPTOR_STORAGE_SIZE 1024
 #define BT_HID_LOCAL_NAME "AmigaHID Pico"
 
@@ -76,7 +77,20 @@ typedef struct
     bool in_use;
     uint16_t hid_cid;
     hid_protocol_mode_t protocol_mode;
+    bd_addr_t address;
+    bool descriptor_ready, gamepad_device, has_gamepad, is_ds4;
+    hid_gamepad_t gamepad;
+    bt_ds4_t ds4;
+    bt_hid_gamepad_status_t status;
+    btstack_timer_source_t setup_timer;
+    uint8_t setup_attempts;
 } bt_classic_connection_t;
+
+typedef enum {
+    BT_CLASSIC_IDLE,
+    BT_CLASSIC_SCANNING,
+    BT_CLASSIC_CONNECTING,
+} bt_classic_state_t;
 
 typedef enum
 {
@@ -113,6 +127,11 @@ static bt_hid_overflow_t bt_hid_overflow[INPUT_BRIDGE_MAX_SLOTS];
 static bt_classic_connection_t bt_classic_connections[INPUT_BRIDGE_BT_CLASSIC_SLOTS];
 static uint8_t bt_classic_descriptor_storage[BT_CLASSIC_DESCRIPTOR_STORAGE_SIZE];
 static const hid_protocol_mode_t bt_classic_report_mode = HID_PROTOCOL_MODE_REPORT_WITH_FALLBACK_TO_BOOT;
+static bt_classic_state_t bt_classic_state;
+static bool bt_classic_working, bt_classic_candidate;
+static bd_addr_t bt_classic_candidate_addr;
+static uint16_t bt_classic_outgoing_cid;
+static btstack_timer_source_t bt_classic_scan_timer;
 
 static btstack_packet_callback_registration_t bt_classic_hci_event_callback;
 static btstack_packet_callback_registration_t bt_le_hci_event_callback;
@@ -193,9 +212,18 @@ static char const *bt_le_state_name(bt_le_state_t state)
 static void bt_hid_update_status(void)
 {
     char linebuf[32] = "";
-
-    snprintf(linebuf, sizeof(linebuf), "bt c%u le:%s%s",
-        bt_classic_connected_count(), bt_le_state_name(bt_le_state), bt_le_has_gamepad ? " j1" : "");
+    unsigned gamepads = bt_le_has_gamepad ? 1 : 0;
+    for (unsigned slot = 0; slot < INPUT_BRIDGE_BT_CLASSIC_SLOTS; slot++)
+        gamepads += bt_classic_connections[slot].in_use && bt_classic_connections[slot].has_gamepad;
+    char const *phase = bt_classic_state == BT_CLASSIC_SCANNING ? ":scan" :
+        bt_classic_state == BT_CLASSIC_CONNECTING ? ":conn" : "";
+    // Keep the whole line within the OLED's 21 character width.
+    if (gamepads)
+        snprintf(linebuf, sizeof(linebuf), "bt c%u le:%s j%u",
+            bt_classic_connected_count(), bt_le_state_name(bt_le_state), gamepads);
+    else
+        snprintf(linebuf, sizeof(linebuf), "bt c%u%s le:%s",
+            bt_classic_connected_count(), phase, bt_le_state_name(bt_le_state));
     dbgcons_bt_status(linebuf);
 }
 
@@ -231,6 +259,14 @@ bool bt_hid_gamepad_status(bt_hid_gamepad_status_t *status)
     bool available = bt_le_has_gamepad && bt_le_state == BT_LE_STATE_READY;
     if (available)
         *status = bt_le_gamepad_status;
+    for (unsigned slot = 0; slot < INPUT_BRIDGE_BT_CLASSIC_SLOTS; slot++) {
+        bt_classic_connection_t const *connection = &bt_classic_connections[slot];
+        if (connection->in_use && connection->has_gamepad) {
+            *status = connection->status;
+            available = true;
+            break;
+        }
+    }
     restore_interrupts(interrupts);
     return available;
 }
@@ -400,13 +436,152 @@ static int8_t bt_classic_find_free_slot(void)
     return -1;
 }
 
+static bool bt_classic_wants_inquiry(void)
+{
+    if (!bt_classic_working || bt_classic_find_free_slot() < 0)
+        return false;
+    for (unsigned slot = 0; slot < INPUT_BRIDGE_BT_CLASSIC_SLOTS; slot++)
+        if (bt_classic_connections[slot].in_use && bt_classic_connections[slot].has_gamepad)
+            return false;
+    return true;
+}
+
+static void bt_classic_schedule_inquiry(uint32_t delay_ms);
+
+static void bt_classic_inquiry_timer(btstack_timer_source_t *timer)
+{
+    UNUSED(timer);
+    if (!bt_classic_wants_inquiry() || bt_classic_state != BT_CLASSIC_IDLE)
+        return;
+    // Short searches with a quiet interval; stop once a Classic pad is ready.
+    if (gap_inquiry_start(3) == ERROR_CODE_SUCCESS) {
+        bt_classic_state = BT_CLASSIC_SCANNING;
+        bt_hid_update_status();
+    } else {
+        bt_classic_schedule_inquiry(5000);
+    }
+}
+
+static void bt_classic_schedule_inquiry(uint32_t delay_ms)
+{
+    btstack_run_loop_remove_timer(&bt_classic_scan_timer);
+    if (!bt_classic_wants_inquiry() || bt_classic_state != BT_CLASSIC_IDLE)
+        return;
+    bt_classic_scan_timer.process = &bt_classic_inquiry_timer;
+    btstack_run_loop_set_timer(&bt_classic_scan_timer, delay_ms);
+    btstack_run_loop_add_timer(&bt_classic_scan_timer);
+}
+
+static void bt_classic_stop_inquiry(void)
+{
+    btstack_run_loop_remove_timer(&bt_classic_scan_timer);
+    bt_classic_candidate = false;
+    if (bt_classic_state == BT_CLASSIC_SCANNING) {
+        bt_classic_state = BT_CLASSIC_IDLE;
+        gap_inquiry_stop();
+    }
+}
+
+static void bt_classic_inquiry_result(uint8_t const *packet, uint16_t size)
+{
+    if (size < 27 || bt_classic_state != BT_CLASSIC_SCANNING ||
+        bt_classic_candidate || !bt_classic_wants_inquiry())
+        return;
+    uint32_t cod = gap_event_inquiry_result_get_class_of_device(packet);
+    // Peripheral / joystick or gamepad only. Do not claim nearby keyboards,
+    // mice, phones or consoles simply because they are discoverable.
+    unsigned kind = (cod >> 2) & 0x0f;
+    if ((cod & 0x1f00) != 0x0500 || (kind != 1 && kind != 2))
+        return;
+    bd_addr_t address;
+    gap_event_inquiry_result_get_bd_addr(packet, address);
+    for (unsigned slot = 0; slot < INPUT_BRIDGE_BT_CLASSIC_SLOTS; slot++)
+        if (bt_classic_connections[slot].in_use &&
+            !memcmp(address, bt_classic_connections[slot].address, sizeof(bd_addr_t)))
+            return;
+    memcpy(bt_classic_candidate_addr, address, sizeof(bd_addr_t));
+    bt_classic_candidate = true;
+    // Connect only after inquiry cancellation completes.
+    gap_inquiry_stop();
+}
+
+static void bt_classic_inquiry_complete(void)
+{
+    bt_classic_state = BT_CLASSIC_IDLE;
+    if (bt_classic_candidate && bt_classic_wants_inquiry()) {
+        bt_classic_candidate = false;
+        bt_classic_state = BT_CLASSIC_CONNECTING;
+        uint8_t result = hid_host_connect(bt_classic_candidate_addr,
+            HID_PROTOCOL_MODE_REPORT, &bt_classic_outgoing_cid);
+        if (result != ERROR_CODE_SUCCESS) {
+            ahprintf("[bt] classic gamepad connect failed: 0x%02x\n", result);
+            bt_classic_outgoing_cid = 0;
+            bt_classic_state = BT_CLASSIC_IDLE;
+        }
+    } else {
+        bt_classic_candidate = false;
+    }
+    bt_classic_schedule_inquiry(5000);
+    bt_hid_update_status();
+}
+
+static void bt_classic_ds4_setup(btstack_timer_source_t *timer)
+{
+    bt_classic_connection_t *connection = timer->context;
+    if (!connection->in_use || !connection->is_ds4)
+        return;
+    // Feature 2 enables extended input, including the touchpad. Defer until
+    // incoming SDP/SET_PROTOCOL has completed inside BTstack.
+    uint8_t result = hid_host_send_get_report(connection->hid_cid, HID_REPORT_TYPE_FEATURE, 2);
+    if (result != ERROR_CODE_SUCCESS && ++connection->setup_attempts < 5) {
+        btstack_run_loop_set_timer(timer, 200);
+        btstack_run_loop_add_timer(timer);
+    } else if (result != ERROR_CODE_SUCCESS) {
+        ahprintf("[bt] DS4 extended input request failed: 0x%02x\n", result);
+    }
+}
+
+static void bt_classic_descriptor_ready(uint8_t slot)
+{
+    bt_classic_connection_t *connection = &bt_classic_connections[slot];
+    uint8_t const *descriptor = hid_descriptor_storage_get_descriptor_data(connection->hid_cid);
+    uint16_t length = hid_descriptor_storage_get_descriptor_len(connection->hid_cid);
+    if (!descriptor || !length || connection->descriptor_ready)
+        return;
+    connection->descriptor_ready = true;
+    connection->is_ds4 = bt_ds4_matches_descriptor(descriptor, length);
+    connection->has_gamepad = connection->is_ds4 || hid_gamepad_parse(&connection->gamepad, descriptor, length);
+    // Also suppress the old mouse decoder for unsupported controller layouts.
+    if (length >= 6 && descriptor[0] == 5 && descriptor[1] == 1 &&
+        descriptor[2] == 9 && (descriptor[3] == 4 || descriptor[3] == 5) &&
+        descriptor[4] == 0xa1 && descriptor[5] == 1)
+        connection->gamepad_device = true;
+    connection->gamepad_device |= connection->has_gamepad;
+    if (connection->has_gamepad) {
+        connection->status.slot = bt_classic_input_slot(slot);
+        bt_classic_stop_inquiry();
+        if (connection->is_ds4) {
+            connection->status.expected_length = 78;
+            connection->setup_timer.process = &bt_classic_ds4_setup;
+            connection->setup_timer.context = connection;
+            btstack_run_loop_set_timer(&connection->setup_timer, 100);
+            btstack_run_loop_add_timer(&connection->setup_timer);
+        }
+    }
+    ahprintf("[bt] classic descriptor %u bytes, %s\n", length,
+        connection->is_ds4 ? "DS4" : connection->has_gamepad ? "gamepad" : "other HID");
+    bt_hid_update_status();
+}
+
 static void bt_classic_disconnect_slot(uint8_t slot)
 {
     if (!bt_classic_connections[slot].in_use)
         return;
 
     bt_hid_enqueue_disconnect(bt_classic_input_slot(slot));
+    btstack_run_loop_remove_timer(&bt_classic_connections[slot].setup_timer);
     memset(&bt_classic_connections[slot], 0, sizeof(bt_classic_connections[slot]));
+    bt_classic_schedule_inquiry(1000);
     bt_hid_update_status();
 }
 
@@ -426,6 +601,38 @@ static void bt_classic_parse_report(uint8_t slot, uint8_t const *report, uint16_
 
     report++;
     report_len--;
+
+    if (connection->protocol_mode != HID_PROTOCOL_MODE_BOOT && !connection->descriptor_ready)
+        return;
+    if (connection->has_gamepad) {
+        bt_hid_gamepad_status_t *status = &connection->status;
+        status->reports++;
+        status->length = report_len;
+        if (connection->is_ds4) {
+            bt_ds4_report_t decoded;
+            status->expected_length = report[0] == 1 ? 10 : 78;
+            status->decoded = bt_ds4_decode(&connection->ds4, report, report_len, &decoded);
+            if (status->decoded) {
+                status->state = decoded.gamepad;
+                bt_hid_mouse_report_t touch = {
+                    .buttons = decoded.mouse_buttons, .x = decoded.mouse_x, .y = decoded.mouse_y,
+                };
+                bt_hid_enqueue_mouse(bt_classic_input_slot(slot), &touch);
+            }
+        } else {
+            hid_gamepad_t *pad = &connection->gamepad;
+            status->expected_length = 0;
+            for (unsigned i = 0; i < pad->report_count; i++)
+                if (!pad->report_ids || pad->reports[i].id == report[0])
+                    status->expected_length = (pad->reports[i].bits + 7u) / 8u + (pad->report_ids ? 1u : 0u);
+            status->decoded = hid_gamepad_decode(pad, report, report_len, &status->state);
+        }
+        if (status->decoded)
+            bt_hid_enqueue_gamepad(bt_classic_input_slot(slot), status->state);
+        return;
+    }
+    if (connection->gamepad_device)
+        return;
 
     if (connection->protocol_mode == HID_PROTOCOL_MODE_BOOT) {
         descriptor = btstack_hid_get_boot_descriptor_data();
@@ -506,13 +713,29 @@ static void bt_classic_parse_report(uint8_t slot, uint8_t const *report, uint16_
 static void bt_classic_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
 {
     UNUSED(channel);
-    UNUSED(size);
 
-    if (packet_type != HCI_EVENT_PACKET)
+    if (packet_type != HCI_EVENT_PACKET || size < 2)
         return;
 
     switch (hci_event_packet_get_type(packet)) {
+        case BTSTACK_EVENT_STATE:
+            if (size >= 3 && btstack_event_state_get_state(packet) == HCI_STATE_WORKING) {
+                bt_classic_working = true;
+                bt_classic_schedule_inquiry(1000);
+            }
+            break;
+
+        case GAP_EVENT_INQUIRY_RESULT:
+            bt_classic_inquiry_result(packet, size);
+            break;
+
+        case GAP_EVENT_INQUIRY_COMPLETE:
+            if (bt_classic_state == BT_CLASSIC_SCANNING)
+                bt_classic_inquiry_complete();
+            break;
+
         case HCI_EVENT_PIN_CODE_REQUEST: {
+            if (size < 8) break;
             bd_addr_t event_addr;
 
             hci_event_pin_code_request_get_bd_addr(packet, event_addr);
@@ -522,6 +745,7 @@ static void bt_classic_packet_handler(uint8_t packet_type, uint16_t channel, uin
         }
 
         case HCI_EVENT_USER_CONFIRMATION_REQUEST: {
+            if (size < 12) break;
             bd_addr_t event_addr;
 
             hci_event_user_confirmation_request_get_bd_addr(packet, event_addr);
@@ -532,27 +756,42 @@ static void bt_classic_packet_handler(uint8_t packet_type, uint16_t channel, uin
         }
 
         case HCI_EVENT_HID_META:
+            if (size < 3) break;
             switch (hci_event_hid_meta_get_subevent_code(packet)) {
                 case HID_SUBEVENT_INCOMING_CONNECTION:
+                    if (size < 14) break;
                     if (hid_subevent_incoming_connection_get_status(packet) != ERROR_CODE_SUCCESS)
                         break;
-                    if (bt_classic_find_free_slot() >= 0)
+                    if (bt_classic_find_free_slot() >= 0) {
+                        bt_classic_stop_inquiry();
                         hid_host_accept_connection(hid_subevent_incoming_connection_get_hid_cid(packet), bt_classic_report_mode);
-                    else
+                    } else {
                         hid_host_decline_connection(hid_subevent_incoming_connection_get_hid_cid(packet));
+                    }
                     break;
 
                 case HID_SUBEVENT_CONNECTION_OPENED: {
+                    if (size < 15) break;
                     uint8_t status = hid_subevent_connection_opened_get_status(packet);
                     uint16_t hid_cid = hid_subevent_connection_opened_get_hid_cid(packet);
                     int8_t slot;
+                    bool outgoing = hid_cid == bt_classic_outgoing_cid;
+                    if (outgoing) {
+                        bt_classic_outgoing_cid = 0;
+                        bt_classic_state = BT_CLASSIC_IDLE;
+                    }
 
                     if (status != ERROR_CODE_SUCCESS) {
                         ahprintf("[bt] classic hid connect failed: 0x%02x\n", status);
                         dbgcons_bt_passkey_clear();
+                        slot = bt_classic_find_slot(hid_cid);
+                        if (slot >= 0) bt_classic_disconnect_slot((uint8_t)slot);
+                        bt_classic_schedule_inquiry(5000);
+                        bt_hid_update_status();
                         break;
                     }
 
+                    if (bt_classic_find_slot(hid_cid) >= 0) break;
                     slot = bt_classic_find_free_slot();
                     if (slot < 0) {
                         hid_host_disconnect(hid_cid);
@@ -562,12 +801,24 @@ static void bt_classic_packet_handler(uint8_t packet_type, uint16_t channel, uin
                     bt_classic_connections[slot].in_use = true;
                     bt_classic_connections[slot].hid_cid = hid_cid;
                     bt_classic_connections[slot].protocol_mode = HID_PROTOCOL_MODE_REPORT;
+                    bt_classic_connections[slot].gamepad_device = outgoing;
+                    hid_subevent_connection_opened_get_bd_addr(packet, bt_classic_connections[slot].address);
+                    bt_classic_schedule_inquiry(5000);
                     dbgcons_bt_passkey_clear();
                     bt_hid_update_status();
                     break;
                 }
 
+                case HID_SUBEVENT_DESCRIPTOR_AVAILABLE: {
+                    if (size < 6) break;
+                    int8_t slot = bt_classic_find_slot(hid_subevent_descriptor_available_get_hid_cid(packet));
+                    if (slot >= 0 && hid_subevent_descriptor_available_get_status(packet) == ERROR_CODE_SUCCESS)
+                        bt_classic_descriptor_ready((uint8_t)slot);
+                    break;
+                }
+
                 case HID_SUBEVENT_SET_PROTOCOL_RESPONSE: {
+                    if (size < 7) break;
                     int8_t slot = bt_classic_find_slot(hid_subevent_set_protocol_response_get_hid_cid(packet));
 
                     if ((slot >= 0)
@@ -579,6 +830,7 @@ static void bt_classic_packet_handler(uint8_t packet_type, uint16_t channel, uin
                 }
 
                 case HID_SUBEVENT_REPORT: {
+                    if (size < 7 || hid_subevent_report_get_report_len(packet) > size - 7) break;
                     int8_t slot = bt_classic_find_slot(hid_subevent_report_get_hid_cid(packet));
 
                     if (slot >= 0)
@@ -588,7 +840,14 @@ static void bt_classic_packet_handler(uint8_t packet_type, uint16_t channel, uin
                 }
 
                 case HID_SUBEVENT_CONNECTION_CLOSED: {
-                    int8_t slot = bt_classic_find_slot(hid_subevent_connection_closed_get_hid_cid(packet));
+                    if (size < 5) break;
+                    uint16_t cid = hid_subevent_connection_closed_get_hid_cid(packet);
+                    if (cid == bt_classic_outgoing_cid) {
+                        bt_classic_outgoing_cid = 0;
+                        bt_classic_state = BT_CLASSIC_IDLE;
+                        bt_classic_schedule_inquiry(5000);
+                    }
+                    int8_t slot = bt_classic_find_slot(cid);
 
                     dbgcons_bt_passkey_clear();
 
@@ -1103,6 +1362,7 @@ void bt_hid_init(void)
     hid_host_register_packet_handler(&bt_classic_packet_handler);
 
     gap_set_local_name(BT_HID_LOCAL_NAME);
+    hci_set_inquiry_mode(INQUIRY_MODE_RSSI_AND_EIR);
     gap_discoverable_control(1);
     gap_set_default_link_policy_settings(LM_LINK_POLICY_ENABLE_SNIFF_MODE | LM_LINK_POLICY_ENABLE_ROLE_SWITCH);
     hci_set_master_slave_policy(HCI_ROLE_MASTER);
