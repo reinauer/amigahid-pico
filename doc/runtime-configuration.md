@@ -40,7 +40,7 @@ the menu key. The default Amiga reset chord is unchanged.
 
 On REV5, mouse on port 1 and joystick on port 2 work simultaneously by default.
 Joystick uses a supported USB or Bluetooth HID controller's stick/D-pad and
-Button 1. See [joystick setup](joystick.md) for controller support and validation.
+up to three fire buttons. See [joystick setup](joystick.md) for mappings and validation.
 Port 2 can be disabled with its own setting. Selecting Joystick on port 1
 disables mouse input; if both ports are set to joystick, they mirror the same
 combined controller state. Keyboard input continues normally in all modes.
@@ -105,5 +105,7 @@ Temporary native checks cover CRC/schema validation, interrupted writes and
 erases, sequence rollover, schema migration, save/cancel, menu capture and held-key
 release, recovery, display caching and watchdog control. The menu and persistence
 of a saved 5-second watchdog timeout have been confirmed on Pico W/REV5 across
-power loss (using the earlier REV4 firmware). Recovery, an actual watchdog-triggered restart, and the new joystick
-mode still need hardware validation. No new tests are checked into the repository.
+power loss (using the earlier REV4 firmware). Joystick input is confirmed on REV5
+with Competition Pro, Stadia and PS4 controllers; see [validation details](joystick.md).
+Recovery and an actual watchdog-triggered restart still need hardware validation.
+No new tests are checked into the repository.

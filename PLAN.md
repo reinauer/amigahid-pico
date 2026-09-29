@@ -87,6 +87,24 @@ Implemented in the PS4 Bluetooth trial:
   The user confirmed the initial trial works on REV5, including touchpad
   left-click. Reconnect and long-running stability still need hardware checks.
 
+Implemented in the additional-buttons trial:
+
+- Joystick buttons 1/2/3 drive Amiga pins 6/9/5 on each enabled joystick port.
+  PS4 uses Cross/Circle/Square, Stadia uses A/B/X. Generic HID uses Buttons
+  1/2/3, falling back to Button 4 for the third fire if Button 3 is absent.
+  The Competition Pro PS3-mode four-buttons-as-fire mapping is preserved.
+- PS4 L1/touchpad press supply left-click, R1 right-click, and either L2 or R2
+  supplies middle-click on the mouse port. USB/Bluetooth mouse buttons are
+  combined so one device cannot release a button held on another.
+- Temporary checks cover button combinations, source aggregation, menu capture,
+  disconnect release, and all seven digital output lines on both REV5 ports.
+  No settings schema changes or new checked-in tests.
+
+Hardware check on Pico W/REV5 with `features-ps4-stadia-buttons-20260928`
+(`0.3.0-dev-14-g7489e0d*`): the user confirmed that PS4 and Stadia joystick
+buttons 1/2/3 and the PS4 mouse button mappings all work as expected.
+Reconnect and long-running stability still need hardware validation.
+
 Still to implement or validate:
 
 - Measure input latency and validate the faster mouse timing presets on hardware.

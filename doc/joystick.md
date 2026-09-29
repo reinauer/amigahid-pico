@@ -1,6 +1,6 @@
 # Joystick mode
 
-The `features` firmware supports a one-button digital joystick. On REV5 boards,
+The `features` firmware supports a three-button digital joystick. On REV5 boards,
 port 1 defaults to mouse and port 2 to joystick, working simultaneously. Use a
 `BOARD_HIDPICO_REV5` build for this arrangement. Keyboard input continues normally,
 including access to the settings menu.
@@ -18,8 +18,10 @@ including access to the settings menu.
    second, release it, and use the settings menu. Select **Save and exit** after edits.
 4. Centre the stick/D-pad and release all buttons before testing directions and fire.
 
-The stick/D-pad provides up, down, left, right and diagonals. Generic HID Button 1
-provides fire; PS3 USB mode uses the four face buttons instead. The saved
+The stick/D-pad provides up, down, left, right and diagonals. Generic HID Buttons
+1, 2 and 3 supply the three fire buttons; Button 4 is used for the third fire when
+Button 3 is absent from the descriptor (as on Stadia). PS3 USB mode retains its
+four-face-buttons-as-fire-1 mapping for the Competition Pro. The saved
 mode survives power loss. Port 2 can be turned Off independently. If an earlier
 trial saved port 1 as USB joystick, select Mouse there to restore mouse input.
 The menu now calls this mode Joystick; existing saved choices keep their meaning.
@@ -28,7 +30,14 @@ REV2 and REV4 builds support only controller port 1, where Mouse and Joystick
 remain alternative modes. REV4's second port has a hardware wiring error; see
 the [errata](errata.md#board-revision-4). Do not use a REV5 build on an unmodified
 REV4 board. The REV5 port-2 mapping is Up GPIO27, Down GPIO26, Left GPIO22,
-Right GPIO21 and Fire GPIO20; the other two button lines remain released.
+Right GPIO21 and buttons 1/2/3 on GPIO20/19/18 respectively.
+
+The Amiga can read buttons 1/2/3 on DE-9 pins 6/9/5. Amiga Test Kit displays
+these separately in Joystick mode; its `2` and `3` labels are always drawn and
+do not indicate that a particular controller was detected. Games must explicitly
+read the extra buttons to use them. See the
+[hardware pinout](https://www.theflatnet.de/pub/cbm/amiga/AmigaDevDocs/hard_e.html)
+and [Amiga Test Kit's button reader](https://github.com/keirf/amiga-stuff/blob/master/testkit/joymouse.c).
 
 All connected USB and Bluetooth gamepads currently feed one combined joystick state. If both REV5
 ports are configured as joystick, both output that state; independent player
@@ -40,7 +49,7 @@ assignment and mouse on port 2 are not implemented.
 - Four- or eight-way hat switches, or separate HID D-pad direction usages.
 - Absolute X/Y fields mapped to digital directions. These include digital sticks
   such as the Competition Pro, which reports its switches as X/Y values.
-- HID Button 1 for fire.
+- Three fire buttons from HID Button usages 1, 2 and 3 (or 4 if 3 is absent).
 - Report IDs, including directions and fire in separate reports.
 - PS3 USB controllers identifying as `054c:0268` with input report ID 1 and a
   49-byte report. An asynchronous feature-report command enables input; the
@@ -56,7 +65,7 @@ directions cancel. Deadzone and button mapping are not yet configurable.
 
 Bluetooth LE and Classic gamepads with standard HID reports use the generic
 decoder. DualShock 4 Bluetooth has a separate decoder for its simple and extended
-reports, with Cross as fire and touchpad mouse input. Proprietary/XInput reports,
+reports, with Cross/Circle/Square as fire buttons and touchpad mouse input. Proprietary/XInput reports,
 keyboard-as-joystick and CD32 buttons are not implemented yet. Controllers other
 than the tested PS4, Stadia and Competition Pro still need hardware validation.
 The generic parser supports up to four input report IDs, sixteen mapped fields
@@ -80,17 +89,19 @@ Use the Pico W USB + Bluetooth build for your board revision.
    `le:conn`, `le:pair` and service discovery. `le:pad` is gamepad report discovery;
    **`bt c0 le:ready j1`** means the LE gamepad report map has been accepted.
    The `c` number counts Classic connections, so `c0` is normal for Stadia.
-4. Use the **D-pad or left stick** for directions and **A** for fire. Centre the
-   stick and release all controls after leaving the settings menu.
+4. Use the **D-pad or left stick** for directions and **A/B/X** for joystick
+   buttons **1/2/3**. Centre the stick and release all controls after leaving
+   the settings menu. Y remains unmapped.
 5. Test directions, diagonals and fire in Amiga Test Kit, then turn off and
    reconnect the controller. Disconnecting must release held directions and fire.
 
 Only one LE device can be connected at a time in this implementation. USB and
 Classic Bluetooth keyboards/mice can remain connected. Rumble, right-stick
-mapping, extra Amiga buttons and separate player assignments are not implemented.
+mapping, CD32 buttons and separate player assignments are not implemented.
 Stadia pairing and D-pad/A-button input on Amiga port 2 are confirmed on REV5
 with `0.3.0-dev-13-gde9ae63`. Left-stick thresholds, disconnect release,
-reconnection and extended play still need hardware validation.
+reconnection and extended play still need hardware validation. All three A/B/X
+button mappings are confirmed on REV5 with `features-ps4-stadia-buttons-20260928`.
 
 The new path reads HID Report Maps and Report References and subscribes to input
 notifications using BTstack's HIDS host. Existing LE boot keyboards/mice retain
@@ -110,11 +121,13 @@ and **Controller port 2: Joystick**.
    connection attempt. A successful PS4 connection normally shows
    **`bt c1 le:scan j1`**. `le:scan` is the independent LE scanner, so it is normal
    for it to remain visible while using a PS4 controller.
-4. Use the D-pad or left stick for directions and **Cross (X)** for fire on
-   port 2. Move one finger on the touchpad to move the mouse on port 1;
-   physically pressing the touchpad is the left mouse button. Lifting and
-   replacing a finger starts a new movement without jumping the pointer.
-5. After pairing, try switching the controller off and reconnecting with PS.
+4. Use the D-pad or left stick for directions, with **Cross/Circle/Square** as
+   joystick buttons **1/2/3** on port 2. Triangle remains unmapped.
+5. Move one finger on the touchpad to move the mouse on port 1. Mouse buttons:
+   **L1 or touchpad press = left**, **R1 = right**, **L2 or R2 = middle**.
+   Either trigger works alone, and simultaneous buttons are supported. Lifting
+   and replacing a finger starts a new movement without jumping the pointer.
+6. After pairing, try switching the controller off and reconnecting with PS.
    Held directions, fire and mouse buttons must release on disconnect.
 
 The firmware identifies the standard DualShock 4 Bluetooth report descriptor
@@ -127,15 +140,20 @@ input without touch movement. The first USB device-count line excludes Bluetooth
 Discovery stops once a Classic gamepad is accepted and resumes after it disconnects.
 One Classic gamepad is discovered automatically; the two Classic HID connection
 slots can also serve a keyboard or mouse. A Stadia/other LE device can coexist.
-All gamepads still share one joystick output state. Right-click, touch gestures,
+All gamepads still share one joystick output state. Touch gestures,
 rumble, light-bar control and motion sensors are outside this trial. Controller
 clones with different descriptors are not identified as DualShock 4.
 
 The user confirmed that the first PS4 trial works on REV5, including touchpad
-left-click. Reconnect and extended use still need hardware validation.
-Temporary native checks cover published DS4/DS5 descriptors,
+left-click. All three joystick buttons and the shoulder/trigger mouse mappings
+are also confirmed with `features-ps4-stadia-buttons-20260928`
+(`0.3.0-dev-14-g7489e0d*`). Reconnect and extended use still need hardware
+validation. Temporary native checks cover published DS4/DS5 descriptors,
 discovery and connection callbacks, extended-mode setup, input decoding, CRC and
 length validation, contact tracking, held-control release and queue overflow.
+They also cover all face/shoulder/trigger button combinations, GPIO output for
+all three joystick buttons, and independent mouse-button holds across USB and
+Bluetooth sources: releasing one device cannot release a button held on another.
 Wire-format references are
 [hid-tools' Sony controller definitions](https://github.com/bentiss/hid-tools/blob/master/hidtools/device/sony_gamepad.py)
 and [Bluepad32's DS4 driver](https://github.com/ricardoquesada/bluepad32/blob/main/src/components/bluepad32/parser/uni_hid_parser_ds4.c).
@@ -167,7 +185,7 @@ in01 out01 p2
   again if it sends reports only when controls change.
 
 Controls are hexadecimal bit masks: up `01`, down `02`, left `04`, right `08`,
-fire `10`; combinations add together. Neutral is `00`.
+fire 1 `10`, fire 2 `20`, fire 3 `40`; combinations add together. Neutral is `00`.
 The input diagnostics follow the first mounted controller slot; output includes
 all controllers. Reconnect resets that controller's counters. Updates are limited
 to ten per second and Bluetooth pairing messages take priority on the fourth row.
@@ -209,7 +227,7 @@ The connected Competition Pro Extra (`0079:181c`, identifying as
 Its digital stick reports X/Y values of 0, 128 and 255; its advertised hat remained
 centred. Native checks using its actual descriptor and captured axis values pass
 for neutral, all four directions and all four diagonals. All four physical buttons
-produced input events; generic HID mode maps only HID Button 1 to fire.
+produced input events; the initial generic HID trial mapped only Button 1 to fire.
 This Linux capture verified the generic input decoder; the subsequent hardware
 test used the PS3-compatible USB path described below.
 

@@ -117,7 +117,14 @@ bool bt_ds4_decode(bt_ds4_t *pad, uint8_t const *report, size_t length,
     if (report[offset + 1] < 64) decoded->gamepad |= GAMEPAD_UP;
     if (report[offset + 1] > 191) decoded->gamepad |= GAMEPAD_DOWN;
     if (report[offset + 4] & 0x20) decoded->gamepad |= GAMEPAD_FIRE; // Cross
+    if (report[offset + 4] & 0x40) decoded->gamepad |= GAMEPAD_FIRE2; // Circle
+    if (report[offset + 4] & 0x10) decoded->gamepad |= GAMEPAD_FIRE3; // Square
     if (report[offset + 6] & 0x02) decoded->mouse_buttons = 1; // pad click
+    // HID mouse mask: left=1, right=2, middle=4. Keep these independent of
+    // the three joystick buttons, including simultaneous presses and releases.
+    if (report[offset + 5] & 0x01) decoded->mouse_buttons |= 1; // L1
+    if (report[offset + 5] & 0x02) decoded->mouse_buttons |= 2; // R1
+    if (report[offset + 5] & 0x0c) decoded->mouse_buttons |= 4; // L2 or R2
     if (offset == 3)
         touchpad_decode(pad, report, decoded);
     else
