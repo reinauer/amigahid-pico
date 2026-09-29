@@ -85,7 +85,9 @@ Use the Pico W USB + Bluetooth build for your board revision.
 Only one LE device can be connected at a time in this implementation. USB and
 Classic Bluetooth keyboards/mice can remain connected. Rumble, right-stick
 mapping, extra Amiga buttons and separate player assignments are not implemented.
-Pairing and gameplay on a physical Stadia controller still need validation.
+Stadia pairing and D-pad/A-button input on Amiga port 2 are confirmed on REV5
+with `0.3.0-dev-13-gde9ae63`. Left-stick thresholds, disconnect release,
+reconnection and extended play still need hardware validation.
 
 The new path reads HID Report Maps and Report References and subscribes to input
 notifications using BTstack's HIDS host. Existing LE boot keyboards/mice retain
@@ -187,8 +189,9 @@ reports, report-ID-zero handling, multiple HID services, disconnect/reconnect,
 queue overflow and 50,000 mixed gamepad/disconnect events. The button mapping
 agrees with [SDL's Stadia driver](https://github.com/libsdl-org/SDL/blob/main/src/joystick/hidapi/SDL_hidapi_stadia.c).
 Existing boot keyboard/mouse discovery paths, settings persistence, joystick
-routing and OLED diagnostics also pass native checks. Bluetooth LE pairing and
-input delivery on the actual controller remain untested.
+routing and OLED diagnostics also pass native checks. On 2026-09-28 the user
+confirmed Stadia pairing (`bt c0 le:ready j1`) and D-pad/A-button input in Amiga
+Test Kit on port 2, using Pico W/REV5 firmware `0.3.0-dev-13-gde9ae63`.
 
 The PS3 startup transfer is feature report `f4`, payload `42 0c 00 00`, as used
 by the [USB Host Shield PS3 driver](https://github.com/felis/USB_Host_Shield_2.0/blob/master/PS3USB.cpp#L444).

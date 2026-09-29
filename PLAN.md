@@ -1,4 +1,4 @@
-# Implementation status: features branch (2026-09-27)
+# Implementation status: features branch (2026-09-28)
 
 Based on `bluetooth` at `b437643`. The existing Bluetooth PR is unchanged.
 
@@ -39,7 +39,7 @@ Usage and supported formats: [doc/joystick.md](doc/joystick.md).
 Competition Pro Extra (`0079:181c`) input checked on Linux: its digital stick uses
 X/Y values 0/128/255, with the advertised hat unused. Native decoding checks pass
 using the actual descriptor and captured axis values. All four buttons produced
-events. Hardware testing detects the controller, but Amiga Test Kit shows no
+events. Initial hardware testing detected the controller, but Amiga Test Kit showed no
 activity on either port, including port 1 through the working mouse cable.
 HID diagnostics now expose USB report count/length, decoding, routed controls
 and waiting for neutral. On direct USB connection, the stick showed zero received
@@ -50,7 +50,7 @@ before enabling input, and maps PS3 face buttons to fire. The user confirmed tha
 USB identity was not read back directly; the successful initialization supports
 the PS3-mode explanation. Detailed unplug/menu/diagonal checks remain outstanding.
 
-Implemented in the Bluetooth LE gamepad milestone; hardware validation pending:
+Implemented in the Bluetooth LE gamepad milestone:
 
 - Active LE scanning includes scan responses. Devices without keyboard/mouse boot
   reports use BTstack's HIDS host to discover report maps and subscribe to input.
@@ -65,12 +65,18 @@ Implemented in the Bluetooth LE gamepad milestone; hardware validation pending:
   Xbox behavior remain follow-ups. Keyboard-as-joystick is deferred at the user's
   request; Bluetooth gamepads take priority.
 
+Hardware check on Pico W/REV5 with `0.3.0-dev-13-gde9ae63`: Stadia connected,
+the OLED reached `bt c0 le:ready j1`, and D-pad directions and A/fire worked on
+Amiga port 2 in Amiga Test Kit. Left-stick thresholds, disconnect release,
+reconnection and extended play still need hardware validation. The USB-only
+device counters remain unchanged; Bluetooth status is shown on the second line.
+
 Still to implement or validate:
 
 - Measure input latency and validate the faster mouse timing presets on hardware.
 - Earlier HID rearming and GPIO timing instrumentation.
 - Keyboard PIO; consider mouse PIO only after measurement.
-- Validate LE gamepad pairing/reconnect and complete USB joystick lifecycle checks;
+- Validate LE gamepad disconnect/reconnect and complete USB joystick lifecycle checks;
   add configurable deadzones and button mappings, more Bluetooth controllers,
   keyboard-as-joystick, and CD32 output.
 - Full key remapping/layout presets, further controller modes, Bluetooth configuration,
@@ -277,8 +283,8 @@ paths, starting with the simplest and most compatible target.
 ## Phase 1: HID Joystick to Digital Joystick
 
 USB and LE HID hat/D-pad, absolute X/Y and Button 1 support is implemented on
-`features`. Competition Pro USB gameplay works on REV5; LE gamepads, complete
-lifecycle testing and configurable thresholds remain outstanding.
+`features`. Competition Pro USB gameplay and Stadia LE D-pad/fire work on REV5;
+complete lifecycle testing and configurable thresholds remain outstanding.
 See [doc/joystick.md](doc/joystick.md).
 
 - Add a controller backend that drives one Amiga controller port as:
