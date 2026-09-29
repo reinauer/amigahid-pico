@@ -35,6 +35,7 @@ static bool input_captured;
 static bool joystick_mode;
 static bool joystick_port2;
 static uint8_t gamepad_output;
+static uint8_t mouse_buttons;
 
 input_bridge_gamepad_status_t input_bridge_gamepad_status(uint8_t slot)
 {
@@ -113,14 +114,20 @@ static void _ib_update_keyboard_leds(input_bridge_state_t *state, input_bridge_k
     state->led_report = led_report;
 }
 
-static void _ib_release_mouse_buttons(hid_mouse_report_t const *last_report)
+static void _ib_sync_mouse_buttons(void)
 {
-    if (last_report->buttons & MOUSE_BUTTON_LEFT)
-        amiga_quad_mouse_button(AQM_LEFT, false);
-    if (last_report->buttons & MOUSE_BUTTON_MIDDLE)
-        amiga_quad_mouse_button(AQM_MIDDLE, false);
-    if (last_report->buttons & MOUSE_BUTTON_RIGHT)
-        amiga_quad_mouse_button(AQM_RIGHT, false);
+    uint8_t buttons = 0;
+    if (!input_captured && !joystick_mode)
+        for (unsigned slot = 0; slot < INPUT_BRIDGE_MAX_SLOTS; slot++)
+            buttons |= bridge_state[slot].mouse.buttons;
+    uint8_t changed = buttons ^ mouse_buttons;
+    if (changed & MOUSE_BUTTON_LEFT)
+        amiga_quad_mouse_button(AQM_LEFT, (buttons & MOUSE_BUTTON_LEFT) != 0);
+    if (changed & MOUSE_BUTTON_MIDDLE)
+        amiga_quad_mouse_button(AQM_MIDDLE, (buttons & MOUSE_BUTTON_MIDDLE) != 0);
+    if (changed & MOUSE_BUTTON_RIGHT)
+        amiga_quad_mouse_button(AQM_RIGHT, (buttons & MOUSE_BUTTON_RIGHT) != 0);
+    mouse_buttons = buttons;
 }
 
 void input_bridge_reset(uint8_t slot)
@@ -130,6 +137,7 @@ void input_bridge_reset(uint8_t slot)
 
     memset(&bridge_state[slot], 0, sizeof(bridge_state[slot]));
     runtime_menu_disconnect(slot);
+    _ib_sync_mouse_buttons();
     _ib_sync_gamepads();
 }
 
@@ -142,9 +150,9 @@ void input_bridge_disconnect(uint8_t slot)
 
     _ib_sync_keyboard_keys(&bridge_state[slot].keyboard, &empty_keyboard);
     _ib_sync_keyboard_modifiers(&bridge_state[slot].keyboard, &empty_keyboard);
-    _ib_release_mouse_buttons(&bridge_state[slot].mouse);
     memset(&bridge_state[slot], 0, sizeof(bridge_state[slot]));
     runtime_menu_disconnect(slot);
+    _ib_sync_mouse_buttons();
     _ib_sync_gamepads();
 }
 
@@ -157,7 +165,6 @@ void input_bridge_capture(bool capture)
             input_bridge_state_t *state = &bridge_state[slot];
             _ib_sync_keyboard_keys(&state->keyboard, &empty);
             _ib_sync_keyboard_modifiers(&state->keyboard, &empty);
-            _ib_release_mouse_buttons(&state->mouse);
             memset(&state->keyboard, 0, sizeof(state->keyboard));
             memset(&state->mouse, 0, sizeof(state->mouse));
             state->mouse_quarantine = true;
@@ -166,6 +173,7 @@ void input_bridge_capture(bool capture)
         }
     }
     amiga_quad_mouse_capture(capture);
+    _ib_sync_mouse_buttons();
     _ib_sync_gamepads();
 }
 
@@ -185,6 +193,7 @@ void input_bridge_set_port_modes(bool joystick1, bool joystick2)
         bridge_state[slot].gamepad_quarantine = true;
     }
     amiga_quad_mouse_set_joystick_ports(joystick1, joystick2);
+    _ib_sync_mouse_buttons();
     _ib_sync_gamepads();
 }
 
@@ -260,20 +269,10 @@ void input_bridge_handle_mouse(uint8_t slot, hid_mouse_report_t const *report)
         return;
     }
 
-    if ((report->buttons & MOUSE_BUTTON_LEFT) && !(state->mouse.buttons & MOUSE_BUTTON_LEFT))
-        amiga_quad_mouse_button(AQM_LEFT, true);
-    if (!(report->buttons & MOUSE_BUTTON_LEFT) && (state->mouse.buttons & MOUSE_BUTTON_LEFT))
-        amiga_quad_mouse_button(AQM_LEFT, false);
-
-    if ((report->buttons & MOUSE_BUTTON_MIDDLE) && !(state->mouse.buttons & MOUSE_BUTTON_MIDDLE))
-        amiga_quad_mouse_button(AQM_MIDDLE, true);
-    if (!(report->buttons & MOUSE_BUTTON_MIDDLE) && (state->mouse.buttons & MOUSE_BUTTON_MIDDLE))
-        amiga_quad_mouse_button(AQM_MIDDLE, false);
-
-    if ((report->buttons & MOUSE_BUTTON_RIGHT) && !(state->mouse.buttons & MOUSE_BUTTON_RIGHT))
-        amiga_quad_mouse_button(AQM_RIGHT, true);
-    if (!(report->buttons & MOUSE_BUTTON_RIGHT) && (state->mouse.buttons & MOUSE_BUTTON_RIGHT))
-        amiga_quad_mouse_button(AQM_RIGHT, false);
+    state->mouse = *report;
+    // Releasing one device must not release a button still held on another.
+    // Each source retains its own button state.
+    _ib_sync_mouse_buttons();
 
     dbgcons_mouse_report(report->x, report->y, report->buttons);
 
@@ -282,8 +281,6 @@ void input_bridge_handle_mouse(uint8_t slot, hid_mouse_report_t const *report)
 
     if (report->wheel)
         amiga_quad_mouse_wheel(report->wheel);
-
-    state->mouse = *report;
 }
 
 void input_bridge_handle_mouse_boot(uint8_t slot, uint8_t buttons, int8_t x, int8_t y, int8_t wheel)
