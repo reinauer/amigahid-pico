@@ -10,8 +10,9 @@ including access to the settings menu.
 1. Connect the board's first controller cable to Amiga port 1 and its second cable
    to Amiga port 2. The actual Amiga sockets determine which port software sees.
 2. Connect a supported USB HID gamepad or joystick. The OLED's USB `j` count
-   increases when a supported controller descriptor is found. For Bluetooth LE,
-   use the [gamepad trial instructions](#bluetooth-le-gamepad-trial) below.
+   increases when a supported controller descriptor is found. For Bluetooth,
+   use the [Stadia](#bluetooth-le-gamepad-trial) or [PS4](#ps4-bluetooth-trial)
+   instructions below.
 3. The REV5 defaults are **Controller port 1: Mouse** and
    **Controller port 2: Joystick**. To check or change them, hold F12 for one
    second, release it, and use the settings menu. Select **Save and exit** after edits.
@@ -29,7 +30,7 @@ the [errata](errata.md#board-revision-4). Do not use a REV5 build on an unmodifi
 REV4 board. The REV5 port-2 mapping is Up GPIO27, Down GPIO26, Left GPIO22,
 Right GPIO21 and Fire GPIO20; the other two button lines remain released.
 
-All connected USB and LE gamepads currently feed one combined joystick state. If both REV5
+All connected USB and Bluetooth gamepads currently feed one combined joystick state. If both REV5
 ports are configured as joystick, both output that state; independent player
 assignment and mouse on port 2 are not implemented.
 
@@ -53,11 +54,13 @@ values in the outer quarters select a direction. Low X means left, low Y means
 up. Relative axes are ignored. Hats and X/Y can both supply directions; opposing
 directions cancel. Deadzone and button mapping are not yet configurable.
 
-Bluetooth Classic gamepads (including PS4), proprietary/XInput reports,
-keyboard-as-joystick and CD32 buttons are not implemented yet. Other LE controllers
-with standard HID gamepad reports may work, but have not been validated.
-The parser supports up to four input report IDs, sixteen mapped fields and
-64-byte reports. Unsupported descriptors are ignored.
+Bluetooth LE and Classic gamepads with standard HID reports use the generic
+decoder. DualShock 4 Bluetooth has a separate decoder for its simple and extended
+reports, with Cross as fire and touchpad mouse input. Proprietary/XInput reports,
+keyboard-as-joystick and CD32 buttons are not implemented yet. Controllers other
+than the tested PS4, Stadia and Competition Pro still need hardware validation.
+The generic parser supports up to four input report IDs, sixteen mapped fields
+and 64-byte reports. Unsupported controller layouts are not treated as mice.
 
 Opening the menu releases all joystick controls. After closing it or switching
 modes, centre the gamepad and release buttons before input resumes. Unplugging a
@@ -93,6 +96,49 @@ The new path reads HID Report Maps and Report References and subscribes to input
 notifications using BTstack's HIDS host. Existing LE boot keyboards/mice retain
 their boot-report path. Standard gamepad reports use the same bounded decoder as
 USB; gamepad axes are never passed to the mouse decoder on this LE path.
+
+## PS4 Bluetooth trial
+
+Use the Pico W USB + Bluetooth REV5 build. Keep **Controller port 1: Mouse**
+and **Controller port 2: Joystick**.
+
+1. Disconnect USB from the DualShock 4. If it is on, hold PS until it turns off.
+2. Hold **SHARE + PS** until the light bar flashes. See
+   [Sony's pairing instructions](https://www.playstation.com/en-us/support/hardware/ps4-pair-dualshock-4-wireless-with-pc-or-mac/).
+3. The Pico searches for Classic Bluetooth gamepads automatically in short rounds,
+   with five-second pauses. `c0:scan` means Classic discovery; `c0:conn` means a
+   connection attempt. A successful PS4 connection normally shows
+   **`bt c1 le:scan j1`**. `le:scan` is the independent LE scanner, so it is normal
+   for it to remain visible while using a PS4 controller.
+4. Use the D-pad or left stick for directions and **Cross (X)** for fire on
+   port 2. Move one finger on the touchpad to move the mouse on port 1;
+   physically pressing the touchpad is the left mouse button. Lifting and
+   replacing a finger starts a new movement without jumping the pointer.
+5. After pairing, try switching the controller off and reconnecting with PS.
+   Held directions, fire and mouse buttons must release on disconnect.
+
+The firmware identifies the standard DualShock 4 Bluetooth report descriptor
+before requesting feature report 2 to enable extended input. It handles
+10-byte report 1 and 78-byte report 17, including the latter's CRC. With HID
+diagnostics enabled and no USB joystick attached, `l78/78 d+` confirms that
+extended packets are arriving and decoding; `l10/10 d+` means basic joystick
+input without touch movement. The first USB device-count line excludes Bluetooth.
+
+Discovery stops once a Classic gamepad is accepted and resumes after it disconnects.
+One Classic gamepad is discovered automatically; the two Classic HID connection
+slots can also serve a keyboard or mouse. A Stadia/other LE device can coexist.
+All gamepads still share one joystick output state. Right-click, touch gestures,
+rumble, light-bar control and motion sensors are outside this trial. Controller
+clones with different descriptors are not identified as DualShock 4.
+
+The user confirmed that the first PS4 trial works on REV5, including touchpad
+left-click. Reconnect and extended use still need hardware validation.
+Temporary native checks cover published DS4/DS5 descriptors,
+discovery and connection callbacks, extended-mode setup, input decoding, CRC and
+length validation, contact tracking, held-control release and queue overflow.
+Wire-format references are
+[hid-tools' Sony controller definitions](https://github.com/bentiss/hid-tools/blob/master/hidtools/device/sony_gamepad.py)
+and [Bluepad32's DS4 driver](https://github.com/ricardoquesada/bluepad32/blob/main/src/components/bluepad32/parser/uni_hid_parser_ds4.c).
 
 ## Diagnosing missing input
 
@@ -132,7 +178,7 @@ generic device needing no startup command, `sp` pending submission, `s?` awaitin
 completion, `s+` completed, or `s!` failed. Completion alone does not prove input
 has started; check that the `j` counter advances when moving the stick.
 
-With a Bluetooth LE gamepad and no USB joystick connected, the rows show:
+With a Bluetooth gamepad and no USB joystick connected, the rows show:
 
 ```text
 b002a l11/11 d+
@@ -141,9 +187,10 @@ in01 out01 p2
 
 `b` counts Bluetooth reports; the other fields have the same meanings as above.
 Lengths include a Report ID when the HID descriptor uses one. Bluetooth input
-arrives through notifications, so there is no USB `r` field. USB joystick
+arrives through LE notifications or Classic HID packets, so there is no USB `r` field. USB joystick
 diagnostics take priority if both are connected; unplug the USB joystick when
-checking Bluetooth reports. The first line's USB device counts exclude Bluetooth.
+checking Bluetooth reports. A Classic gamepad takes precedence over an LE gamepad
+in diagnostics. The first line's USB device counts exclude Bluetooth.
 
 ## Validation
 

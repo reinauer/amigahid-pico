@@ -22,7 +22,7 @@ typedef struct {
 
 void bt_hid_init(void);
 void bt_hid_task(void);
-// Main-context snapshot of the LE gamepad; false if none is ready.
+// Main-context snapshot of the first Classic or LE gamepad; false if none is ready.
 bool bt_hid_gamepad_status(bt_hid_gamepad_status_t *status);
 
 #endif // _BT_HID_H

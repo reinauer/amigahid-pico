@@ -39,7 +39,7 @@ Application/Menu retains its existing Right Amiga mapping unless selected as
 the menu key. The default Amiga reset chord is unchanged.
 
 On REV5, mouse on port 1 and joystick on port 2 work simultaneously by default.
-Joystick uses a supported USB or Bluetooth LE HID controller's stick/D-pad and
+Joystick uses a supported USB or Bluetooth HID controller's stick/D-pad and
 Button 1. See [joystick setup](joystick.md) for controller support and validation.
 Port 2 can be disabled with its own setting. Selecting Joystick on port 1
 disables mouse input; if both ports are set to joystick, they mirror the same

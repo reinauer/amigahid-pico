@@ -61,8 +61,7 @@ Implemented in the Bluetooth LE gamepad milestone:
   report/decoding/output diagnostics when no USB joystick is connected.
 - Controller menus now say Joystick because the same mode accepts USB and LE
   input. Existing saved settings and the REV5 mouse/joystick defaults are preserved.
-- Stadia is the first hardware target. PS4/Classic gamepads and controller-specific
-  Xbox behavior remain follow-ups. Keyboard-as-joystick is deferred at the user's
+- Stadia is the first hardware target. Keyboard-as-joystick is deferred at the user's
   request; Bluetooth gamepads take priority.
 
 Hardware check on Pico W/REV5 with `0.3.0-dev-13-gde9ae63`: Stadia connected,
@@ -70,6 +69,23 @@ the OLED reached `bt c0 le:ready j1`, and D-pad directions and A/fire worked on
 Amiga port 2 in Amiga Test Kit. Left-stick thresholds, disconnect release,
 reconnection and extended play still need hardware validation. The USB-only
 device counters remain unchanged; Bluetooth status is shown on the second line.
+
+Implemented in the PS4 Bluetooth trial:
+
+- Classic inquiry automatically finds joystick/gamepad devices and opens HID
+  connections. Discovery pauses once a Classic gamepad is accepted and resumes
+  on disconnect; incoming keyboard/mouse connections remain supported.
+- Standard Classic gamepads use the existing descriptor decoder. DualShock 4
+  Bluetooth uses a descriptor-matched decoder for basic and extended reports:
+  D-pad/left stick supply directions and Cross supplies fire.
+- Extended reports are requested for touchpad input. A finger drives relative
+  mouse movement on port 1; pressing the pad supplies left-click. Contact tracking
+  prevents jumps on lift/re-touch. Extended reports are length/CRC checked.
+- Bluetooth diagnostics include Classic gamepads. No settings schema changes.
+- Temporary native checks cover discovery, pairing failures, incoming reconnect,
+  published descriptors, joystick/touchpad reports and disconnect release.
+  The user confirmed the initial trial works on REV5, including touchpad
+  left-click. Reconnect and long-running stability still need hardware checks.
 
 Still to implement or validate:
 
