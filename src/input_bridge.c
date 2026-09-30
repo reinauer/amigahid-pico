@@ -35,6 +35,7 @@ static input_bridge_state_t bridge_state[INPUT_BRIDGE_MAX_SLOTS];
 static bool input_captured;
 static bool joystick_mode;
 static bool joystick_port2;
+static uint8_t controller_mode1, controller_mode2;
 static uint16_t gamepad_output;
 static uint8_t mouse_buttons;
 
@@ -161,22 +162,23 @@ void input_bridge_capture(bool capture)
     _ib_sync_gamepads();
 }
 
-void input_bridge_set_port_modes(bool joystick1, bool joystick2)
+void input_bridge_set_port_modes(uint8_t mode1, uint8_t mode2)
 {
 #ifndef HAS_JOYSTICK_PORT2
-    joystick2 = false;
+    mode2 = 0;
 #endif
-    if (joystick_mode == joystick1 && joystick_port2 == joystick2)
-        return;
-    joystick_mode = joystick1;
-    joystick_port2 = joystick2;
+    if (controller_mode1 == mode1 && controller_mode2 == mode2) return;
+    controller_mode1 = mode1;
+    controller_mode2 = mode2;
+    joystick_mode = mode1 != 0;
+    joystick_port2 = mode2 != 0;
     for (unsigned slot = 0; slot < INPUT_BRIDGE_MAX_SLOTS; slot++) {
         memset(&bridge_state[slot].mouse, 0, sizeof(bridge_state[slot].mouse));
         bridge_state[slot].mouse_quarantine = true;
         bridge_state[slot].gamepad = 0;
         bridge_state[slot].gamepad_quarantine = true;
     }
-    amiga_quad_mouse_set_joystick_ports(joystick1, joystick2);
+    amiga_quad_mouse_set_controller_ports(mode1, mode2);
     _ib_sync_mouse_buttons();
     _ib_sync_gamepads();
 }

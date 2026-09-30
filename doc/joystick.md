@@ -1,6 +1,6 @@
 # Joystick mode
 
-The `features` firmware supports a three-button digital joystick. On REV5 boards,
+The `features` firmware supports a three-button digital joystick and CD32 pad emulation. On REV5 boards,
 port 1 defaults to mouse and port 2 to joystick, working simultaneously. Use a
 `BOARD_HIDPICO_REV5` build for this arrangement. Keyboard input continues normally,
 including access to the settings menu.
@@ -61,14 +61,14 @@ sending the startup command. Other HID devices keep generic handling.
 X/Y values in the central half of the descriptor's logical range are neutral;
 values in the outer quarters select a direction. Low X means left, low Y means
 up. Relative axes are ignored. Hats and X/Y can both supply directions; opposing
-directions cancel. Deadzone and button mapping are not yet configurable.
+directions cancel. Deadzone and button mapping are configurable in the OLED menu; see below.
 
 Bluetooth LE and Classic gamepads with standard HID reports use the generic
 decoder. DualShock 4 Bluetooth has a separate decoder for its simple and extended
 reports, with Cross/Circle/Square as fire buttons and touchpad mouse input. Proprietary/XInput reports,
-keyboard-as-joystick and CD32 buttons are not implemented yet. Controllers other
+and keyboard-as-joystick are not implemented yet. Controllers other
 than the tested PS4, Stadia and Competition Pro still need hardware validation.
-The generic parser supports up to four input report IDs, sixteen mapped fields
+The generic parser supports up to four input report IDs, thirty-two mapped fields
 and 64-byte reports. Unsupported controller layouts are not treated as mice.
 
 Opening the menu releases all joystick controls. After closing it or switching
@@ -97,7 +97,7 @@ Use the Pico W USB + Bluetooth build for your board revision.
 
 Only one LE device can be connected at a time in this implementation. USB and
 Classic Bluetooth keyboards/mice can remain connected. Rumble, right-stick
-mapping, CD32 buttons and separate player assignments are not implemented.
+mapping and separate player assignments are not implemented.
 Stadia pairing and D-pad/A-button input on Amiga port 2 are confirmed on REV5
 with `0.3.0-dev-13-gde9ae63`. Left-stick thresholds, disconnect release,
 reconnection and extended play still need hardware validation. All three A/B/X
@@ -293,3 +293,44 @@ Schema 5 preserves older settings and selects the previous direction, deadzone,
 and mouse defaults. Diagnostics now use three hexadecimal digits; extra output
 bits are fourth button `080`, rewind `100`, forward `200`, and play `400`.
 Hardware validation of the new settings is pending.
+
+## CD32 pad mode
+
+Keep Controller port 1 as Mouse and select **Controller port 2: CD32 pad**, then
+Save and exit. In Amiga Test Kit select **CD32 Pad** for Amiga port 2 (F2 cycles
+its type). Check **Pad Detected**, directions, all seven buttons and release states.
+Port 1 can also select CD32; REV2/REV4 support CD32 on port 1 only. Both enabled
+controller ports currently receive the same combined gamepad state.
+
+| CD32 button | PS4 default | Stadia default |
+| --- | --- | --- |
+| Red | Cross | A |
+| Blue | Circle | B |
+| Green | Square | X |
+| Yellow | Triangle | Y |
+| Rewind | L1 | L1 |
+| Forward | R1 | R1 |
+| Play/Pause | Options | Menu |
+
+The seven Gamepad mapping settings override these defaults. To use PS4 shoulders
+only for CD32, select **PS4 mouse controls: Touchpad only**; touch movement and
+pad-click remain available on the mouse port. The previous mouse-button mapping
+remains the default until changed.
+
+CD32 uses Amiga pin 5 as select, pin 6 as clock and pin 9 as serial data. PIO
+handles both data and fire/clock ownership, with open-drain outputs; the select
+line is never driven in CD32 mode. Each read snapshots all buttons and supplies
+the identification bits after them. With select high, Red and Blue behave as
+ordinary joystick buttons. CD32 mode does not provide the third ordinary button
+on pin 5, because that pin belongs to the Amiga's select signal.
+
+PIO1 supplies two state machines per port and shares 25 instructions between
+ports. PIO0 remains available to CYW43. Clock handling continues through CPU
+interrupts and flash lockout. Direction pins remain serviced by the output core.
+Reference: [Amiga Test Kit's read_gamepad implementation](https://github.com/keirf/amiga-stuff/blob/master/testkit/joymouse.c).
+
+Temporary simulation of the assembled PIO program passes all 128 button patterns,
+phase offsets, ID/tail bits, snapshot changes and interrupted reads. Native GPIO
+checks cover mode changes, capture and concurrent mouse/CD32 routing. These are
+software checks; CD32 electrical timing and recognition on the Amiga await the
+first hardware test. No new tests are checked into the repository.

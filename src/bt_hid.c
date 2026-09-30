@@ -309,7 +309,8 @@ static int8_t bt_hid_clamp_i8(int32_t value)
 
 static void bt_hid_enqueue(bt_hid_queue_entry_t const *entry)
 {
-    if (entry->slot >= INPUT_BRIDGE_MAX_SLOTS)
+    if (entry->slot >= INPUT_BRIDGE_MAX_SLOTS ||
+        (!bt_radio_on && entry->type != BT_HID_QUEUE_DISCONNECT))
         return;
 
     // CYW43's background callbacks and bt_hid_task() both run on core0.
@@ -1494,6 +1495,9 @@ static void bt_hid_settings_task(void)
         bt_pair_window = false;
         bt_classic_stop_inquiry();
         gap_stop_scan();
+        // A fast OFF/ON cycle must not replay input queued before shutdown.
+        bt_hid_queue_entry_t stale;
+        while (bt_hid_dequeue(&stale)) { }
         hci_power_control(HCI_POWER_OFF);
         // Release controls immediately, before asynchronous disconnection finishes.
         for (unsigned slot = INPUT_BRIDGE_BT_CLASSIC_SLOT_BASE; slot < INPUT_BRIDGE_MAX_SLOTS; slot++)

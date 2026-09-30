@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "hardware/flash.h"
+#include "hardware/sync.h"
 #include "pico/flash.h"
 #include "pico/stdlib.h"
 #include "class/hid/hid.h"
@@ -19,7 +20,7 @@
  * valid record intact. The linker also reserves this 16 KiB region. */
 #define SETTINGS_FLASH_OFFSET (PICO_FLASH_SIZE_BYTES - 4u * FLASH_SECTOR_SIZE)
 #define SETTINGS_MAGIC 0x41484346u
-#define SETTINGS_SCHEMA 6u
+#define SETTINGS_SCHEMA 7u
 #define SETTINGS_V1_SIZE 8u
 
 typedef struct {
@@ -82,7 +83,7 @@ bool settings_valid(settings_t const *settings)
         settings->menu_entry < SETTINGS_MENU_ENTRY_COUNT && settings->right_gui < SETTINGS_GUI_COUNT &&
         settings->wheel_enabled <= 1 && settings->wheel_reverse <= 1 && settings->mouse_speed < 4 &&
         settings->display < SETTINGS_DISPLAY_COUNT && settings->watchdog < 3 &&
-        settings->port_mode < SETTINGS_PORT_COUNT && settings->joystick_port2 <= 1 &&
+        settings->port_mode < SETTINGS_PORT_COUNT && settings->joystick_port2 < SETTINGS_PORT_COUNT &&
         !settings->reserved[0] && !settings->reserved[1] &&
         settings->bluetooth_enabled <= 1 && settings->bluetooth_pairing <= 1 &&
         !settings->reserved4[0] && !settings->reserved4[1] &&
@@ -117,7 +118,7 @@ static bool record_decode(settings_record_t const *record, settings_t *settings)
           ((record->schema == 2 || record->schema == 3) && record->length == 12) ||
           (record->schema == 4 && record->length == 16) ||
           (record->schema == 5 && record->length == 28) ||
-          (record->schema == SETTINGS_SCHEMA && record->length == sizeof(settings_t))))
+          ((record->schema == 6 || record->schema == SETTINGS_SCHEMA) && record->length == sizeof(settings_t))))
         return false;
     uint32_t crc;
     memcpy(&crc, (uint8_t const *)&record->values + record->length, sizeof(crc));
@@ -134,6 +135,8 @@ static bool record_decode(settings_record_t const *record, settings_t *settings)
             return false;
         settings->joystick_port2 = port2_default;
     }
+    if (record->schema < 7 && (settings->port_mode > 1 || settings->joystick_port2 > 1))
+        return false;
     return settings_valid(settings);
 }
 
@@ -163,7 +166,11 @@ bool settings_set(settings_t const *settings)
 {
     if (!settings_valid(settings))
         return false;
+    // Bluetooth report callbacks read these fields in the background IRQ.
+    // Publish the complete validated configuration as one update.
+    uint32_t interrupts = save_and_disable_interrupts();
     active = *settings;
+    restore_interrupts(interrupts);
     return true;
 }
 

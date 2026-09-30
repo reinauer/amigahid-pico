@@ -30,8 +30,8 @@ version stays visible, and normal status/pairing text is restored on exit.
 | Mouse step interval | 300, 200, 150, 100 microseconds | 300 |
 | Display | Status, HID diagnostics, mouse diagnostics, off | Status |
 | Watchdog | Off, 2 seconds, 5 seconds | Off |
-| Controller port 1 | Mouse, Joystick | Mouse |
-| Controller port 2 (REV5 only) | Off, Joystick | Joystick |
+| Controller port 1 | Mouse, Joystick, CD32 pad | Mouse |
+| Controller port 2 (REV5 only) | Off, Joystick, CD32 pad | Joystick |
 
 The selected menu key is reserved for configuration while a working OLED is
 present. The Right GUI setting affects the right Windows/Command modifier;
@@ -81,7 +81,7 @@ itself has failed, the firmware continues using saved settings without a menu.
 
 ## Storage and validation
 
-Settings use schema version 3 and a CRC32. Two alternating 4 KiB sectors keep
+Settings use schema version 7 and a CRC32. Two alternating 4 KiB sectors keep
 the previous valid record intact while a new record is erased/programmed. On
 boot, the newest valid record is selected, including across sequence rollover.
 Unchanged saves do not erase flash. Failed saves leave the menu open and do not
@@ -93,12 +93,12 @@ builds use the same layout. Settings writes run through the SDK's flash-safe
 execution API with core1 registered for lockout. Normal UF2 updates below this
 region preserve settings; erasing the entire flash removes them.
 
-Schema 1 and 2 records are migrated in RAM, preserving existing settings,
+Schema 1–6 records are migrated in RAM, preserving existing settings,
 including the watchdog timeout and any saved port 1 choice. Port 1 defaults to
 Mouse when migrating schema 1, which had no port setting. The new port 2 option
 defaults to Joystick on REV5 and Off on other revisions. If an earlier trial
 saved port 1 as USB joystick, change that setting to Mouse for simultaneous
-mouse/joystick use. The next explicit save writes schema 3. Unknown schemas are
+mouse/joystick use. The next explicit save writes schema 7. Unknown schemas are
 rejected, falling back to a compatible record or defaults.
 
 Temporary native checks cover CRC/schema validation, interrupted writes and
@@ -150,3 +150,12 @@ Two keys or keyboards mapped to the same Amiga key retain it until both release.
 
 Schema 6 migrates schemas 1–5 with original keyboard behavior and empty custom
 slots. New keyboard settings still require hardware validation.
+
+## CD32 and migration
+
+Both controller-port menus now include CD32 pad; ordinary joystick remains the
+port 2 default on REV5. See [CD32 setup and mappings](joystick.md#cd32-pad-mode).
+Schema 7 adds this mode and reads every previous settings schema. Migration keeps
+your watchdog, port choices, keyboard behavior and wheel settings. New choices
+use the previously tested defaults. Save and exit commits the migrated record.
+Hardware validation of all four new feature groups is pending.

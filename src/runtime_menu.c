@@ -70,7 +70,7 @@ static bool report_empty(hid_keyboard_report_t const *report)
 static void apply_settings(void)
 {
     settings_t const *settings = settings_get();
-    input_bridge_set_port_modes(settings->port_mode == SETTINGS_PORT_JOYSTICK, settings->joystick_port2 != 0);
+    input_bridge_set_port_modes(settings->port_mode, settings->joystick_port2);
     amiga_quad_mouse_configure(settings_mouse_interval_us(), settings->wheel_enabled, settings->wheel_reverse);
     dbgcons_settings_changed();
     disp_ssd_set_enabled(settings->display != SETTINGS_DISPLAY_OFF);
@@ -147,9 +147,9 @@ static void render_menu(void)
         case MENU_SPEED: value = speed[edited.mouse_speed]; break;
         case MENU_DISPLAY: value = display[edited.display]; break;
         case MENU_WATCHDOG: value = watchdog[edited.watchdog]; break;
-        case MENU_PORT: value = edited.port_mode == SETTINGS_PORT_MOUSE ? "Mouse" : "Joystick"; break;
+        case MENU_PORT: value = edited.port_mode == SETTINGS_PORT_MOUSE ? "Mouse" : edited.port_mode == SETTINGS_PORT_CD32 ? "CD32 pad" : "Joystick"; break;
 #ifdef HAS_JOYSTICK_PORT2
-        case MENU_PORT2: value = edited.joystick_port2 ? "Joystick" : "Off"; break;
+        case MENU_PORT2: value = edited.joystick_port2 == SETTINGS_PORT_CD32 ? "CD32 pad" : edited.joystick_port2 ? "Joystick" : "Off"; break;
 #endif
 #ifdef ENABLE_BLUETOOTH_HID
         case MENU_BT: value = edited.bluetooth_enabled ? "On" : "Off"; break;
@@ -212,7 +212,7 @@ static void change_value(int direction)
         case MENU_WATCHDOG: value = &edited.watchdog; count = 3; break;
         case MENU_PORT: value = &edited.port_mode; count = SETTINGS_PORT_COUNT; break;
 #ifdef HAS_JOYSTICK_PORT2
-        case MENU_PORT2: value = &edited.joystick_port2; count = 2; break;
+        case MENU_PORT2: value = &edited.joystick_port2; count = SETTINGS_PORT_COUNT; break;
 #endif
 #ifdef ENABLE_BLUETOOTH_HID
         case MENU_BT: value = &edited.bluetooth_enabled; count = 2; break;

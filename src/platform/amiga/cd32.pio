@@ -1,0 +1,42 @@
+; CD32 open-drain button output. SPDX-License-Identifier: EPL-2.0
+; jmp pin = DB9 pin 5 (/load), in pin = pin 6 (clock), out pin = pin 9 (data).
+; Direction 1 sinks LOW; output latch is always zero. Snapshot at /load falling.
+.program cd32_data
+.wrap_target
+normal:
+    pull noblock
+    mov x, osr
+    out pindirs, 1
+    jmp pin normal
+clock_low:
+    jmp pin normal
+    mov isr, null
+    in pins, 1
+    mov y, isr
+    jmp !y clock_low
+    jmp !osre next_bit
+    set pindirs, 1       ; serial input tied LOW after the seven buttons + HIGH ID
+    jmp clock_high
+next_bit:
+    out pindirs, 1
+clock_high:
+    jmp pin normal
+    mov isr, null
+    in pins, 1
+    mov y, isr
+    jmp !y clock_low
+    jmp clock_high
+.wrap
+
+; In ordinary joystick mode pin 6 is Red/fire. Release it during serial reads
+; so the Amiga owns the clock. This runs independently of software scheduling.
+.program cd32_fire
+.wrap_target
+    pull noblock
+    mov x, osr
+    jmp pin normal_fire
+    set pindirs, 0
+    jmp 0
+normal_fire:
+    out pindirs, 1
+.wrap

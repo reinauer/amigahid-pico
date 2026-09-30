@@ -1,4 +1,4 @@
-# Implementation status: features branch (2026-09-28)
+# Implementation status: features branch (2026-09-29)
 
 Based on `bluetooth` at `b437643`. The existing Bluetooth PR is unchanged.
 
@@ -105,16 +105,40 @@ Hardware check on Pico W/REV5 with `features-ps4-stadia-buttons-20260928`
 buttons 1/2/3 and the PS4 mouse button mappings all work as expected.
 Reconnect and long-running stability still need hardware validation.
 
+Implemented in the configuration and CD32 milestone (hardware test pending):
+
+- Bluetooth radio On/Off, automatic or bonded-only pairing policy, a timed pairing
+  action and confirmed removal of Classic/LE bonds. Stored LE identities support
+  private-address resolution. Radio shutdown discards stale input and releases controls.
+- Gamepad D-pad/stick selection, three deadzones, seven configurable button sources,
+  and PS4 touchpad/shoulder mouse controls. Controller-specific defaults are retained.
+- Keyboard Help/Delete choices, ISO-key selection, letter-layout presets and eight
+  learned-source custom remaps. Translated keys are aggregated across devices so
+  aliases and shared modifiers stay held until every source releases them.
+- CD32 pad mode on supported ports: PIO provides the seven-button shift register,
+  identification bits and fire/clock handover. REV5 can retain mouse on port 1 and
+  CD32 on port 2. Explicit CD32 mode preserves ordinary joystick as the default.
+- Settings schema 7 reads schemas 1–6 and preserves saved choices. Live settings
+  are published atomically to Bluetooth callbacks. No CAD changes or new checked-in tests.
+- Temporary checks pass settings migration/interrupted writes, menu actions, key
+  aliases and reset chord order, seven-button decoding, Bluetooth power/pairing/
+  forget transitions, parser mutation cases, GPIO routing and assembled CD32 PIO
+  behavior. CD32 recognition/electrical timing and the new menu settings need the
+  user's combined hardware test; software simulation is not hardware validation.
+
 Still to implement or validate:
 
-- Measure input latency and validate the faster mouse timing presets on hardware.
+- Test the four new feature groups on Pico W/REV5, including saved settings,
+  controller disconnect/reconnect, held-control release and extended use.
+- Validate boot recovery and an actual watchdog-triggered restart.
+- Measure input latency and validate faster mouse timing presets on hardware.
 - Earlier HID rearming and GPIO timing instrumentation.
 - Keyboard PIO; consider mouse PIO only after measurement.
-- Validate LE gamepad disconnect/reconnect and complete USB joystick lifecycle checks;
-  add configurable deadzones and button mappings, more Bluetooth controllers,
-  keyboard-as-joystick, and CD32 output.
-- Full key remapping/layout presets, further controller modes, Bluetooth configuration,
-  and the optional Amiga preference tool.
+- Keyboard-as-joystick remains deferred at the user's request.
+- Additional controller formats and optional automatic port mode selection.
+- Full national keyboard layouts beyond the letter presets/custom remaps, and
+  arbitrary remapping beyond the eight custom slots.
+- The optional Amiga preference tool.
 
 The sections below retain the design and acceptance criteria for these phases.
 
@@ -316,9 +340,9 @@ paths, starting with the simplest and most compatible target.
 
 ## Phase 1: HID Joystick to Digital Joystick
 
-USB and LE HID hat/D-pad, absolute X/Y and Button 1 support is implemented on
-`features`. Competition Pro USB gameplay and Stadia LE D-pad/fire work on REV5;
-complete lifecycle testing and configurable thresholds remain outstanding.
+USB, LE and Classic HID hat/D-pad, absolute X/Y and multi-button support is
+implemented on `features`. Competition Pro, Stadia and PS4 input work on REV5;
+complete lifecycle testing and validation of the new configurable thresholds remain outstanding.
 See [doc/joystick.md](doc/joystick.md).
 
 - Add a controller backend that drives one Amiga controller port as:
@@ -347,6 +371,8 @@ See [doc/joystick.md](doc/joystick.md).
   the normal keyboard path.
 
 ## Phase 3: CD32 Pad Emulation
+
+Implemented with PIO on `features`; first hardware validation is pending.
 
 - Add a separate backend for CD32-compatible controller output.
 - Reuse the basic digital directions from the earlier joystick backend.
@@ -504,6 +530,10 @@ firmware for small behavioral changes.
 - Keep each setting independent and easy to reset.
 
 ## Phase 5a: Follow-Up Runtime-Configurable Features
+
+Port/CD32 selection, gamepad settings, Help/Delete choices, letter presets, custom
+remaps and Bluetooth controls are implemented. Automatic port detection and
+keyboard-as-joystick remain future work. The original design follows.
 
 - Add these after the settings model, flash storage and menu UI are
   stable:
