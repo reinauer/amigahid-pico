@@ -28,6 +28,11 @@ typedef struct {
     uint8_t bluetooth_enabled;
     uint8_t bluetooth_pairing; /* 0: automatic, 1: paired devices / timed pairing */
     uint8_t reserved4[2];
+    uint8_t gamepad_directions; /* both, D-pad only, stick only */
+    uint8_t gamepad_deadzone;   /* central 25%, 50%, 75% */
+    uint8_t gamepad_buttons[7]; /* 0 auto, HID button 1..16, 17 off */
+    uint8_t ds4_mouse;          /* touchpad only, touchpad + shoulders, off */
+    uint8_t reserved5[2];
 } settings_t;
 
 void settings_defaults(settings_t *settings);

@@ -23,7 +23,8 @@ typedef struct
 } input_bridge_keyboard_sink_t;
 
 typedef struct {
-    uint8_t state, ports;
+    uint16_t state;
+    uint8_t ports;
     bool waiting;
 } input_bridge_gamepad_status_t;
 
@@ -35,7 +36,7 @@ void input_bridge_disconnect(uint8_t slot);
 // Release routed input while the local settings menu owns the keyboard.
 void input_bridge_capture(bool capture);
 void input_bridge_set_port_modes(bool joystick1, bool joystick2);
-void input_bridge_handle_gamepad(uint8_t slot, uint8_t state);
+void input_bridge_handle_gamepad(uint8_t slot, uint16_t state);
 void input_bridge_handle_keyboard(uint8_t slot, hid_keyboard_report_t const *report,
     input_bridge_keyboard_sink_t const *sink);
 void input_bridge_handle_mouse(uint8_t slot, hid_mouse_report_t const *report);

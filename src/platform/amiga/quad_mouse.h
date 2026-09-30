@@ -24,6 +24,6 @@ void amiga_quad_mouse_wheel(int8_t wheel);
 void amiga_quad_mouse_configure(uint16_t step_us, bool wheel_enabled, bool wheel_reverse);
 void amiga_quad_mouse_capture(bool capture);
 void amiga_quad_mouse_set_joystick_ports(bool port1, bool port2);
-void amiga_quad_mouse_joystick(uint8_t state);
+void amiga_quad_mouse_joystick(uint16_t state);
 
 #endif

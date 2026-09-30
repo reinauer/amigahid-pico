@@ -267,3 +267,29 @@ The parser follows [USB HID 1.11](https://www.usb.org/sites/default/files/hid1_1
 and the [HID Usage Tables](https://www.usb.org/sites/default/files/hut1_2.pdf).
 Output uses the digital joystick pin assignments in Commodore's
 [Amiga Hardware Reference Manual, Appendix E](https://www.theflatnet.de/pub/cbm/amiga/AmigaDevDocs/hard_e.html).
+
+## Gamepad settings
+
+The OLED menu now selects D-pad and stick together (default), D-pad only, or
+stick only. Stick deadzone selects the central 25%, 50% (default), or 75% of
+travel; directions activate outside that range. A wider deadzone requires more
+stick movement. These settings apply to USB and Bluetooth controllers.
+
+Each of seven output buttons has an Auto mapping, a HID button number 1–16, or
+Disabled. The first three are the ordinary joystick buttons; the other four
+are retained for CD32 output. Mappings are global across connected controllers.
+Auto retains the tested PS4 Cross/Circle/Square and Stadia A/B/X mapping.
+PS4's additional defaults are Triangle, L1, R1, Options; Stadia's are Y, L1,
+R1, Menu. The Competition Pro retains all four face buttons as fire 1.
+
+For custom mappings, PS4 HID numbers are Square=1, Cross=2, Circle=3,
+Triangle=4, L1=5, R1=6, L2=7, R2=8, Share=9, Options=10.
+Stadia uses A=1, B=2, X=4, Y=5, L1=7, R1=8, Menu=12.
+**PS4 mouse controls** selects Touchpad + shoulders (the tested default),
+Touchpad only, or Off, so shoulders can be dedicated to gamepad use.
+
+Save and exit applies these choices. Release held controls before resuming.
+Schema 5 preserves older settings and selects the previous direction, deadzone,
+and mouse defaults. Diagnostics now use three hexadecimal digits; extra output
+bits are fourth button `080`, rewind `100`, forward `200`, and play `400`.
+Hardware validation of the new settings is pending.

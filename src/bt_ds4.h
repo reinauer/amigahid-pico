@@ -14,7 +14,8 @@ typedef struct {
 } bt_ds4_t;
 
 typedef struct {
-    uint8_t gamepad, mouse_buttons;
+    uint16_t gamepad;
+    uint8_t mouse_buttons;
     int8_t mouse_x, mouse_y;
 } bt_ds4_report_t;
 

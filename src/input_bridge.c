@@ -26,7 +26,7 @@ typedef struct
     hid_mouse_report_t mouse;
     uint8_t led_report;
     bool mouse_quarantine;
-    uint8_t gamepad;
+    uint16_t gamepad;
     bool gamepad_quarantine;
 } input_bridge_state_t;
 
@@ -34,7 +34,7 @@ static input_bridge_state_t bridge_state[INPUT_BRIDGE_MAX_SLOTS];
 static bool input_captured;
 static bool joystick_mode;
 static bool joystick_port2;
-static uint8_t gamepad_output;
+static uint16_t gamepad_output;
 static uint8_t mouse_buttons;
 
 input_bridge_gamepad_status_t input_bridge_gamepad_status(uint8_t slot)
@@ -49,7 +49,7 @@ input_bridge_gamepad_status_t input_bridge_gamepad_status(uint8_t slot)
 
 static void _ib_sync_gamepads(void)
 {
-    uint8_t state = 0;
+    uint16_t state = 0;
     if ((joystick_mode || joystick_port2) && !input_captured)
         for (unsigned slot = 0; slot < INPUT_BRIDGE_MAX_SLOTS; slot++)
             state |= bridge_state[slot].gamepad;
@@ -197,7 +197,7 @@ void input_bridge_set_port_modes(bool joystick1, bool joystick2)
     _ib_sync_gamepads();
 }
 
-void input_bridge_handle_gamepad(uint8_t slot, uint8_t state)
+void input_bridge_handle_gamepad(uint8_t slot, uint16_t state)
 {
     if (slot >= INPUT_BRIDGE_MAX_SLOTS)
         return;

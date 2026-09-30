@@ -97,17 +97,17 @@ static void dbgcons_gamepad_line(unsigned row, char const *message)
     }
 }
 
-static void dbgcons_gamepad_output(uint8_t slot, bool decoded, uint8_t state)
+static void dbgcons_gamepad_output(uint8_t slot, bool decoded, uint16_t state)
 {
 #ifdef ENABLE_BLUETOOTH_HID
     if (bt_passkey_active)
         return;
 #endif
     input_bridge_gamepad_status_t output = input_bridge_gamepad_status(slot);
-    char input[3] = "--", line[32];
+    char input[4] = "---", line[32];
     if (decoded)
-        snprintf(input, sizeof(input), "%02x", state);
-    snprintf(line, sizeof(line), "in%s out%02x p%u%s", input, output.state,
+        snprintf(input, sizeof(input), "%03x", state & 0x7ffu);
+    snprintf(line, sizeof(line), "in%s out%03x p%u%s", input, output.state,
         output.ports, output.waiting ? " wait" : "");
     dbgcons_gamepad_line(1, line);
 }

@@ -60,7 +60,7 @@ static volatile bool wheel_enabled = true;
 static bool wheel_reverse;
 static volatile bool input_captured;
 static volatile uint8_t joystick_ports;
-static volatile uint8_t joystick_state;
+static volatile uint16_t joystick_state;
 
 enum _mouse_pin_state { LOW, HIGH };
 
@@ -93,7 +93,7 @@ static inline bool _aqm_gpio_active(uint gpio)
     return !gpio_get(gpio);
 }
 
-static inline void _aqm_set_quad_state(uint gpio_main, uint gpio_quad, uint8_t state)
+static inline void _aqm_set_quad_state(uint gpio_main, uint gpio_quad, uint16_t state)
 {
     // Set both destination levels so negative starts and reversals emit every
     // step. States (main, quadrature): 0 = 10, 1 = 11, 2 = 01, 3 = 00.
@@ -326,7 +326,7 @@ void amiga_quad_mouse_set_joystick_ports(bool port1, bool port2)
     joystick_ports = (port1 ? JOYSTICK_PORT1 : 0) | (port2 ? JOYSTICK_PORT2 : 0);
 }
 
-void amiga_quad_mouse_joystick(uint8_t state)
+void amiga_quad_mouse_joystick(uint16_t state)
 {
     joystick_state = state;
 }
@@ -342,7 +342,7 @@ static void _aqm_release_port(void)
     _aqm_gpio_set(QM1_AMIGA_B3, HIGH);
 }
 
-static void _aqm_joystick_output(uint8_t state, uint up, uint down, uint left, uint right,
+static void _aqm_joystick_output(uint16_t state, uint up, uint down, uint left, uint right,
     uint fire, uint fire2, uint fire3)
 {
     // Amiga DE-9: pins 1/2/3/4 = up/down/left/right; buttons 1/2/3 = 6/9/5.
@@ -427,9 +427,10 @@ void amiga_quad_mouse_motion()
     uint8_t quad_mx_phase = 0, quad_my_phase = 0;
     uint8_t divider;
     bool previous_mode = false;
-    uint8_t previous_joystick = 0xff, previous_buttons = 0xff;
+    uint16_t previous_joystick = UINT16_MAX;
+    uint8_t previous_buttons = 0xff;
 #ifdef HAS_JOYSTICK_PORT2
-    uint8_t previous_joystick2 = 0xff;
+    uint16_t previous_joystick2 = UINT16_MAX;
 #endif
     bool last_mmb_state = _aqm_gpio_active(QM1_AMIGA_B3);
     // This deadline stays unchanged while idle. A signed 32-bit comparison
@@ -453,7 +454,7 @@ void amiga_quad_mouse_motion()
         bool joystick = (ports & JOYSTICK_PORT1) != 0;
 #ifdef HAS_JOYSTICK_PORT2
         // Port 2 runs alongside mouse quadrature, buttons and wheel on port 1.
-        uint8_t state2 = (ports & JOYSTICK_PORT2) && !input_captured ? joystick_state : 0;
+        uint16_t state2 = (ports & JOYSTICK_PORT2) && !input_captured ? joystick_state : 0;
         if (state2 != previous_joystick2) {
             _aqm_joystick_output(state2, QM2_AMIGA_V, QM2_AMIGA_H, QM2_AMIGA_VQ, QM2_AMIGA_HQ,
                 QM2_AMIGA_B1, QM2_AMIGA_B2, QM2_AMIGA_B3);
@@ -468,12 +469,13 @@ void amiga_quad_mouse_motion()
             out_x = out_y = x_residue = y_residue = 0;
             quad_mx_state = quad_my_state = 1;
             quad_mx_phase = quad_my_phase = 0;
-            previous_joystick = previous_buttons = 0xff;
+            previous_joystick = UINT16_MAX;
+            previous_buttons = 0xff;
             previous_mode = joystick;
             last_mmb_state = _aqm_gpio_active(QM1_AMIGA_B3);
         }
         if (joystick) {
-            uint8_t state = input_captured ? 0 : joystick_state;
+            uint16_t state = input_captured ? 0 : joystick_state;
             if (state != previous_joystick) {
                 _aqm_joystick_output(state, QM1_AMIGA_V, QM1_AMIGA_H, QM1_AMIGA_VQ, QM1_AMIGA_HQ,
                     QM1_AMIGA_B1, QM1_AMIGA_B2, QM1_AMIGA_B3);
