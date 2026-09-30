@@ -24,6 +24,8 @@
 #include "input_bridge_bt.h"
 #include "hid_gamepad.h"
 #include "bt_ds4.h"
+#include "settings.h"
+#include "ble/le_device_db.h"
 #include "util/debug_cons.h"
 #include "util/output.h"
 
@@ -109,6 +111,26 @@ typedef enum
 
 static queue_t bt_hid_queue;
 static bool bt_hid_ready;
+static bool bt_radio_on, bt_controller_off = true;
+static bool bt_pair_request, bt_forget_request, bt_forgetting;
+static bool bt_pair_window;
+static uint32_t bt_pair_deadline;
+static bool bt_resolving;
+static bd_addr_t bt_resolve_addr;
+static uint8_t bt_resolve_type;
+
+static bool bt_pairing_allowed(void)
+{
+    return bt_radio_on && (!settings_get()->bluetooth_pairing || bt_pair_window);
+}
+
+static bool bt_classic_known(bd_addr_t address)
+{
+    link_key_t key;
+    link_key_type_t type;
+    return gap_get_link_key_for_bd_addr(address, key, &type);
+}
+
 
 typedef struct
 {
@@ -211,6 +233,10 @@ static char const *bt_le_state_name(bt_le_state_t state)
 
 static void bt_hid_update_status(void)
 {
+    if (!bt_radio_on) {
+        dbgcons_bt_status("bt off");
+        return;
+    }
     char linebuf[32] = "";
     unsigned gamepads = bt_le_has_gamepad ? 1 : 0;
     for (unsigned slot = 0; slot < INPUT_BRIDGE_BT_CLASSIC_SLOTS; slot++)
@@ -438,7 +464,7 @@ static int8_t bt_classic_find_free_slot(void)
 
 static bool bt_classic_wants_inquiry(void)
 {
-    if (!bt_classic_working || bt_classic_find_free_slot() < 0)
+    if (!bt_radio_on || !bt_classic_working || bt_classic_find_free_slot() < 0)
         return false;
     for (unsigned slot = 0; slot < INPUT_BRIDGE_BT_CLASSIC_SLOTS; slot++)
         if (bt_classic_connections[slot].in_use && bt_classic_connections[slot].has_gamepad)
@@ -495,6 +521,7 @@ static void bt_classic_inquiry_result(uint8_t const *packet, uint16_t size)
         return;
     bd_addr_t address;
     gap_event_inquiry_result_get_bd_addr(packet, address);
+    if (!bt_pairing_allowed() && !bt_classic_known(address)) return;
     for (unsigned slot = 0; slot < INPUT_BRIDGE_BT_CLASSIC_SLOTS; slot++)
         if (bt_classic_connections[slot].in_use &&
             !memcmp(address, bt_classic_connections[slot].address, sizeof(bd_addr_t)))
@@ -587,6 +614,7 @@ static void bt_classic_disconnect_slot(uint8_t slot)
 
 static void bt_classic_parse_report(uint8_t slot, uint8_t const *report, uint16_t report_len)
 {
+    if (!bt_radio_on) return;
     bt_classic_connection_t *connection = &bt_classic_connections[slot];
     bt_hid_keyboard_report_t keyboard = { 0, 0, {0} };
     bt_hid_mouse_report_t mouse = { 0 };
@@ -720,8 +748,18 @@ static void bt_classic_packet_handler(uint8_t packet_type, uint16_t channel, uin
     switch (hci_event_packet_get_type(packet)) {
         case BTSTACK_EVENT_STATE:
             if (size >= 3 && btstack_event_state_get_state(packet) == HCI_STATE_WORKING) {
+                bt_controller_off = false;
                 bt_classic_working = true;
+                gap_discoverable_control(bt_pairing_allowed());
                 bt_classic_schedule_inquiry(1000);
+            } else if (size >= 3 && btstack_event_state_get_state(packet) == HCI_STATE_OFF) {
+                bt_controller_off = true;
+                bt_classic_working = false;
+                bt_classic_stop_inquiry();
+                bt_classic_state = BT_CLASSIC_IDLE;
+                bt_classic_outgoing_cid = 0;
+                for (unsigned slot = 0; slot < INPUT_BRIDGE_BT_CLASSIC_SLOTS; slot++)
+                    bt_classic_disconnect_slot(slot);
             }
             break;
 
@@ -740,7 +778,8 @@ static void bt_classic_packet_handler(uint8_t packet_type, uint16_t channel, uin
 
             hci_event_pin_code_request_get_bd_addr(packet, event_addr);
             dbgcons_bt_passkey("bt pin 0000");
-            gap_pin_code_response(event_addr, "0000");
+            if (bt_pairing_allowed()) gap_pin_code_response(event_addr, "0000");
+            else gap_pin_code_negative(event_addr);
             break;
         }
 
@@ -751,7 +790,9 @@ static void bt_classic_packet_handler(uint8_t packet_type, uint16_t channel, uin
             hci_event_user_confirmation_request_get_bd_addr(packet, event_addr);
             bt_hid_show_passkey("conf",
                 hci_event_user_confirmation_request_get_numeric_value(packet));
-            gap_ssp_confirmation_response(event_addr);
+            if (bt_pairing_allowed() || bt_classic_known(event_addr))
+                gap_ssp_confirmation_response(event_addr);
+            else gap_ssp_confirmation_negative(event_addr);
             break;
         }
 
@@ -762,7 +803,10 @@ static void bt_classic_packet_handler(uint8_t packet_type, uint16_t channel, uin
                     if (size < 14) break;
                     if (hid_subevent_incoming_connection_get_status(packet) != ERROR_CODE_SUCCESS)
                         break;
-                    if (bt_classic_find_free_slot() >= 0) {
+                    bd_addr_t incoming;
+                    hid_subevent_incoming_connection_get_address(packet, incoming);
+                    if (bt_radio_on && (bt_pairing_allowed() || bt_classic_known(incoming)) &&
+                        bt_classic_find_free_slot() >= 0) {
                         bt_classic_stop_inquiry();
                         hid_host_accept_connection(hid_subevent_incoming_connection_get_hid_cid(packet), bt_classic_report_mode);
                     } else {
@@ -894,7 +938,7 @@ static bool bt_le_adv_event_contains_hid_service(uint8_t const *packet)
 
 static void bt_le_start_scan(void)
 {
-    if (!bt_hid_ready || (bt_le_connection_handle != HCI_CON_HANDLE_INVALID))
+    if (!bt_hid_ready || !bt_radio_on || !bt_classic_working || (bt_le_connection_handle != HCI_CON_HANDLE_INVALID))
         return;
 
     bt_le_clear_characteristics();
@@ -1207,6 +1251,17 @@ static void bt_le_gatt_client_handler(uint8_t packet_type, uint16_t channel, uin
     }
 }
 
+static void bt_le_connect_candidate(uint8_t type, bd_addr_t address)
+{
+    if (!bt_radio_on || bt_le_state != BT_LE_STATE_SCANNING) return;
+    gap_stop_scan();
+    memcpy(bt_le_addr, address, sizeof(bd_addr_t));
+    bt_le_addr_type = type;
+    bt_le_set_state(BT_LE_STATE_CONNECTING);
+    if (gap_connect(bt_le_addr, bt_le_addr_type) != ERROR_CODE_SUCCESS)
+        bt_le_restart_scan();
+}
+
 static void bt_le_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
 {
     UNUSED(channel);
@@ -1219,6 +1274,13 @@ static void bt_le_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
         case BTSTACK_EVENT_STATE:
             if (btstack_event_state_get_state(packet) == HCI_STATE_WORKING)
                 bt_le_start_scan();
+            else if (btstack_event_state_get_state(packet) == HCI_STATE_OFF) {
+                bt_resolving = false;
+                bt_hid_enqueue_disconnect(bt_le_input_slot());
+                bt_le_clear_characteristics();
+                bt_le_connection_handle = HCI_CON_HANDLE_INVALID;
+                bt_le_set_state(BT_LE_STATE_OFF);
+            }
             break;
 
         case GAP_EVENT_ADVERTISING_REPORT:
@@ -1227,11 +1289,17 @@ static void bt_le_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
             if (!bt_le_adv_event_contains_hid_service(packet))
                 break;
 
-            gap_stop_scan();
-            gap_event_advertising_report_get_address(packet, bt_le_addr);
-            bt_le_addr_type = gap_event_advertising_report_get_address_type(packet);
-            bt_le_set_state(BT_LE_STATE_CONNECTING);
-            gap_connect(bt_le_addr, bt_le_addr_type);
+            if (bt_resolving) break;
+            gap_event_advertising_report_get_address(packet, bt_resolve_addr);
+            bt_resolve_type = gap_event_advertising_report_get_address_type(packet);
+            if (bt_pairing_allowed()) {
+                bt_le_connect_candidate(bt_resolve_type, bt_resolve_addr);
+            } else {
+                // Resolve private addresses against stored IRKs as well as public identities.
+                bt_resolving = true;
+                if (sm_address_resolution_lookup(bt_resolve_type, bt_resolve_addr))
+                    bt_resolving = false;
+            }
             break;
 
         case HCI_EVENT_META_GAP:
@@ -1276,15 +1344,29 @@ static void bt_le_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8
         return;
 
     switch (hci_event_packet_get_type(packet)) {
+        case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
+        case SM_EVENT_IDENTITY_RESOLVING_FAILED: {
+            if (size < 11 || !bt_resolving) break;
+            bd_addr_t address;
+            sm_event_identity_resolving_failed_get_address(packet, address);
+            if (sm_event_identity_resolving_failed_get_addr_type(packet) != bt_resolve_type ||
+                memcmp(address, bt_resolve_addr, sizeof(address))) break;
+            bt_resolving = false;
+            if (hci_event_packet_get_type(packet) == SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED)
+                bt_le_connect_candidate(bt_resolve_type, bt_resolve_addr);
+            break;
+        }
         case SM_EVENT_JUST_WORKS_REQUEST:
-            sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
+            if (bt_pairing_allowed()) sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
+            else sm_bonding_decline(sm_event_just_works_request_get_handle(packet));
             break;
 
         case SM_EVENT_NUMERIC_COMPARISON_REQUEST:
             ahprintf("[btle] confirm %lu\n", (unsigned long)sm_event_numeric_comparison_request_get_passkey(packet));
             bt_hid_show_passkey("conf",
                 sm_event_numeric_comparison_request_get_passkey(packet));
-            sm_numeric_comparison_confirm(sm_event_numeric_comparison_request_get_handle(packet));
+            if (bt_pairing_allowed()) sm_numeric_comparison_confirm(sm_event_numeric_comparison_request_get_handle(packet));
+            else sm_bonding_decline(sm_event_numeric_comparison_request_get_handle(packet));
             break;
 
         case SM_EVENT_PASSKEY_DISPLAY_NUMBER:
@@ -1327,8 +1409,11 @@ static void bt_le_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8
 
 void bt_hid_init(void)
 {
-    if (bt_hid_ready)
+    if (bt_hid_ready) return;
+    if (!settings_get()->bluetooth_enabled) {
+        dbgcons_bt_status("bt off");
         return;
+    }
 
     dbgcons_bt_status("bt init");
 
@@ -1363,10 +1448,10 @@ void bt_hid_init(void)
 
     gap_set_local_name(BT_HID_LOCAL_NAME);
     hci_set_inquiry_mode(INQUIRY_MODE_RSSI_AND_EIR);
-    gap_discoverable_control(1);
+    gap_discoverable_control(!settings_get()->bluetooth_pairing);
     gap_set_default_link_policy_settings(LM_LINK_POLICY_ENABLE_SNIFF_MODE | LM_LINK_POLICY_ENABLE_ROLE_SWITCH);
     hci_set_master_slave_policy(HCI_ROLE_MASTER);
-    gap_ssp_set_auto_accept(1);
+    gap_ssp_set_auto_accept(0);
 
     bt_classic_hci_event_callback.callback = &bt_classic_packet_handler;
     hci_add_event_handler(&bt_classic_hci_event_callback);
@@ -1382,18 +1467,78 @@ void bt_hid_init(void)
 
     dbgcons_bt_status("bt power");
     ahprintf("[bt] powering Bluetooth controller\n");
+    bt_radio_on = true;
+    bt_controller_off = false;
     hci_power_control(HCI_POWER_ON);
     ahprintf("[bt] controller startup requested\n");
+}
+
+void bt_hid_pair(void) { bt_pair_request = true; }
+void bt_hid_forget(void) { bt_forget_request = true; }
+
+static void bt_hid_settings_task(void)
+{
+    bool enabled = settings_get()->bluetooth_enabled;
+    if (!bt_hid_ready) {
+        if (enabled) bt_hid_init();
+        return;
+    }
+    async_context_t *context = cyw43_arch_async_context();
+    async_context_acquire_lock_blocking(context);
+    if (bt_forget_request) {
+        bt_forget_request = false;
+        bt_forgetting = true;
+    }
+    if (bt_radio_on && (!enabled || bt_forgetting)) {
+        bt_radio_on = false;
+        bt_pair_window = false;
+        bt_classic_stop_inquiry();
+        gap_stop_scan();
+        hci_power_control(HCI_POWER_OFF);
+        // Release controls immediately, before asynchronous disconnection finishes.
+        for (unsigned slot = INPUT_BRIDGE_BT_CLASSIC_SLOT_BASE; slot < INPUT_BRIDGE_MAX_SLOTS; slot++)
+            bt_hid_enqueue_disconnect(slot);
+        bt_hid_update_status();
+    }
+    if (bt_controller_off && bt_forgetting) {
+        gap_delete_all_link_keys();
+        for (int index = 0; index < le_device_db_max_count(); index++) {
+            int type;
+            bd_addr_t address;
+            le_device_db_info(index, &type, address, NULL);
+            if (type != BD_ADDR_TYPE_UNKNOWN) le_device_db_remove(index);
+        }
+        bt_forgetting = false;
+    }
+    if (enabled && !bt_radio_on && bt_controller_off && !bt_forgetting) {
+        bt_radio_on = true;
+        bt_controller_off = false;
+        hci_power_control(HCI_POWER_ON);
+    }
+    if (bt_pair_request) {
+        bt_pair_request = false;
+        if (bt_radio_on) {
+            bt_pair_window = true;
+            bt_pair_deadline = btstack_run_loop_get_time_ms() + 120000u;
+            bt_classic_schedule_inquiry(1);
+        }
+    }
+    if (bt_pair_window && (int32_t)(btstack_run_loop_get_time_ms() - bt_pair_deadline) >= 0)
+        bt_pair_window = false;
+    if (bt_classic_working) gap_discoverable_control(bt_pairing_allowed());
+    async_context_release_lock(context);
 }
 
 void bt_hid_task(void)
 {
     bt_hid_queue_entry_t entry;
+    bt_hid_settings_task();
 
     if (!bt_hid_ready)
         return;
 
     while (bt_hid_dequeue(&entry)) {
+        if (!bt_radio_on && entry.type != BT_HID_QUEUE_DISCONNECT) continue;
         switch (entry.type) {
             case BT_HID_QUEUE_DISCONNECT:
                 input_bridge_disconnect(entry.slot);

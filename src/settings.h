@@ -25,6 +25,9 @@ typedef struct {
     uint8_t port_mode;        /* port 1: mouse or joystick */
     uint8_t joystick_port2;   /* port 2: off or joystick; REV5 only */
     uint8_t reserved[2];
+    uint8_t bluetooth_enabled;
+    uint8_t bluetooth_pairing; /* 0: automatic, 1: paired devices / timed pairing */
+    uint8_t reserved4[2];
 } settings_t;
 
 void settings_defaults(settings_t *settings);

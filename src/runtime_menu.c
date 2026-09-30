@@ -10,6 +10,9 @@
 #include "pico/stdlib.h"
 #include "platform/amiga/quad_mouse.h"
 #include "settings.h"
+#ifdef ENABLE_BLUETOOTH_HID
+#include "bt_hid.h"
+#endif
 #include "util/debug_cons.h"
 #include "util/output.h"
 
@@ -22,12 +25,18 @@ enum menu_item { MENU_KEY, MENU_ENTRY, MENU_RIGHT_GUI, MENU_WHEEL, MENU_REVERSE,
 #ifdef HAS_JOYSTICK_PORT2
     MENU_PORT2,
 #endif
+#ifdef ENABLE_BLUETOOTH_HID
+    MENU_BT, MENU_BT_POLICY, MENU_BT_PAIR, MENU_BT_FORGET,
+#endif
     MENU_SAVE, MENU_DEFAULTS, MENU_CANCEL, MENU_ITEM_COUNT };
 
 static hid_keyboard_report_t keyboards[INPUT_BRIDGE_MAX_SLOTS];
 static bool quarantine[INPUT_BRIDGE_MAX_SLOTS];
 static settings_t edited;
 static bool opened, redraw, save_pending;
+#ifdef ENABLE_BLUETOOTH_HID
+static bool pair_pending, forget_pending, forget_confirm;
+#endif
 static bool holding, recovering;
 static uint64_t hold_started, recovery_started, boot_deadline;
 static unsigned item;
@@ -70,6 +79,9 @@ static void apply_settings(void)
 
 static void open_menu(bool recovery)
 {
+#ifdef ENABLE_BLUETOOTH_HID
+    pair_pending = forget_pending = forget_confirm = false;
+#endif
     edited = *settings_get();
     if (recovery) {
         settings_defaults(&edited);
@@ -103,6 +115,9 @@ static void render_menu(void)
 #ifdef HAS_JOYSTICK_PORT2
         "Controller port 2",
 #endif
+#ifdef ENABLE_BLUETOOTH_HID
+        "Bluetooth", "BT pairing policy", "Pair for 2 minutes", "Forget BT devices",
+#endif
         "Save and exit", "Factory defaults", "Cancel changes"};
     static char const *const keys[] = {"F12", "F11", "Application/Menu"};
     static char const *const entry[] = {"Hold for 1 second", "Boot only"};
@@ -124,6 +139,10 @@ static void render_menu(void)
         case MENU_PORT: value = edited.port_mode == SETTINGS_PORT_MOUSE ? "Mouse" : "Joystick"; break;
 #ifdef HAS_JOYSTICK_PORT2
         case MENU_PORT2: value = edited.joystick_port2 ? "Joystick" : "Off"; break;
+#endif
+#ifdef ENABLE_BLUETOOTH_HID
+        case MENU_BT: value = edited.bluetooth_enabled ? "On" : "Off"; break;
+        case MENU_BT_POLICY: value = edited.bluetooth_pairing ? "Paired devices only" : "Automatic (default)"; break;
 #endif
         default: break;
     }
@@ -149,6 +168,10 @@ static void change_value(int direction)
 #ifdef HAS_JOYSTICK_PORT2
         case MENU_PORT2: value = &edited.joystick_port2; count = 2; break;
 #endif
+#ifdef ENABLE_BLUETOOTH_HID
+        case MENU_BT: value = &edited.bluetooth_enabled; count = 2; break;
+        case MENU_BT_POLICY: value = &edited.bluetooth_pairing; count = 2; break;
+#endif
         default: return;
     }
     *value = (uint8_t)((*value + count + direction) % count);
@@ -157,6 +180,9 @@ static void change_value(int direction)
 static void menu_key(uint8_t key)
 {
     notice = NULL;
+#ifdef ENABLE_BLUETOOTH_HID
+    if (key != HID_KEY_ENTER) forget_confirm = false;
+#endif
     switch (key) {
         case HID_KEY_ARROW_UP: item = (item + MENU_ITEM_COUNT - 1) % MENU_ITEM_COUNT; break;
         case HID_KEY_ARROW_DOWN: item = (item + 1) % MENU_ITEM_COUNT; break;
@@ -165,6 +191,14 @@ static void menu_key(uint8_t key)
         case HID_KEY_ENTER:
             if (item == MENU_SAVE)
                 save_pending = true;
+#ifdef ENABLE_BLUETOOTH_HID
+            else if (item == MENU_BT_PAIR) {
+                pair_pending = true;
+            } else if (item == MENU_BT_FORGET) {
+                if (forget_confirm) { forget_pending = true; forget_confirm = false; }
+                else { forget_confirm = true; notice = "Enter again to forget"; }
+            }
+#endif
             else if (item == MENU_DEFAULTS) {
                 settings_defaults(&edited);
                 notice = "Defaults (unsaved)";
@@ -238,6 +272,24 @@ void runtime_menu_filter_keyboard(hid_keyboard_report_t *report)
 void runtime_menu_task(void)
 {
     if (opened) {
+#ifdef ENABLE_BLUETOOTH_HID
+        if (pair_pending) {
+            pair_pending = false;
+            if (settings_get()->bluetooth_enabled) {
+                bt_hid_pair();
+                notice = "Pairing: 2 minutes";
+            } else notice = "Save Bluetooth On";
+            redraw = true;
+        }
+        if (forget_pending) {
+            forget_pending = false;
+            if (settings_get()->bluetooth_enabled) {
+                bt_hid_forget();
+                notice = "Forgetting devices";
+            } else notice = "Save Bluetooth On";
+            redraw = true;
+        }
+#endif
         if (!disp_ssd_available()) {
             close_menu();
             return;
