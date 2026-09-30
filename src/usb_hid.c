@@ -22,6 +22,8 @@
 
 #include "input_bridge.h"
 #include "hid_gamepad.h"
+#include "gamepad_config.h"
+#include "settings.h"
 #include "platform/amiga/keyboard_serial_io.h"
 #include "tusb_config.h"
 #include "util/output.h"
@@ -300,20 +302,23 @@ static void process_report(uint8_t slot, uint8_t dev_addr, uint8_t instance, uin
 {
     if (report == NULL || len == 0)
         return;
-    uint8_t gamepad;
+    uint16_t gamepad;
     if (hid_gamepad_decode(&hid_info[slot].gamepad, report, len, &gamepad)) {
         if (hid_info[slot].gamepad_status.initialization != USB_GAMEPAD_INIT_NONE &&
                 len >= 49 && report[0] == 1) {
-            // PS3 Button 1 is Select; use the four face buttons as fire instead.
-            // Competition Pro's physical fire buttons occupy these positions.
-            // Preserve this adapter's existing four-buttons-as-fire mapping;
-            // PS3 Button 2/3 are stick clicks, not the extra Amiga buttons.
-            gamepad &= ~(GAMEPAD_FIRE | GAMEPAD_FIRE2 | GAMEPAD_FIRE3);
-            if (report[3] & 0xf0) gamepad |= GAMEPAD_FIRE;
-            if (report[2] & 0x10) gamepad |= GAMEPAD_UP;
-            if (report[2] & 0x20) gamepad |= GAMEPAD_RIGHT;
-            if (report[2] & 0x40) gamepad |= GAMEPAD_DOWN;
-            if (report[2] & 0x80) gamepad |= GAMEPAD_LEFT;
+            // Preserve Competition Pro's default four-face-buttons-as-fire.
+            // Explicit mappings select native PS3 HID button usages instead.
+            static uint8_t const defaults[] = {0, 0, 0, 13, 11, 12, 4};
+            uint16_t buttons = report[2] | (uint16_t)report[3] << 8;
+            gamepad &= 0x0fu;
+            gamepad |= gamepad_map(0, 0, buttons, defaults);
+            if (!settings_get()->gamepad_buttons[0] && (report[3] & 0xf0)) gamepad |= GAMEPAD_FIRE;
+            if (settings_get()->gamepad_directions != 2) {
+                if (report[2] & 0x10) gamepad |= GAMEPAD_UP;
+                if (report[2] & 0x20) gamepad |= GAMEPAD_RIGHT;
+                if (report[2] & 0x40) gamepad |= GAMEPAD_DOWN;
+                if (report[2] & 0x80) gamepad |= GAMEPAD_LEFT;
+            }
         }
         hid_info[slot].gamepad_status.decoded = true;
         hid_info[slot].gamepad_status.state = gamepad;

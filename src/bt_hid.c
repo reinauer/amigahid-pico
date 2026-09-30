@@ -70,7 +70,7 @@ typedef struct
     {
         bt_hid_keyboard_report_t keyboard;
         bt_hid_mouse_report_t mouse;
-        uint8_t gamepad;
+        uint16_t gamepad;
     };
 } bt_hid_queue_entry_t;
 
@@ -140,7 +140,7 @@ typedef struct
     bool gamepad_pending;
     bt_hid_keyboard_report_t keyboard;
     bt_hid_mouse_report_t mouse;
-    uint8_t gamepad;
+    uint16_t gamepad;
 } bt_hid_overflow_t;
 
 static bool bt_hid_queue_resync;
@@ -175,7 +175,7 @@ static bool bt_le_has_boot_mouse;
 static uint16_t bt_le_hids_cid;
 static uint8_t bt_le_descriptor_storage[BT_LE_DESCRIPTOR_STORAGE_SIZE];
 static hid_gamepad_t bt_le_gamepads[MAX_NUM_HID_SERVICES];
-static uint8_t bt_le_gamepad_states[MAX_NUM_HID_SERVICES];
+static uint16_t bt_le_gamepad_states[MAX_NUM_HID_SERVICES];
 static bool bt_le_has_gamepad;
 static bt_hid_gamepad_status_t bt_le_gamepad_status;
 
@@ -433,7 +433,7 @@ static void bt_hid_append_keycode(bt_hid_keyboard_report_t *report, uint8_t keyc
     }
 }
 
-static void bt_hid_enqueue_gamepad(uint8_t slot, uint8_t state)
+static void bt_hid_enqueue_gamepad(uint8_t slot, uint16_t state)
 {
     bt_hid_queue_entry_t entry = {
         .slot = slot,
@@ -1041,7 +1041,7 @@ static void bt_le_gamepad_handler(uint8_t packet_type, uint16_t channel, uint8_t
             bt_le_gamepad_status.decoded = hid_gamepad_decode(pad, report, length, &bt_le_gamepad_states[service]);
             if (!bt_le_gamepad_status.decoded)
                 break;
-            uint8_t combined = 0;
+            uint16_t combined = 0;
             for (unsigned i = 0; i < MAX_NUM_HID_SERVICES; i++)
                 combined |= bt_le_gamepad_states[i];
             bt_le_gamepad_status.state = combined;

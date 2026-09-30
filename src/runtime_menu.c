@@ -28,6 +28,8 @@ enum menu_item { MENU_KEY, MENU_ENTRY, MENU_RIGHT_GUI, MENU_WHEEL, MENU_REVERSE,
 #ifdef ENABLE_BLUETOOTH_HID
     MENU_BT, MENU_BT_POLICY, MENU_BT_PAIR, MENU_BT_FORGET,
 #endif
+    MENU_PAD_DIR, MENU_PAD_ZONE, MENU_PAD_B1, MENU_PAD_B2, MENU_PAD_B3,
+    MENU_PAD_B4, MENU_PAD_L, MENU_PAD_R, MENU_PAD_PLAY, MENU_DS4_MOUSE,
     MENU_SAVE, MENU_DEFAULTS, MENU_CANCEL, MENU_ITEM_COUNT };
 
 static hid_keyboard_report_t keyboards[INPUT_BRIDGE_MAX_SLOTS];
@@ -118,6 +120,8 @@ static void render_menu(void)
 #ifdef ENABLE_BLUETOOTH_HID
         "Bluetooth", "BT pairing policy", "Pair for 2 minutes", "Forget BT devices",
 #endif
+        "Gamepad directions", "Stick deadzone", "Fire 1 / CD32 Red", "Fire 2 / CD32 Blue",
+        "Fire 3 / CD32 Green", "CD32 Yellow", "CD32 Rewind", "CD32 Forward", "CD32 Play", "PS4 mouse controls",
         "Save and exit", "Factory defaults", "Cancel changes"};
     static char const *const keys[] = {"F12", "F11", "Application/Menu"};
     static char const *const entry[] = {"Hold for 1 second", "Boot only"};
@@ -125,7 +129,7 @@ static void render_menu(void)
     static char const *const speed[] = {"300 us (default)", "200 us", "150 us", "100 us"};
     static char const *const display[] = {"Status", "HID diagnostics", "Mouse diagnostics", "Off"};
     static char const *const watchdog[] = {"Off (default)", "2 seconds", "5 seconds"};
-    char heading[22];
+    char heading[22], custom[22];
     char const *value = "Enter to select";
     switch (item) {
         case MENU_KEY: value = keys[edited.menu_key]; break;
@@ -144,7 +148,26 @@ static void render_menu(void)
         case MENU_BT: value = edited.bluetooth_enabled ? "On" : "Off"; break;
         case MENU_BT_POLICY: value = edited.bluetooth_pairing ? "Paired devices only" : "Automatic (default)"; break;
 #endif
-        default: break;
+        case MENU_PAD_DIR: {
+            static char const *const values[] = {"D-pad and stick", "D-pad only", "Stick only"};
+            value = values[edited.gamepad_directions]; break;
+        }
+        case MENU_PAD_ZONE: {
+            static char const *const values[] = {"25% (sensitive)", "50% (default)", "75% (wide)"};
+            value = values[edited.gamepad_deadzone]; break;
+        }
+        case MENU_DS4_MOUSE: {
+            static char const *const values[] = {"Touchpad only", "Touchpad + shoulders", "Off"};
+            value = values[edited.ds4_mouse]; break;
+        }
+        default:
+            if (item >= MENU_PAD_B1 && item <= MENU_PAD_PLAY) {
+                unsigned button = edited.gamepad_buttons[item - MENU_PAD_B1];
+                if (!button) value = "Auto (controller)";
+                else if (button == 17) value = "Disabled";
+                else { snprintf(custom, sizeof(custom), "HID button %u", button); value = custom; }
+            }
+            break;
     }
     snprintf(heading, sizeof(heading), "Settings %u/%u", item + 1, MENU_ITEM_COUNT);
     disp_ssd_menu(heading, names[item], value, notice ? notice : "Arrows Enter Esc");
@@ -172,7 +195,12 @@ static void change_value(int direction)
         case MENU_BT: value = &edited.bluetooth_enabled; count = 2; break;
         case MENU_BT_POLICY: value = &edited.bluetooth_pairing; count = 2; break;
 #endif
-        default: return;
+        case MENU_PAD_DIR: value = &edited.gamepad_directions; count = 3; break;
+        case MENU_PAD_ZONE: value = &edited.gamepad_deadzone; count = 3; break;
+        case MENU_DS4_MOUSE: value = &edited.ds4_mouse; count = 3; break;
+        default:
+            if (item < MENU_PAD_B1 || item > MENU_PAD_PLAY) return;
+            value = &edited.gamepad_buttons[item - MENU_PAD_B1]; count = 18; break;
     }
     *value = (uint8_t)((*value + count + direction) % count);
 }

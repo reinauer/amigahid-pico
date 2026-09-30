@@ -21,7 +21,8 @@ enum usb_gamepad_initialization {
 
 typedef struct {
     uint16_t reports, length, vid, pid;
-    uint8_t slot, expected_length, state, initialization;
+    uint8_t slot, expected_length, initialization;
+    uint16_t state;
     bool decoded, receive_ok;
 } usb_hid_gamepad_status_t;
 

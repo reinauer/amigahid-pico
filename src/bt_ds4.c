@@ -4,6 +4,8 @@
  */
 #include "bt_ds4.h"
 #include "hid_gamepad.h"
+#include "gamepad_config.h"
+#include "settings.h"
 
 #include <string.h>
 
@@ -111,20 +113,22 @@ bool bt_ds4_decode(bt_ds4_t *pad, uint8_t const *report, size_t length,
         GAMEPAD_DOWN | GAMEPAD_LEFT, GAMEPAD_LEFT, GAMEPAD_LEFT | GAMEPAD_UP,
     };
     uint8_t hat = report[offset + 4] & 0x0f;
-    if (hat < sizeof(hats)) decoded->gamepad = hats[hat];
-    if (report[offset] < 64) decoded->gamepad |= GAMEPAD_LEFT;
-    if (report[offset] > 191) decoded->gamepad |= GAMEPAD_RIGHT;
-    if (report[offset + 1] < 64) decoded->gamepad |= GAMEPAD_UP;
-    if (report[offset + 1] > 191) decoded->gamepad |= GAMEPAD_DOWN;
-    if (report[offset + 4] & 0x20) decoded->gamepad |= GAMEPAD_FIRE; // Cross
-    if (report[offset + 4] & 0x40) decoded->gamepad |= GAMEPAD_FIRE2; // Circle
-    if (report[offset + 4] & 0x10) decoded->gamepad |= GAMEPAD_FIRE3; // Square
+    uint8_t dpad = hat < sizeof(hats) ? hats[hat] : 0;
+    uint8_t stick = gamepad_axis(report[offset], 0, 255, GAMEPAD_LEFT, GAMEPAD_RIGHT) |
+        gamepad_axis(report[offset + 1], 0, 255, GAMEPAD_UP, GAMEPAD_DOWN);
+    uint16_t buttons = (report[offset + 4] >> 4) | (uint16_t)report[offset + 5] << 4;
+    static uint8_t const defaults[] = {2, 3, 1, 4, 5, 6, 10};
+    decoded->gamepad = gamepad_map(dpad, stick, buttons, defaults);
+    if (settings_get()->ds4_mouse == 2) {
+        memset(pad, 0, sizeof(*pad));
+        return true;
+    }
     if (report[offset + 6] & 0x02) decoded->mouse_buttons = 1; // pad click
     // HID mouse mask: left=1, right=2, middle=4. Keep these independent of
     // the three joystick buttons, including simultaneous presses and releases.
-    if (report[offset + 5] & 0x01) decoded->mouse_buttons |= 1; // L1
-    if (report[offset + 5] & 0x02) decoded->mouse_buttons |= 2; // R1
-    if (report[offset + 5] & 0x0c) decoded->mouse_buttons |= 4; // L2 or R2
+    if (settings_get()->ds4_mouse == 1 && (report[offset + 5] & 0x01)) decoded->mouse_buttons |= 1; // L1
+    if (settings_get()->ds4_mouse == 1 && (report[offset + 5] & 0x02)) decoded->mouse_buttons |= 2; // R1
+    if (settings_get()->ds4_mouse == 1 && (report[offset + 5] & 0x0c)) decoded->mouse_buttons |= 4; // L2 or R2
     if (offset == 3)
         touchpad_decode(pad, report, decoded);
     else

@@ -1,6 +1,7 @@
 /* USB HID 1.11 short-item parser for digital controls in Game Pad/Joystick
  * application collections. SPDX-License-Identifier: EPL-2.0 */
 #include "hid_gamepad.h"
+#include "gamepad_config.h"
 
 #include <limits.h>
 #include <string.h>
@@ -11,7 +12,7 @@
 #define FIELD_HAT 0x80u
 #define FIELD_X 0x81u
 #define FIELD_Y 0x82u
-#define FIELD_BUTTON4 0x83u
+#define FIELD_BUTTON 0x100u
 #define MAX_USAGES 32u
 #define MAX_DEPTH 8
 
@@ -48,8 +49,10 @@ static int report_index(hid_gamepad_t *pad, uint8_t id)
     return (int)i;
 }
 
-static uint8_t field_kind(uint32_t usage)
+static uint16_t field_kind(uint32_t usage)
 {
+    if ((usage >> 16) == BUTTON_PAGE && (usage & 0xffff) >= 1 && (usage & 0xffff) <= 16)
+        return FIELD_BUTTON + (usage & 0xffff) - 1;
     switch (usage) {
         case USAGE(DESKTOP_PAGE, 0x30): return FIELD_X;
         case USAGE(DESKTOP_PAGE, 0x31): return FIELD_Y;
@@ -58,10 +61,6 @@ static uint8_t field_kind(uint32_t usage)
         case USAGE(DESKTOP_PAGE, 0x91): return GAMEPAD_DOWN;
         case USAGE(DESKTOP_PAGE, 0x92): return GAMEPAD_RIGHT;
         case USAGE(DESKTOP_PAGE, 0x93): return GAMEPAD_LEFT;
-        case USAGE(BUTTON_PAGE, 1): return GAMEPAD_FIRE;
-        case USAGE(BUTTON_PAGE, 2): return GAMEPAD_FIRE2;
-        case USAGE(BUTTON_PAGE, 3): return GAMEPAD_FIRE3;
-        case USAGE(BUTTON_PAGE, 4): return FIELD_BUTTON4;
         default: return 0;
     }
 }
@@ -161,7 +160,7 @@ static bool parse(hid_gamepad_t *pad, uint8_t const *descriptor, size_t length)
                 if (controller && (value & 7u) == 2u && local.count) {
                     for (uint32_t i = 0; i < global.count; i++) {
                         uint32_t usage = local.usages[i < local.count ? i : local.count - 1u];
-                        uint8_t kind = field_kind(usage);
+                        uint16_t kind = field_kind(usage);
                         if (!kind) continue;
                         int64_t range = (int64_t)global.maximum - global.minimum;
                         if (range < 0 || (kind == FIELD_HAT && range != 3 && range != 7) ||
@@ -186,21 +185,18 @@ static bool parse(hid_gamepad_t *pad, uint8_t const *descriptor, size_t length)
     }
     if (depth || global_depth || local.range || !pad->field_count)
         return false;
-    // Some HID gamepads skip Button 3 (Stadia uses 1=A, 2=B, 4=X).
-    // Prefer Button 3 when present; otherwise use Button 4 as the third fire.
-    bool has_button3 = false;
+    uint16_t buttons = 0;
     for (unsigned i = 0; i < pad->field_count; i++)
-        has_button3 |= pad->fields[i].kind == GAMEPAD_FIRE3;
-    unsigned fields = 0;
-    for (unsigned i = 0; i < pad->field_count; i++) {
-        gamepad_field_t field = pad->fields[i];
-        if (field.kind == FIELD_BUTTON4) {
-            if (has_button3) continue;
-            field.kind = GAMEPAD_FIRE3;
-        }
-        pad->fields[fields++] = field;
+        if (pad->fields[i].kind >= FIELD_BUTTON)
+            buttons |= 1u << (pad->fields[i].kind - FIELD_BUTTON);
+    uint8_t defaults[] = {1, 2, (buttons & 4) ? 3 : 4, 4, 5, 6, 10};
+    // Stadia's HID usages skip 3 and 6; its Menu button is usage 12.
+    if (!(buttons & (1u << 2)) && !(buttons & (1u << 5)) &&
+        (buttons & 0x08dbu) == 0x08dbu) {
+        uint8_t stadia[] = {1, 2, 4, 5, 7, 8, 12};
+        memcpy(defaults, stadia, sizeof(defaults));
     }
-    pad->field_count = (uint8_t)fields;
+    memcpy(pad->defaults, defaults, sizeof(defaults));
     for (unsigned i = 0; i < pad->report_count; i++)
         if ((pad->report_ids && !pad->reports[i].id) ||
             (pad->reports[i].bits + 7u) / 8u + (pad->report_ids ? 1u : 0u) > GAMEPAD_MAX_REPORT_BYTES)
@@ -220,7 +216,7 @@ bool hid_gamepad_parse(hid_gamepad_t *pad, uint8_t const *descriptor, size_t len
     return true;
 }
 
-bool hid_gamepad_decode(hid_gamepad_t *pad, uint8_t const *report, size_t length, uint8_t *state)
+bool hid_gamepad_decode(hid_gamepad_t *pad, uint8_t const *report, size_t length, uint16_t *state)
 {
     if (!pad || !report || !state || !length || !pad->field_count)
         return false;
@@ -232,7 +228,8 @@ bool hid_gamepad_decode(hid_gamepad_t *pad, uint8_t const *report, size_t length
         if (pad->reports[i].id == id) index = (int)i;
     if (index < 0 || length < (pad->reports[index].bits + 7u) / 8u)
         return false;
-    uint8_t result = 0;
+    uint8_t dpad = 0, stick = 0;
+    uint16_t buttons = 0;
     bool relevant = false;
     for (unsigned i = 0; i < pad->field_count; i++) {
         gamepad_field_t const *field = &pad->fields[i];
@@ -247,15 +244,9 @@ bool hid_gamepad_decode(hid_gamepad_t *pad, uint8_t const *report, size_t length
         if (value < field->minimum || value > field->maximum)
             continue; // Includes a hat's null (centred) value.
         if (field->kind == FIELD_X || field->kind == FIELD_Y) {
-            // Digital sticks can encode their switches as absolute X/Y axes
-            // (e.g. Competition Pro: 0, 128, 255). Use the descriptor's range
-            // with a central deadzone so centred sticks never hold a direction.
-            int64_t position = 4 * (value - field->minimum);
-            int64_t range = (int64_t)field->maximum - field->minimum;
-            if (position < range)
-                result |= field->kind == FIELD_X ? GAMEPAD_LEFT : GAMEPAD_UP;
-            else if (position > 3 * range)
-                result |= field->kind == FIELD_X ? GAMEPAD_RIGHT : GAMEPAD_DOWN;
+            stick |= gamepad_axis(value, field->minimum, field->maximum,
+                field->kind == FIELD_X ? GAMEPAD_LEFT : GAMEPAD_UP,
+                field->kind == FIELD_X ? GAMEPAD_RIGHT : GAMEPAD_DOWN);
         } else if (field->kind == FIELD_HAT) {
             static uint8_t const directions[] = {GAMEPAD_UP, GAMEPAD_UP | GAMEPAD_RIGHT,
                 GAMEPAD_RIGHT, GAMEPAD_RIGHT | GAMEPAD_DOWN, GAMEPAD_DOWN,
@@ -263,16 +254,24 @@ bool hid_gamepad_decode(hid_gamepad_t *pad, uint8_t const *report, size_t length
             unsigned hat = (unsigned)(value - field->minimum);
             if (field->maximum - field->minimum == 3)
                 hat *= 2;
-            result |= directions[hat];
+            dpad |= directions[hat];
         } else if (value != 0) {
-            result |= field->kind;
+            if (field->kind >= FIELD_BUTTON) buttons |= 1u << (field->kind - FIELD_BUTTON);
+            else dpad |= field->kind;
         }
     }
     if (!relevant)
         return false;
-    pad->reports[index].state = result;
-    *state = 0;
-    for (unsigned i = 0; i < pad->report_count; i++)
-        *state |= pad->reports[i].state;
+    pad->reports[index].dpad = dpad;
+    pad->reports[index].stick = stick;
+    pad->reports[index].buttons = buttons;
+    dpad = stick = 0;
+    buttons = 0;
+    for (unsigned i = 0; i < pad->report_count; i++) {
+        dpad |= pad->reports[i].dpad;
+        stick |= pad->reports[i].stick;
+        buttons |= pad->reports[i].buttons;
+    }
+    *state = gamepad_map(dpad, stick, buttons, pad->defaults);
     return true;
 }

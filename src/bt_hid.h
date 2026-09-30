@@ -16,7 +16,8 @@
 
 typedef struct {
     uint16_t reports, length;
-    uint8_t slot, expected_length, state;
+    uint8_t slot, expected_length;
+    uint16_t state;
     bool decoded;
 } bt_hid_gamepad_status_t;
 

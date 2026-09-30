@@ -24,7 +24,7 @@
 
 void input_bridge_reset(uint8_t slot);
 void input_bridge_disconnect(uint8_t slot);
-void input_bridge_handle_gamepad(uint8_t slot, uint8_t state);
+void input_bridge_handle_gamepad(uint8_t slot, uint16_t state);
 void input_bridge_handle_keyboard_boot(uint8_t slot, uint8_t modifier, uint8_t const keycode[6]);
 void input_bridge_handle_mouse_boot(uint8_t slot, uint8_t buttons, int8_t x, int8_t y, int8_t wheel);
 
