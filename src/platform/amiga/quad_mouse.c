@@ -13,6 +13,8 @@
 #include "util/debug_cons.h"
 #include "util/output.h"
 #include "hid_gamepad.h"
+#include "cd32.h"
+#include "settings.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -35,6 +37,8 @@ static semaphore_t mouse_core_ready;
 #define AQM_TANKMOUSE_WHEEL_DOWN 0x09
 #define JOYSTICK_PORT1 1u
 #define JOYSTICK_PORT2 2u
+#define CD32_PORT1 4u
+#define CD32_PORT2 8u
 
 typedef struct
 {
@@ -314,16 +318,17 @@ void amiga_quad_mouse_capture(bool capture)
     input_captured = capture;
 }
 
-void amiga_quad_mouse_set_joystick_ports(bool port1, bool port2)
+void amiga_quad_mouse_set_controller_ports(uint8_t mode1, uint8_t mode2)
 {
 #ifndef HAS_JOYSTICK_PORT2
-    port2 = false;
+    mode2 = 0;
 #endif
     for (unsigned i = 0; i < 3; i++)
         button_pressed[i] = false;
     joystick_state = 0;
     // Publish both choices together so core1 never sees a half-updated route.
-    joystick_ports = (port1 ? JOYSTICK_PORT1 : 0) | (port2 ? JOYSTICK_PORT2 : 0);
+    joystick_ports = (mode1 ? JOYSTICK_PORT1 : 0) | (mode2 ? JOYSTICK_PORT2 : 0) |
+        (mode1 == SETTINGS_PORT_CD32 ? CD32_PORT1 : 0) | (mode2 == SETTINGS_PORT_CD32 ? CD32_PORT2 : 0);
 }
 
 void amiga_quad_mouse_joystick(uint16_t state)
@@ -343,7 +348,7 @@ static void _aqm_release_port(void)
 }
 
 static void _aqm_joystick_output(uint16_t state, uint up, uint down, uint left, uint right,
-    uint fire, uint fire2, uint fire3)
+    uint fire, uint fire2, uint fire3, bool cd32)
 {
     // Amiga DE-9: pins 1/2/3/4 = up/down/left/right; buttons 1/2/3 = 6/9/5.
     // Use the same open-drain convention as the mouse output.
@@ -351,6 +356,7 @@ static void _aqm_joystick_output(uint16_t state, uint up, uint down, uint left, 
     _aqm_gpio_set(down, state & GAMEPAD_DOWN ? LOW : HIGH);
     _aqm_gpio_set(left, state & GAMEPAD_LEFT ? LOW : HIGH);
     _aqm_gpio_set(right, state & GAMEPAD_RIGHT ? LOW : HIGH);
+    if (cd32) return; // PIO owns both button outputs; pin 5 is always an input.
     _aqm_gpio_set(fire, state & GAMEPAD_FIRE ? LOW : HIGH);
     _aqm_gpio_set(fire2, state & GAMEPAD_FIRE2 ? LOW : HIGH);
     _aqm_gpio_set(fire3, state & GAMEPAD_FIRE3 ? LOW : HIGH);
@@ -417,6 +423,7 @@ void amiga_quad_mouse_motion()
 {
     if (!flash_safe_execute_core_init())
         panic("Mouse core flash lockout initialization failed");
+    cd32_init();
     sem_release(&mouse_core_ready);
 
     // ahprintf("[aqm] hello from core1, mouse motion output loop starting\n");
@@ -427,6 +434,7 @@ void amiga_quad_mouse_motion()
     uint8_t quad_mx_phase = 0, quad_my_phase = 0;
     uint8_t divider;
     bool previous_mode = false;
+    uint8_t previous_ports = 0xff;
     uint16_t previous_joystick = UINT16_MAX;
     uint8_t previous_buttons = 0xff;
 #ifdef HAS_JOYSTICK_PORT2
@@ -452,12 +460,27 @@ void amiga_quad_mouse_motion()
     while (1) {
         uint8_t ports = joystick_ports;
         bool joystick = (ports & JOYSTICK_PORT1) != 0;
+        if (ports != previous_ports) {
+            cd32_enable(0, (ports & CD32_PORT1) != 0);
+#ifdef HAS_JOYSTICK_PORT2
+            cd32_enable(1, (ports & CD32_PORT2) != 0);
+            previous_joystick2 = UINT16_MAX;
+#endif
+            previous_joystick = UINT16_MAX;
+            previous_buttons = 0xff;
+            previous_ports = ports;
+        }
+        uint16_t pad_state = input_captured ? 0 : joystick_state;
+        cd32_update(0, pad_state);
+#ifdef HAS_JOYSTICK_PORT2
+        cd32_update(1, pad_state);
+#endif
 #ifdef HAS_JOYSTICK_PORT2
         // Port 2 runs alongside mouse quadrature, buttons and wheel on port 1.
         uint16_t state2 = (ports & JOYSTICK_PORT2) && !input_captured ? joystick_state : 0;
         if (state2 != previous_joystick2) {
             _aqm_joystick_output(state2, QM2_AMIGA_V, QM2_AMIGA_H, QM2_AMIGA_VQ, QM2_AMIGA_HQ,
-                QM2_AMIGA_B1, QM2_AMIGA_B2, QM2_AMIGA_B3);
+                QM2_AMIGA_B1, QM2_AMIGA_B2, QM2_AMIGA_B3, (ports & CD32_PORT2) != 0);
             previous_joystick2 = state2;
         }
 #endif
@@ -478,7 +501,7 @@ void amiga_quad_mouse_motion()
             uint16_t state = input_captured ? 0 : joystick_state;
             if (state != previous_joystick) {
                 _aqm_joystick_output(state, QM1_AMIGA_V, QM1_AMIGA_H, QM1_AMIGA_VQ, QM1_AMIGA_HQ,
-                    QM1_AMIGA_B1, QM1_AMIGA_B2, QM1_AMIGA_B3);
+                    QM1_AMIGA_B1, QM1_AMIGA_B2, QM1_AMIGA_B3, (ports & CD32_PORT1) != 0);
                 previous_joystick = state;
             }
             tight_loop_contents();
