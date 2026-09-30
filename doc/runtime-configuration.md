@@ -109,3 +109,21 @@ power loss (using the earlier REV4 firmware). Joystick input is confirmed on REV
 with Competition Pro, Stadia and PS4 controllers; see [validation details](joystick.md).
 Recovery and an actual watchdog-triggered restart still need hardware validation.
 No new tests are checked into the repository.
+
+## Bluetooth controls
+
+Pico W Bluetooth builds provide **Bluetooth: On/Off** and **BT pairing policy**.
+Save and exit applies the radio setting without rebooting. Off releases connected
+inputs; saved bonds remain available when it is turned on again. Automatic is the
+existing discovery/pairing behavior. Paired devices only accepts stored Classic
+keys and resolves LE addresses against the bond database, including private addresses.
+
+**Pair for 2 minutes** temporarily allows new devices in paired-only mode. It is
+an immediate action using the saved radio setting; enable and save Bluetooth first.
+Existing connections remain active. **Forget BT devices** requires Enter twice,
+disconnects devices, clears Classic and LE bonds, and restarts Bluetooth. In
+paired-only mode, use Pair afterwards to enrol devices again. These actions do
+not save unrelated menu edits. USB-only builds omit these menu items.
+
+Settings schema 4 migrates schemas 1–3, preserving previous choices and defaulting
+Bluetooth to On with Automatic pairing. Hardware validation is pending.

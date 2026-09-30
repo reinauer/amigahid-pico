@@ -22,6 +22,9 @@ typedef struct {
 
 void bt_hid_init(void);
 void bt_hid_task(void);
+// Main-loop requests; work runs under the Bluetooth context lock.
+void bt_hid_pair(void);
+void bt_hid_forget(void);
 // Main-context snapshot of the first Classic or LE gamepad; false if none is ready.
 bool bt_hid_gamepad_status(bt_hid_gamepad_status_t *status);
 
