@@ -19,6 +19,7 @@
 #include "util/debug_cons.h"
 #include "runtime_menu.h"
 #include "hid_gamepad.h"
+#include "keyboard_map.h"
 
 typedef struct
 {
@@ -62,46 +63,29 @@ static void _ib_sync_gamepads(void)
     amiga_quad_mouse_joystick(state);
 }
 
-static inline bool _ib_key_pressed(hid_keyboard_report_t const *report, uint8_t keycode)
+static bool keyboard_output[128];
+
+static void _ib_sync_keyboard(void)
 {
-    for (uint8_t pos = 0; pos < 6; pos++)
-        if (report->keycode[pos] == keycode)
-            return true;
-
-    return false;
-}
-
-static void _ib_sync_keyboard_modifiers(hid_keyboard_report_t const *last_report,
-    hid_keyboard_report_t const *report)
-{
-    bool last_ctrl = (last_report->modifier & (KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_RIGHTCTRL)) != 0;
-    bool new_ctrl = (report->modifier & (KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_RIGHTCTRL)) != 0;
-
-    if (new_ctrl && !last_ctrl)
-        amiga_hid_modifier(KEYBOARD_MODIFIER_LEFTCTRL, false);
-    if (!new_ctrl && last_ctrl)
-        amiga_hid_modifier(KEYBOARD_MODIFIER_LEFTCTRL, true);
-
-    for (uint8_t bit = 1; bit < 8; bit++) {
-        hid_keyboard_modifier_bm_t mask = (hid_keyboard_modifier_bm_t)(1u << bit);
-
-        if ((report->modifier & mask) && !(last_report->modifier & mask))
-            amiga_hid_modifier(mask, false);
-        if (!(report->modifier & mask) && (last_report->modifier & mask))
-            amiga_hid_modifier(mask, true);
+    bool keys[128] = {0};
+    if (!input_captured) {
+        for (unsigned slot = 0; slot < INPUT_BRIDGE_MAX_SLOTS; slot++) {
+            hid_keyboard_report_t const *report = &bridge_state[slot].keyboard;
+            for (unsigned i = 0; i < 6; i++) {
+                uint8_t code = keyboard_map_key(report->keycode[i]);
+                if (code < sizeof(keys)) keys[code] = true;
+            }
+            for (unsigned bit = 0; bit < 8; bit++)
+                if (report->modifier & (1u << bit)) keys[keyboard_map_modifier(bit)] = true;
+        }
     }
-}
-
-static void _ib_sync_keyboard_keys(hid_keyboard_report_t const *last_report,
-    hid_keyboard_report_t const *report)
-{
-    for (uint8_t pos = 0; pos < 6; pos++) {
-        if (report->keycode[pos] && !_ib_key_pressed(last_report, report->keycode[pos]))
-            amiga_hid_send(report->keycode[pos], false);
-
-        if (last_report->keycode[pos] && !_ib_key_pressed(report, last_report->keycode[pos]))
-            amiga_hid_send(last_report->keycode[pos], true);
-    }
+    // Aggregate after translation: two remaps (or keyboards) can hold the
+    // same Amiga key. Release old targets before pressing new targets.
+    for (unsigned code = 0; code < sizeof(keys); code++)
+        if (keyboard_output[code] && !keys[code]) amiga_send(code, true);
+    for (unsigned code = 0; code < sizeof(keys); code++)
+        if (!keyboard_output[code] && keys[code]) amiga_send(code, false);
+    memcpy(keyboard_output, keys, sizeof(keys));
 }
 
 static void _ib_update_keyboard_leds(input_bridge_state_t *state, input_bridge_keyboard_sink_t const *sink)
@@ -137,34 +121,33 @@ void input_bridge_reset(uint8_t slot)
 
     memset(&bridge_state[slot], 0, sizeof(bridge_state[slot]));
     runtime_menu_disconnect(slot);
+    _ib_sync_keyboard();
     _ib_sync_mouse_buttons();
     _ib_sync_gamepads();
 }
 
 void input_bridge_disconnect(uint8_t slot)
 {
-    static const hid_keyboard_report_t empty_keyboard = { 0, 0, {0} };
 
     if (slot >= INPUT_BRIDGE_MAX_SLOTS)
         return;
 
-    _ib_sync_keyboard_keys(&bridge_state[slot].keyboard, &empty_keyboard);
-    _ib_sync_keyboard_modifiers(&bridge_state[slot].keyboard, &empty_keyboard);
+
     memset(&bridge_state[slot], 0, sizeof(bridge_state[slot]));
     runtime_menu_disconnect(slot);
+    _ib_sync_keyboard();
     _ib_sync_mouse_buttons();
     _ib_sync_gamepads();
 }
 
 void input_bridge_capture(bool capture)
 {
-    static const hid_keyboard_report_t empty = {0};
     input_captured = capture;
     if (capture) {
         for (unsigned slot = 0; slot < INPUT_BRIDGE_MAX_SLOTS; slot++) {
             input_bridge_state_t *state = &bridge_state[slot];
-            _ib_sync_keyboard_keys(&state->keyboard, &empty);
-            _ib_sync_keyboard_modifiers(&state->keyboard, &empty);
+
+
             memset(&state->keyboard, 0, sizeof(state->keyboard));
             memset(&state->mouse, 0, sizeof(state->mouse));
             state->mouse_quarantine = true;
@@ -172,6 +155,7 @@ void input_bridge_capture(bool capture)
             state->gamepad_quarantine = true;
         }
     }
+    _ib_sync_keyboard();
     amiga_quad_mouse_capture(capture);
     _ib_sync_mouse_buttons();
     _ib_sync_gamepads();
@@ -234,10 +218,11 @@ void input_bridge_handle_keyboard(uint8_t slot, hid_keyboard_report_t const *rep
     }
     hid_keyboard_report_t filtered = *report;
     runtime_menu_filter_keyboard(&filtered);
-    _ib_sync_keyboard_keys(&state->keyboard, &filtered);
-    _ib_sync_keyboard_modifiers(&state->keyboard, &filtered);
-    _ib_update_keyboard_leds(state, sink);
+
+
     state->keyboard = filtered;
+    _ib_sync_keyboard();
+    _ib_update_keyboard_leds(state, sink);
 }
 
 void input_bridge_handle_keyboard_boot(uint8_t slot, uint8_t modifier, uint8_t const keycode[6])

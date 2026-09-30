@@ -33,6 +33,11 @@ typedef struct {
     uint8_t gamepad_buttons[7]; /* 0 auto, HID button 1..16, 17 off */
     uint8_t ds4_mouse;          /* touchpad only, touchpad + shoulders, off */
     uint8_t reserved5[2];
+    uint8_t keyboard_layout; /* original, Y/Z swap, A/Q + W/Z swap */
+    uint8_t keyboard_help;   /* Insert, Home, PageUp, F11, none */
+    uint8_t keyboard_delete; /* Delete, Backspace, none */
+    uint8_t keyboard_iso;    /* original extra-key mapping, Amiga ISO key */
+    struct { uint8_t source, target; } keymap[8]; /* source 0 disables slot */
 } settings_t;
 
 void settings_defaults(settings_t *settings);

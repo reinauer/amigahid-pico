@@ -1,4 +1,5 @@
 add_executable(amigahid-pico
+  keyboard_map.c
   gamepad_config.c
   hid_gamepad.c
   input_bridge.c

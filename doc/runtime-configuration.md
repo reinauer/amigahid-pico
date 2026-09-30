@@ -127,3 +127,26 @@ not save unrelated menu edits. USB-only builds omit these menu items.
 
 Settings schema 4 migrates schemas 1–3, preserving previous choices and defaulting
 Bluetooth to On with Automatic pairing. Hardware validation is pending.
+
+## Keyboard mappings
+
+**Keyboard preset** keeps the original QWERTY mapping, swaps Y/Z, or swaps A/Q
+and W/Z. These are physical letter-key permutations, not full national AmigaOS
+keymaps; select the matching locale on the Amiga for punctuation and accents.
+**ISO extra key** can route the key beside left Shift to the Amiga ISO key rather
+than the original backslash mapping. **Amiga Help key** selects Insert (default),
+Home, Page Up, F11, or None; **Amiga Delete key** selects Delete (default),
+Backspace, or None. Moving Help/Delete removes their old Insert/Delete bindings.
+A key reserved for entering the menu continues to open the menu.
+
+Eight custom slots override the preset and Help/Delete choices. Select a slot,
+select **Custom source key**, press Enter, then press the source key. Escape
+cancels learning. Use **Custom Amiga key** to choose the destination with Left/Right,
+or Disabled to suppress it. **Clear custom slot** restores the normal mapping.
+Save and exit applies and stores all changes. Source keys exclude modifiers and
+reserved menu/recovery keys; destination choices include Amiga modifiers. Right
+GUI keeps its separate setting and the default Ctrl-Amiga-Amiga chord is preserved.
+Two keys or keyboards mapped to the same Amiga key retain it until both release.
+
+Schema 6 migrates schemas 1–5 with original keyboard behavior and empty custom
+slots. New keyboard settings still require hardware validation.
