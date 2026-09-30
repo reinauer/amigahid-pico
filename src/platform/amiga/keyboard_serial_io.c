@@ -11,6 +11,7 @@
 #include "config.h"
 #include "keyboard_serial_io.h"
 #include "keyboard.h"
+#include "keyboard_map.h"
 #include "keyboard.pio.h" // generated at compile time
 #include "usb_hid.h"
 #include "util/output.h"
@@ -249,14 +250,15 @@ bool amiga_caps_lock()
 
 void amiga_hid_send(uint8_t hidcode, bool up)
 {
-    if (mapHidToAmiga[hidcode] == AMIGA_UNKNOWN) {
+    uint8_t mapped = keyboard_map_key(hidcode);
+    if (mapped == AMIGA_UNKNOWN) {
         // ahprintf("[akb] cowardly refusing to send $ff to the amiga\n");
         return;
     }
 
-    dbgcons_amiga_key(hidcode, mapHidToAmiga[hidcode], up ? "u" : "d");
+    dbgcons_amiga_key(hidcode, mapped, up ? "u" : "d");
 
-    amiga_send(mapHidToAmiga[hidcode], up);
+    amiga_send(mapped, up);
 }
 
 void amiga_hid_modifier(hid_keyboard_modifier_bm_t modifier, bool up)

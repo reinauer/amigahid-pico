@@ -10,6 +10,7 @@
 #include "pico/stdlib.h"
 #include "platform/amiga/quad_mouse.h"
 #include "settings.h"
+#include "keyboard_map.h"
 #ifdef ENABLE_BLUETOOTH_HID
 #include "bt_hid.h"
 #endif
@@ -30,6 +31,8 @@ enum menu_item { MENU_KEY, MENU_ENTRY, MENU_RIGHT_GUI, MENU_WHEEL, MENU_REVERSE,
 #endif
     MENU_PAD_DIR, MENU_PAD_ZONE, MENU_PAD_B1, MENU_PAD_B2, MENU_PAD_B3,
     MENU_PAD_B4, MENU_PAD_L, MENU_PAD_R, MENU_PAD_PLAY, MENU_DS4_MOUSE,
+    MENU_LAYOUT, MENU_HELP, MENU_DELETE, MENU_ISO,
+    MENU_REMAP_SLOT, MENU_REMAP_SOURCE, MENU_REMAP_TARGET, MENU_REMAP_CLEAR,
     MENU_SAVE, MENU_DEFAULTS, MENU_CANCEL, MENU_ITEM_COUNT };
 
 static hid_keyboard_report_t keyboards[INPUT_BRIDGE_MAX_SLOTS];
@@ -41,7 +44,8 @@ static bool pair_pending, forget_pending, forget_confirm;
 #endif
 static bool holding, recovering;
 static uint64_t hold_started, recovery_started, boot_deadline;
-static unsigned item;
+static unsigned item, remap_slot;
+static bool remap_learning;
 static uint32_t watchdog_timeout;
 static char const *notice;
 
@@ -90,6 +94,7 @@ static void open_menu(bool recovery)
         settings_set(&edited);
         apply_settings();
     }
+    remap_learning = false;
     opened = true;
     item = 0;
     notice = recovery ? "Defaults (unsaved)" : NULL;
@@ -122,6 +127,8 @@ static void render_menu(void)
 #endif
         "Gamepad directions", "Stick deadzone", "Fire 1 / CD32 Red", "Fire 2 / CD32 Blue",
         "Fire 3 / CD32 Green", "CD32 Yellow", "CD32 Rewind", "CD32 Forward", "CD32 Play", "PS4 mouse controls",
+        "Keyboard preset", "Amiga Help key", "Amiga Delete key", "ISO extra key",
+        "Custom key slot", "Custom source key", "Custom Amiga key", "Clear custom slot",
         "Save and exit", "Factory defaults", "Cancel changes"};
     static char const *const keys[] = {"F12", "F11", "Application/Menu"};
     static char const *const entry[] = {"Hold for 1 second", "Boot only"};
@@ -160,6 +167,22 @@ static void render_menu(void)
             static char const *const values[] = {"Touchpad only", "Touchpad + shoulders", "Off"};
             value = values[edited.ds4_mouse]; break;
         }
+        case MENU_LAYOUT: {
+            static char const *const values[] = {"QWERTY (original)", "QWERTZ (Y/Z swap)", "AZERTY (A/Q, W/Z)"};
+            value = values[edited.keyboard_layout]; break;
+        }
+        case MENU_HELP: {
+            static char const *const values[] = {"Insert (default)", "Home", "Page Up", "F11", "None"};
+            value = values[edited.keyboard_help]; break;
+        }
+        case MENU_DELETE: {
+            static char const *const values[] = {"Delete (default)", "Backspace", "None"};
+            value = values[edited.keyboard_delete]; break;
+        }
+        case MENU_ISO: value = edited.keyboard_iso ? "Amiga ISO Shift key" : "Backslash (original)"; break;
+        case MENU_REMAP_SLOT: snprintf(custom, sizeof(custom), "%u of 8", remap_slot + 1); value = custom; break;
+        case MENU_REMAP_SOURCE: value = remap_learning ? "Press source key" : keyboard_map_source_name(edited.keymap[remap_slot].source); break;
+        case MENU_REMAP_TARGET: value = keyboard_map_name(edited.keymap[remap_slot].target); break;
         default:
             if (item >= MENU_PAD_B1 && item <= MENU_PAD_PLAY) {
                 unsigned button = edited.gamepad_buttons[item - MENU_PAD_B1];
@@ -198,6 +221,18 @@ static void change_value(int direction)
         case MENU_PAD_DIR: value = &edited.gamepad_directions; count = 3; break;
         case MENU_PAD_ZONE: value = &edited.gamepad_deadzone; count = 3; break;
         case MENU_DS4_MOUSE: value = &edited.ds4_mouse; count = 3; break;
+        case MENU_LAYOUT: value = &edited.keyboard_layout; count = 3; break;
+        case MENU_HELP: value = &edited.keyboard_help; count = 5; break;
+        case MENU_DELETE: value = &edited.keyboard_delete; count = 3; break;
+        case MENU_ISO: value = &edited.keyboard_iso; count = 2; break;
+        case MENU_REMAP_SLOT: remap_slot = (remap_slot + 8 + direction) % 8; return;
+        case MENU_REMAP_TARGET: {
+            unsigned target = edited.keymap[remap_slot].target;
+            if (target == 0xff) target = 0x68;
+            target = (target + 0x69 + direction) % 0x69;
+            edited.keymap[remap_slot].target = target == 0x68 ? 0xff : target;
+            return;
+        }
         default:
             if (item < MENU_PAD_B1 || item > MENU_PAD_PLAY) return;
             value = &edited.gamepad_buttons[item - MENU_PAD_B1]; count = 18; break;
@@ -208,6 +243,20 @@ static void change_value(int direction)
 static void menu_key(uint8_t key)
 {
     notice = NULL;
+    if (remap_learning) {
+        remap_learning = false;
+        if (key == HID_KEY_ESCAPE) { redraw = true; return; }
+        if (key < 4 || key >= 0xe0 || key == HID_KEY_F12 || key == settings_menu_hid_key()) {
+            notice = "Reserved menu key";
+        } else {
+            for (unsigned i = 0; i < 8; i++)
+                if (edited.keymap[i].source == key) edited.keymap[i].source = 0;
+            edited.keymap[remap_slot].source = key;
+            item = MENU_REMAP_TARGET;
+        }
+        redraw = true;
+        return;
+    }
 #ifdef ENABLE_BLUETOOTH_HID
     if (key != HID_KEY_ENTER) forget_confirm = false;
 #endif
@@ -227,7 +276,11 @@ static void menu_key(uint8_t key)
                 else { forget_confirm = true; notice = "Enter again to forget"; }
             }
 #endif
-            else if (item == MENU_DEFAULTS) {
+            else if (item == MENU_REMAP_SOURCE) remap_learning = true;
+            else if (item == MENU_REMAP_CLEAR) {
+                edited.keymap[remap_slot].source = 0;
+                notice = "Slot cleared (save)";
+            } else if (item == MENU_DEFAULTS) {
                 settings_defaults(&edited);
                 notice = "Defaults (unsaved)";
             } else if (item == MENU_CANCEL)

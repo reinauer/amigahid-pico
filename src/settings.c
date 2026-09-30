@@ -19,7 +19,7 @@
  * valid record intact. The linker also reserves this 16 KiB region. */
 #define SETTINGS_FLASH_OFFSET (PICO_FLASH_SIZE_BYTES - 4u * FLASH_SECTOR_SIZE)
 #define SETTINGS_MAGIC 0x41484346u
-#define SETTINGS_SCHEMA 5u
+#define SETTINGS_SCHEMA 6u
 #define SETTINGS_V1_SIZE 8u
 
 typedef struct {
@@ -34,8 +34,8 @@ typedef struct {
 _Static_assert(FLASH_SECTOR_SIZE == 4096, "Update settings_flash.ld reservation");
 _Static_assert(offsetof(settings_t, port_mode) == SETTINGS_V1_SIZE, "Preserve v1 migration layout");
 _Static_assert(offsetof(settings_t, joystick_port2) == 9, "Preserve v2 migration layout");
-_Static_assert(sizeof(settings_t) == 28, "Update settings schema");
-_Static_assert(sizeof(settings_record_t) == 48, "Unexpected record padding");
+_Static_assert(sizeof(settings_t) == 48, "Update settings schema");
+_Static_assert(sizeof(settings_record_t) == 68, "Unexpected record padding");
 _Static_assert(sizeof(settings_record_t) <= FLASH_PAGE_SIZE, "Settings exceed one flash page");
 #ifdef ENABLE_BLUETOOTH_HID
 _Static_assert(SETTINGS_FLASH_OFFSET + 2u * FLASH_SECTOR_SIZE <= PICO_FLASH_BANK_STORAGE_OFFSET,
@@ -72,6 +72,12 @@ bool settings_valid(settings_t const *settings)
     if (!settings) return false;
     for (unsigned i = 0; i < 7; i++)
         if (settings->gamepad_buttons[i] > 17) return false;
+    for (unsigned i = 0; i < 8; i++) {
+        if (settings->keymap[i].source && (settings->keymap[i].source < 4 || settings->keymap[i].source >= 0xe0)) return false;
+        if (settings->keymap[i].target > 0x67 && settings->keymap[i].target != 0xff) return false;
+        for (unsigned j = 0; j < i; j++)
+            if (settings->keymap[i].source && settings->keymap[i].source == settings->keymap[j].source) return false;
+    }
     return settings->menu_key < SETTINGS_MENU_KEY_COUNT &&
         settings->menu_entry < SETTINGS_MENU_ENTRY_COUNT && settings->right_gui < SETTINGS_GUI_COUNT &&
         settings->wheel_enabled <= 1 && settings->wheel_reverse <= 1 && settings->mouse_speed < 4 &&
@@ -81,7 +87,9 @@ bool settings_valid(settings_t const *settings)
         settings->bluetooth_enabled <= 1 && settings->bluetooth_pairing <= 1 &&
         !settings->reserved4[0] && !settings->reserved4[1] &&
         settings->gamepad_directions < 3 && settings->gamepad_deadzone < 3 &&
-        settings->ds4_mouse < 3 && !settings->reserved5[0] && !settings->reserved5[1];
+        settings->ds4_mouse < 3 && !settings->reserved5[0] && !settings->reserved5[1] &&
+        settings->keyboard_layout < 3 && settings->keyboard_help < 5 &&
+        settings->keyboard_delete < 3 && settings->keyboard_iso < 2;
 }
 
 static uint32_t record_crc(settings_record_t const *record)
@@ -108,6 +116,7 @@ static bool record_decode(settings_record_t const *record, settings_t *settings)
         !((record->schema == 1 && record->length == SETTINGS_V1_SIZE) ||
           ((record->schema == 2 || record->schema == 3) && record->length == 12) ||
           (record->schema == 4 && record->length == 16) ||
+          (record->schema == 5 && record->length == 28) ||
           (record->schema == SETTINGS_SCHEMA && record->length == sizeof(settings_t))))
         return false;
     uint32_t crc;
