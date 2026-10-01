@@ -1,0 +1,1 @@
+(sym_lib_table (version 7) (lib (name "r6") (type "KiCad") (uri "${KIPRJMOD}/r6.kicad_sym") (options "") (descr "R6 bus switch and shielded connectors")))
