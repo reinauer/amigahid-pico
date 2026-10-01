@@ -1,0 +1,9 @@
+/build/
+/reference/
+/assets/
+/pcb-mechanics.json
+/tools/to_step.py
+/tools/verify_step.py
+/tools/mesh_vol.py
+__pycache__/
+*.FCStd1
