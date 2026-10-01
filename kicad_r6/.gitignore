@@ -1,0 +1,36 @@
+# Local KiCad state, copied r5 material, and generated outputs
+/.history/
+/r5-reference/
+/addons/
+/production/
+/fabrication-prototype/
+*.kicad_prl
+*.lck
+*.bak
+*.net
+*-backups/
+fp-info-cache
+__pycache__/
+/BOM.csv
+/design.json
+/fabrication-toolkit-options.json
+# One-off placement/routing generators predate the finished manual layout.
+/scripts/build_r6.py
+/scripts/prepare_routing.py
+# Keep only the project footprints actually used by r6.
+/amigahid-pico.pretty/*
+!/amigahid-pico.pretty/DE9_Female_R6.kicad_mod
+!/amigahid-pico.pretty/MiniDIN6_R6.kicad_mod
+!/amigahid-pico.pretty/Pico_2_W_R6.kicad_mod
+!/amigahid-pico.pretty/USB_A_R6.kicad_mod
+/amigahid-pico.3dshapes/*
+!/amigahid-pico.3dshapes/PS2-TH_DIN-603.step
+# Retain source evidence, not downloaded datasheets or generated reviews.
+/review/*
+!/review/oled-dimensions.png
+!/review/oled-pinout.png
+!/review/sourcing/
+/review/sourcing/*
+!/review/sourcing/stock-snapshot.json
+!/review/sourcing/C7428703-pin-map.json
+!/review/sourcing/pico-compatibility.txt

@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "amigahid-pico") (type "KiCad") (uri "${KIPRJMOD}/amigahid-pico.pretty") (options "") (descr ""))
+)
