@@ -119,8 +119,9 @@ and **Controller port 2: Joystick**.
 4. Use the D-pad or left stick for directions, with **Cross/Circle/Square** as
    joystick buttons **1/2/3** on port 2. Triangle remains unmapped.
 5. Move one finger on the touchpad to move the mouse on port 1. Mouse buttons:
-   **L1 or touchpad press = left**, **R1 = right**, **L2 or R2 = middle**.
-   Either trigger works alone, and simultaneous buttons are supported. Lifting
+   **Touchpad press = left**, **L1 = middle**, **R1 = right**.
+   **L2/R2** are reserved for CD32 Rewind/Forward by default.
+   Simultaneous mouse buttons are supported. Lifting
    and replacing a finger starts a new movement without jumping the pointer.
 6. After pairing, try switching the controller off and reconnecting with PS.
    Held directions, fire and mouse buttons must release on disconnect.
@@ -232,7 +233,7 @@ Each of seven output buttons has an Auto mapping, a HID button number 1–16, or
 Disabled. The first three are the ordinary joystick buttons; the other four
 are retained for CD32 output. Mappings are global across connected controllers.
 Auto retains the tested PS4 Cross/Circle/Square and Stadia A/B/X mapping.
-PS4's additional defaults are Triangle, L1, R1, Options; Stadia's are Y, L1,
+PS4's additional defaults are Triangle, L2, R2, Options; Stadia's are Y, L1,
 R1, Menu. The Competition Pro retains all four face buttons as fire 1.
 
 For custom mappings, PS4 HID numbers are Square=1, Cross=2, Circle=3,
@@ -260,14 +261,15 @@ controller ports currently receive the same combined gamepad state.
 | Blue | Circle | B |
 | Green | Square | X |
 | Yellow | Triangle | Y |
-| Rewind | L1 | L1 |
-| Forward | R1 | R1 |
+| Rewind | L2 | L1 |
+| Forward | R2 | R1 |
 | Play/Pause | Options | Menu |
 
-The seven Gamepad mapping settings override these defaults. To use PS4 shoulders
-only for CD32, select **PS4 mouse controls: Touchpad only**; touch movement and
-pad-click remain available on the mouse port. The previous mouse-button mapping
-remains the default until changed.
+The seven Gamepad mapping settings override these defaults. PS4 L1/R1 control
+middle/right mouse buttons, while L2/R2 control CD32 Rewind/Forward. To disable
+shoulder mouse clicks, select **PS4 mouse controls: Touchpad only**; touch movement and
+pad-click remain available on the mouse port. Explicit custom gamepad button
+mappings still override these defaults.
 
 CD32 uses Amiga pin 5 as select, pin 6 as clock and pin 9 as serial data. PIO
 handles both data and fire/clock ownership, with open-drain outputs; the select

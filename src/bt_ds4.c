@@ -117,7 +117,7 @@ bool bt_ds4_decode(bt_ds4_t *pad, uint8_t const *report, size_t length,
     uint8_t stick = gamepad_axis(report[offset], 0, 255, GAMEPAD_LEFT, GAMEPAD_RIGHT) |
         gamepad_axis(report[offset + 1], 0, 255, GAMEPAD_UP, GAMEPAD_DOWN);
     uint16_t buttons = (report[offset + 4] >> 4) | (uint16_t)report[offset + 5] << 4;
-    static uint8_t const defaults[] = {2, 3, 1, 4, 5, 6, 10};
+    static uint8_t const defaults[] = {2, 3, 1, 4, 7, 8, 10};
     decoded->gamepad = gamepad_map(dpad, stick, buttons, defaults);
     if (settings_get()->ds4_mouse == 2) {
         memset(pad, 0, sizeof(*pad));
@@ -126,9 +126,8 @@ bool bt_ds4_decode(bt_ds4_t *pad, uint8_t const *report, size_t length,
     if (report[offset + 6] & 0x02) decoded->mouse_buttons = 1; // pad click
     // HID mouse mask: left=1, right=2, middle=4. Keep these independent of
     // the three joystick buttons, including simultaneous presses and releases.
-    if (settings_get()->ds4_mouse == 1 && (report[offset + 5] & 0x01)) decoded->mouse_buttons |= 1; // L1
+    if (settings_get()->ds4_mouse == 1 && (report[offset + 5] & 0x01)) decoded->mouse_buttons |= 4; // L1
     if (settings_get()->ds4_mouse == 1 && (report[offset + 5] & 0x02)) decoded->mouse_buttons |= 2; // R1
-    if (settings_get()->ds4_mouse == 1 && (report[offset + 5] & 0x0c)) decoded->mouse_buttons |= 4; // L2 or R2
     if (offset == 3)
         touchpad_decode(pad, report, decoded);
     else
