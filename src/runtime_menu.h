@@ -3,8 +3,10 @@
 #define AMIGAHID_RUNTIME_MENU_H
 
 #include "input_bridge.h"
+#include "settings.h"
 
 void runtime_menu_init(void);
+bool runtime_menu_apply_remote(settings_t const *settings, bool save);
 void runtime_menu_task(void);
 bool runtime_menu_keyboard(uint8_t slot, hid_keyboard_report_t const *report);
 void runtime_menu_disconnect(uint8_t slot);

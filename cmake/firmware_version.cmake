@@ -15,7 +15,7 @@ if (GIT_FOUND AND EXISTS "${AMIGAHID_SOURCE_DIR}/.git")
         # Board-design edits and local notes do not change the firmware.
         execute_process(
             COMMAND "${GIT_EXECUTABLE}" diff --quiet --ignore-submodules=untracked HEAD --
-                CMakeLists.txt cmake src .gitmodules pico-sdk lib
+                CMakeLists.txt cmake src common .gitmodules pico-sdk lib
             WORKING_DIRECTORY "${AMIGAHID_SOURCE_DIR}"
             RESULT_VARIABLE dirty
             ERROR_QUIET

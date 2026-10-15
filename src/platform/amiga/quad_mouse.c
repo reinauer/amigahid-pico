@@ -14,6 +14,7 @@
 #include "util/output.h"
 #include "hid_gamepad.h"
 #include "cd32.h"
+#include "prefs_link.h"
 #include "settings.h"
 
 #include <stdint.h>
@@ -293,6 +294,7 @@ void amiga_quad_mouse_init()
         _aqm_gpio_set(pins[i], HIGH);
     }
 
+    prefs_link_init();
     queue_init(&motion_queue, sizeof(aqm_motion_t), AQM_MOTION_QUEUE_DEPTH);
     queue_init(&wheel_queue, sizeof(uint8_t), AQM_WHEEL_QUEUE_DEPTH);
 
@@ -439,6 +441,7 @@ void amiga_quad_mouse_motion()
     uint8_t previous_buttons = 0xff;
 #ifdef HAS_JOYSTICK_PORT2
     uint16_t previous_joystick2 = UINT16_MAX;
+    bool link_was_active = false, port2_quarantine = false;
 #endif
     bool last_mmb_state = _aqm_gpio_active(QM1_AMIGA_B3);
     // This deadline stays unchanged while idle. A signed 32-bit comparison
@@ -459,11 +462,21 @@ void amiga_quad_mouse_motion()
 
     while (1) {
         uint8_t ports = joystick_ports;
+#ifdef HAS_JOYSTICK_PORT2
+        bool link_active = prefs_link_tick();
+        if (link_active != link_was_active) {
+            previous_ports = 0xff;
+            previous_joystick2 = UINT16_MAX;
+            port2_quarantine = true;
+            link_was_active = link_active;
+        }
+        if (!joystick_state) port2_quarantine = false;
+#endif
         bool joystick = (ports & JOYSTICK_PORT1) != 0;
         if (ports != previous_ports) {
             cd32_enable(0, (ports & CD32_PORT1) != 0);
 #ifdef HAS_JOYSTICK_PORT2
-            cd32_enable(1, (ports & CD32_PORT2) != 0);
+            if (!link_active) cd32_enable(1, (ports & CD32_PORT2) != 0);
             previous_joystick2 = UINT16_MAX;
 #endif
             previous_joystick = UINT16_MAX;
@@ -473,12 +486,12 @@ void amiga_quad_mouse_motion()
         uint16_t pad_state = input_captured ? 0 : joystick_state;
         cd32_update(0, pad_state);
 #ifdef HAS_JOYSTICK_PORT2
-        cd32_update(1, pad_state);
+        if (!link_active) cd32_update(1, port2_quarantine ? 0 : pad_state);
 #endif
 #ifdef HAS_JOYSTICK_PORT2
         // Port 2 runs alongside mouse quadrature, buttons and wheel on port 1.
-        uint16_t state2 = (ports & JOYSTICK_PORT2) && !input_captured ? joystick_state : 0;
-        if (state2 != previous_joystick2) {
+        uint16_t state2 = (ports & JOYSTICK_PORT2) && !input_captured && !port2_quarantine ? joystick_state : 0;
+        if (!link_active && state2 != previous_joystick2) {
             _aqm_joystick_output(state2, QM2_AMIGA_V, QM2_AMIGA_H, QM2_AMIGA_VQ, QM2_AMIGA_HQ,
                 QM2_AMIGA_B1, QM2_AMIGA_B2, QM2_AMIGA_B3, (ports & CD32_PORT2) != 0);
             previous_joystick2 = state2;

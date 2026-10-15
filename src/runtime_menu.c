@@ -10,6 +10,8 @@
 #include "pico/stdlib.h"
 #include "platform/amiga/quad_mouse.h"
 #include "settings.h"
+#include "prefs_server.h"
+#include "platform/amiga/prefs_link.h"
 #include "keyboard_map.h"
 #ifdef ENABLE_BLUETOOTH_HID
 #include "bt_hid.h"
@@ -24,7 +26,7 @@
 enum menu_item { MENU_KEY, MENU_ENTRY, MENU_RIGHT_GUI, MENU_WHEEL, MENU_REVERSE,
     MENU_SPEED, MENU_DISPLAY, MENU_WATCHDOG, MENU_PORT,
 #ifdef HAS_JOYSTICK_PORT2
-    MENU_PORT2,
+    MENU_PORT2, MENU_AMIGA_PREFS,
 #endif
 #ifdef ENABLE_BLUETOOTH_HID
     MENU_BT, MENU_BT_POLICY, MENU_BT_PAIR, MENU_BT_FORGET,
@@ -39,6 +41,8 @@ static hid_keyboard_report_t keyboards[INPUT_BRIDGE_MAX_SLOTS];
 static bool quarantine[INPUT_BRIDGE_MAX_SLOTS];
 static settings_t edited;
 static bool opened, redraw, save_pending;
+static bool remote_overlay, remote_seen;
+static uint64_t remote_started;
 #ifdef ENABLE_BLUETOOTH_HID
 static bool pair_pending, forget_pending, forget_confirm;
 #endif
@@ -85,6 +89,8 @@ static void apply_settings(void)
 
 static void open_menu(bool recovery)
 {
+    prefs_link_end();
+    remote_overlay = false;
 #ifdef ENABLE_BLUETOOTH_HID
     pair_pending = forget_pending = forget_confirm = false;
 #endif
@@ -120,7 +126,7 @@ static void render_menu(void)
     static char const *const names[] = {"Menu key", "Menu entry", "Right GUI key", "Mouse wheel",
         "Wheel direction", "Mouse step interval", "Display", "Watchdog", "Controller port 1",
 #ifdef HAS_JOYSTICK_PORT2
-        "Controller port 2",
+        "Controller port 2", "Amiga preferences",
 #endif
 #ifdef ENABLE_BLUETOOTH_HID
         "Bluetooth", "BT pairing policy", "Pair for 2 minutes", "Forget BT devices",
@@ -149,6 +155,7 @@ static void render_menu(void)
         case MENU_WATCHDOG: value = watchdog[edited.watchdog]; break;
         case MENU_PORT: value = edited.port_mode == SETTINGS_PORT_MOUSE ? "Mouse" : edited.port_mode == SETTINGS_PORT_CD32 ? "CD32 pad" : "Joystick"; break;
 #ifdef HAS_JOYSTICK_PORT2
+        case MENU_AMIGA_PREFS: value = "Enable port 2 link"; break;
         case MENU_PORT2: value = edited.joystick_port2 == SETTINGS_PORT_CD32 ? "CD32 pad" : edited.joystick_port2 ? "Joystick" : "Off"; break;
 #endif
 #ifdef ENABLE_BLUETOOTH_HID
@@ -212,6 +219,7 @@ static void change_value(int direction)
         case MENU_WATCHDOG: value = &edited.watchdog; count = 3; break;
         case MENU_PORT: value = &edited.port_mode; count = SETTINGS_PORT_COUNT; break;
 #ifdef HAS_JOYSTICK_PORT2
+        case MENU_AMIGA_PREFS: return;
         case MENU_PORT2: value = &edited.joystick_port2; count = SETTINGS_PORT_COUNT; break;
 #endif
 #ifdef ENABLE_BLUETOOTH_HID
@@ -274,6 +282,21 @@ static void menu_key(uint8_t key)
             } else if (item == MENU_BT_FORGET) {
                 if (forget_confirm) { forget_pending = true; forget_confirm = false; }
                 else { forget_confirm = true; notice = "Enter again to forget"; }
+            }
+#endif
+#ifdef HAS_JOYSTICK_PORT2
+            else if (item == MENU_AMIGA_PREFS) {
+                if (memcmp(&edited, settings_get(), sizeof(edited))) {
+                    notice = "Save/cancel edits";
+                    break;
+                }
+                close_menu();
+                prefs_server_begin();
+                remote_overlay = true;
+                remote_seen = false;
+                remote_started = time_us_64();
+                disp_ssd_set_overlay(true);
+                disp_ssd_menu("Amiga preferences", "Port 2 link enabled", "Open AmigaHIDPrefs", "F12 menu to cancel");
             }
 #endif
             else if (item == MENU_REMAP_SOURCE) remap_learning = true;
@@ -340,7 +363,7 @@ void runtime_menu_filter_keyboard(hid_keyboard_report_t *report)
     bool recovery = boot && key_down(report, HID_KEY_F12);
     for (unsigned i = 0; i < 6; i++) {
         uint8_t key = report->keycode[i];
-        if (display && (key == settings_menu_hid_key() || (boot && key == HID_KEY_F12) ||
+        if (display && (key == settings_menu_hid_key() || ((boot || remote_overlay) && key == HID_KEY_F12) ||
             (recovery && key == HID_KEY_ESCAPE)))
             report->keycode[i] = 0;
     }
@@ -350,8 +373,27 @@ void runtime_menu_filter_keyboard(hid_keyboard_report_t *report)
         report->modifier &= ~KEYBOARD_MODIFIER_RIGHTGUI;
 }
 
+bool runtime_menu_apply_remote(settings_t const *settings, bool save)
+{
+    if (opened || !settings_valid(settings)) return false;
+    if (save && !settings_save(settings)) return false;
+    input_bridge_capture(true);
+    settings_set(settings);
+    apply_settings();
+    input_bridge_capture(false);
+    return true;
+}
+
 void runtime_menu_task(void)
 {
+    prefs_server_task();
+    if (remote_overlay) {
+        if (prefs_link_active()) remote_seen = true;
+        else if (remote_seen || time_us_64() - remote_started > 1000000u) {
+            remote_overlay = false;
+            disp_ssd_set_overlay(false);
+        }
+    }
     if (opened) {
 #ifdef ENABLE_BLUETOOTH_HID
         if (pair_pending) {
@@ -401,6 +443,7 @@ void runtime_menu_task(void)
         if (quarantine[slot])
             continue;
         hid_keyboard_report_t const *report = &keyboards[slot];
+        if (remote_overlay && key_down(report, HID_KEY_F12)) entry = true;
         if (boot && key_down(report, HID_KEY_F12)) {
             entry = true;
             recovery |= key_down(report, HID_KEY_ESCAPE);
