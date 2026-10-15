@@ -65,7 +65,8 @@ void cd32_enable(unsigned port, bool enabled)
     unsigned clock = ports[port].clock, data = ports[port].data;
     gpio_set_dir(ports[port].load, GPIO_IN);
     if (enabled) {
-        // Hand over released pins before enabling PIO's open-drain outputs.
+        // Hand over released pins. PIO drives data high only during serial
+        // reads; fire/clock and ordinary joystick outputs remain open-drain.
         gpio_set_dir(clock, GPIO_IN);
         gpio_set_dir(data, GPIO_IN);
         start_sm(ports[port].data_sm, data_offset, data, ports[port].load, clock, true);

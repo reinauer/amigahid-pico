@@ -272,13 +272,19 @@ pad-click remain available on the mouse port. Explicit custom gamepad button
 mappings still override these defaults.
 
 CD32 uses Amiga pin 5 as select, pin 6 as clock and pin 9 as serial data. PIO
-handles both data and fire/clock ownership, with open-drain outputs; the select
+handles both data and fire/clock ownership. Data is actively driven during
+serial reads; normal buttons and fire/clock use open-drain output. The select
 line is never driven in CD32 mode. Each read snapshots all buttons and supplies
 the identification bits after them. With select high, Red and Blue behave as
 ordinary joystick buttons. CD32 mode does not provide the third ordinary button
 on pin 5, because that pin belongs to the Amiga's select signal.
 
-PIO1 supplies two state machines per port and shares 25 instructions between
+PIO1 supplies two state machines per port and shares 30 instructions between
 ports. PIO0 remains available to CYW43. Clock handling continues through CPU
 interrupts and flash lockout. Direction pins remain serviced by the output core.
 Reference: [Amiga Test Kit's read_gamepad implementation](https://github.com/keirf/amiga-stuff/blob/master/testkit/joymouse.c).
+
+Driving serial data high charges the Amiga POT input capacitance between bits;
+a slow rise can cause adjacent buttons to appear pressed. Check each button
+individually in Amiga Test Kit when setting up CD32 mode. Electrical compatibility
+with the connected Amiga and adapter requires hardware verification.
