@@ -1,5 +1,5 @@
 /**
- * ssd1306 display handling via i2c dma
+ * SSD1306 and SH1106 display handling via i2c dma
  *
  * this code was very heavily inspired by https://github.com/fivdi/pico-i2c-dma; however, it was largely rewritten
  * as much of that code is considerate of multiple devices and uses freertos. this was chopped and replaced with an
@@ -28,7 +28,11 @@
 
 #define SSD_WIDTH           128
 #define SSD_HEIGHT          64
-#define SSD_BAUD            1000000         // 1MHz; if my estimation is correct, this could achieve 122fps
+#ifdef DISPLAY_SH1106
+#define SSD_BAUD            400000
+#else
+#define SSD_BAUD            1000000         // Preserve the existing SSD1306 bus rate.
+#endif
 #define SSD_ADDR            0x3c            // my board has 0x78 jumper soldered closed on the back but ¯\_(ツ)_/¯
 #define I2C_MAX_TRANSFER    0x400 + 0x20    // 1KB + 32B overhead
 #define DISPLAY_QUEUE_LIMIT 64            // includes the startup command burst
@@ -571,13 +575,32 @@ static void ugui_draw_pixel_cb(UG_S16 x, UG_S16 y, UG_COLOUR colour)
 }
 
 /**
- * Redraw the SSD1306 display
+ * Redraw the display from the shared 128x64 framebuffer.
  *
  * @return void
  */
 static void disp_ssd_update()
 {
+#ifdef DISPLAY_SH1106
+    // SH1106 has 132 columns and no SSD1306 horizontal addressing mode.
+    // Each page is self-contained, including its address, so a dropped
+    // transaction cannot shift subsequent updates. Leave room for a frame
+    // before queuing any pages; only this core's main context appends work.
+    disp_ssd_task();
+    if (display_failed || queue_depth > DISPLAY_QUEUE_LIMIT - SSD_HEIGHT / 8)
+        return;
+    for (unsigned page = 0; page < SSD_HEIGHT / 8; page++) {
+        // Co=1 for each command, then Co=0/D-C=1 for the pixel bytes.
+        // The visible 128 columns on these modules start at RAM column 2.
+        uint8_t packet[7 + SSD_WIDTH] = {
+            0x80, (uint8_t)(0xb0 | page), 0x80, 0x02, 0x80, 0x10, 0x40
+        };
+        memcpy(packet + 7, display_command + 1 + page * SSD_WIDTH, SSD_WIDTH);
+        disp_queue_transaction(packet, sizeof(packet), NULL, 0);
+    }
+#else
     disp_queue_transaction(display_command, sizeof(display_command), NULL, 0);
+#endif
 }
 
 /**
@@ -698,19 +721,29 @@ void disp_ssd_init(void)
         SET_DISP_OFFSET, 0x00,          // Set vertical display shift to 0.
         SET_DISP_START_LINE,            // Set display RAM display start line
                                         //   register to 0.
-        SET_CHARGE_PUMP, 0x14,          // Enable charge pump.
+#ifdef DISPLAY_SH1106
+        0xad, 0x8b,                    // SH1106 DC/DC converter on.
+#else
+        SET_CHARGE_PUMP, 0x14,          // Enable SSD1306 charge pump.
+#endif
         SET_SEGMENT_REMAP | 0x01,       // Map col addr 127 to SEG0.
         SET_COM_OUTPUT_DIR | 0x08,      // Scan from N-1 to 0. (N=height)
         SET_COM_PINS_CONFIG, 0x12,      // Set COM pins hardware configuration to
                                         //   0x12.
         SET_CONTRAST, 0xcf,             // Set contrast to 0xcf
+#ifdef DISPLAY_SH1106
+        SET_PRECHARGE_PERIOD, 0x1f,
+#else
         SET_PRECHARGE_PERIOD, 0xf1,     // Set pre-charge to 0xf1
+#endif
         SET_VCOM_DESEL_LEVEL, 0x40,     // Set VCOMH deselect to 0x40
         SET_ENTIRE_DISP_ON,             // Output follows RAM content.
         SET_NORMAL_INVERTED | 0x00,     // Normal display.
+#ifndef DISPLAY_SH1106
         SET_ADDRESSING_MODE, 0x00,      // Set addressing mode to horizontal mode.
         SET_COLUMN_ADDRESS, 0x00, 0x7f, // Set column start and end address.
         SET_PAGE_ADDRESS, 0x00, 0x07,   // Set page start and end address.
+#endif
         SET_DISP_ON_OFF | 0x01,         // Display on.
     };
 

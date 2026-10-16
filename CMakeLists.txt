@@ -34,6 +34,13 @@ add_compile_options(-Wall -Werror)
 
 # configuration options
 
+set(DISPLAY_CONTROLLER "SSD1306" CACHE STRING "OLED controller (SSD1306 or SH1106)")
+set_property(CACHE DISPLAY_CONTROLLER PROPERTY STRINGS SSD1306 SH1106)
+if (NOT DISPLAY_CONTROLLER STREQUAL "SSD1306" AND NOT DISPLAY_CONTROLLER STREQUAL "SH1106")
+	message(FATAL_ERROR "DISPLAY_CONTROLLER must be SSD1306 or SH1106")
+endif ()
+add_compile_definitions(DISPLAY_${DISPLAY_CONTROLLER}=1)
+
 # uncomment for debug slurry
 add_compile_definitions(DEBUG_MESSAGES=1)
 

@@ -146,12 +146,10 @@ Pico W requires `pico_w`/RP2040. A wireless footprint alone does not enable
 Bluetooth in a firmware image. Ensure settings and Bluetooth pairing storage
 have non-overlapping flash allocations for the selected target.
 
-**The current display driver is SSD1306, not SH1106.** Despite the seller's
-compatibility wording, SH1106 needs page-addressed writes, its DC/DC commands,
-a typical two-column RAM offset and an I2C speed no higher than its specified
-400 kHz. The current 1 MHz SSD1306 horizontal-addressing driver must be adapted
-before the requested display can work. This hardware provides the correct
-supply, signals and mounting, but does not claim SH1106 software support.
+Build with `-DDISPLAY_CONTROLLER=SH1106` for the SH1106 module. SSD1306 is the
+firmware default and uses a different addressing mode. See
+[OLED controller selection](../src/display/README.md) for configuration and
+module compatibility checks.
 
 Before promoting this prototype to a manufacturing release:
 
@@ -169,7 +167,7 @@ Before promoting this prototype to a manufacturing release:
    The manually routed pair is matched to below 0.3 mm; this alone is not USB
    compliance or a verified 90-ohm impedance calculation for a chosen fab stackup.
 6. Verify Bluetooth operation and RF range with the display and enclosure fitted.
-7. Implement/test SH1106 firmware and verify the image reaches all display edges.
+7. Verify the SH1106 image reaches all display edges.
 
 ## Files and reproducibility
 

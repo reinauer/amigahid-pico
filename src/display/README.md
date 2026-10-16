@@ -1,3 +1,27 @@
+# OLED controller selection
+
+The firmware supports 128x64 I2C SSD1306 and SH1106 modules at address
+`0x3c`. Select the controller when configuring the firmware:
+
+```sh
+cmake -S . -B build/ssd1306 -DDISPLAY_CONTROLLER=SSD1306
+cmake -S . -B build/sh1106 -DDISPLAY_CONTROLLER=SH1106
+```
+
+Add the usual board and Bluetooth options to either command. SSD1306 is
+the default for all boards, preserving the existing initialization,
+horizontal transfers and 1 MHz bus rate. SH1106 uses 400 kHz, its DC/DC
+enable command, and eight page transfers with a two-column RAM offset.
+Both share the framebuffer, fonts, status display and runtime menus.
+Selection is explicit; an I2C acknowledgement does not identify the chip.
+
+The SH1106 mode targets the common 128x64 modules whose visible columns
+start at RAM column 2. Check all four edges, menu/status transitions and
+blanking on the actual module before relying on it. Compilation and wire
+format checks do not establish physical display compatibility.
+
+Reference: [Adafruit's SH1106 driver](https://github.com/adafruit/Adafruit_SH110x/blob/master/Adafruit_SH1106G.cpp).
+
 # ugui
 
 this path contains the excellent µgui library from achim döbler.
@@ -37,23 +61,5 @@ this code can be obtained from [github.com/achimdoebler/UGUI](https://github.com
 //
 // Samuel Kleiser
 // for reporting bugs and giving examples how to improve µGUI.
-/* -------------------------------------------------------------------------------- */
-/* -- REVISION HISTORY                                                           -- */
-/* -------------------------------------------------------------------------------- */
-//  Dec 20, 2015  V0.31 Checkbox component with all funtions added.
-//                      Cyrillic font 8x12 added.
-//                      RGB565 color schema added.
-//                      Windows components font could be getted from current GUI by default
-//  Mar 18, 2015  V0.3  Driver support added.
-//                      Window and object support added.
-//                      Touch support added.
-//                      Fixed some minor bugs.
-//
-//  Oct 20, 2014  V0.2  Function UG_DrawRoundFrame() added.
-//                      Function UG_FillRoundFrame() added.
-//                      Function UG_DrawArc() added.
-//                      Fixed some minor bugs.
-//
-//  Oct 11, 2014  V0.1  First release.
 /* -------------------------------------------------------------------------------- */
 ```
