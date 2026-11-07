@@ -28,7 +28,7 @@
 
 #define SSD_WIDTH           128
 #define SSD_HEIGHT          64
-#ifdef DISPLAY_SH1106
+#if defined(DISPLAY_SH1106) || defined(DISPLAY_AUTO)
 #define SSD_BAUD            400000
 #else
 #define SSD_BAUD            1000000         // Preserve the existing SSD1306 bus rate.
@@ -56,6 +56,44 @@ static display_transaction_t *current_transaction = NULL,
 
 static uint8_t queue_depth = 0;
 static bool display_failed = false;
+#ifdef DISPLAY_SH1106
+static bool display_is_sh1106 = true;
+#else
+static bool display_is_sh1106 = false;
+#endif
+
+#ifdef DISPLAY_AUTO
+/* SH1106 status bit 6 follows display off/on; bits 2:0 must be zero.
+ * Read support alone is not a chip ID. Require an off/on/off transition
+ * and ignore the unspecified bits 5:3. Ambiguous replies use SSD1306.
+ */
+static bool disp_probe_sh1106(void)
+{
+    const uint8_t commands[] = {0xae, 0xaf, 0xae};
+    const uint8_t expected[] = {0x40, 0x00, 0x40};
+    bool matched = true;
+
+    for (unsigned i = 0; i < sizeof(commands); i++) {
+        uint8_t command[] = {0x00, commands[i]};
+        uint8_t status = 0xff;
+        if (i2c_write_timeout_us(I2C_PORT, SSD_ADDR, command,
+                sizeof(command), false, DISPLAY_PROBE_TIMEOUT_US) != sizeof(command) ||
+            i2c_read_timeout_us(I2C_PORT, SSD_ADDR, &status, 1, false,
+                DISPLAY_PROBE_TIMEOUT_US) != 1 ||
+            (status & 0xc7) != expected[i]) {
+            matched = false;
+            break;
+        }
+    }
+
+    // Always restore display-off, including after a failed read or write.
+    uint8_t off[] = {0x00, 0xae};
+    if (i2c_write_timeout_us(I2C_PORT, SSD_ADDR, off, sizeof(off),
+            false, DISPLAY_PROBE_TIMEOUT_US) != sizeof(off))
+        matched = false;
+    return matched;
+}
+#endif
 
 /**
  * ssd1306 commands; borrowed from https://github.com/fivdi/pico-i2c-dma ssd1306 example code with thanks.
@@ -332,6 +370,11 @@ bool disp_i2c_init(void)
         display_failed = true;
         return false;
     }
+#ifdef DISPLAY_AUTO
+    display_is_sh1106 = disp_probe_sh1106();
+    // Discard blocking probe STOP/abort state before enabling DMA IRQs.
+    (void)i2c_get_hw(I2C_PORT)->clr_intr;
+#endif
     disp_write = _real_disp_write;
 
     // set stop and abort interrupt flags
@@ -581,26 +624,26 @@ static void ugui_draw_pixel_cb(UG_S16 x, UG_S16 y, UG_COLOUR colour)
  */
 static void disp_ssd_update()
 {
-#ifdef DISPLAY_SH1106
-    // SH1106 has 132 columns and no SSD1306 horizontal addressing mode.
-    // Each page is self-contained, including its address, so a dropped
-    // transaction cannot shift subsequent updates. Leave room for a frame
-    // before queuing any pages; only this core's main context appends work.
-    disp_ssd_task();
-    if (display_failed || queue_depth > DISPLAY_QUEUE_LIMIT - SSD_HEIGHT / 8)
-        return;
-    for (unsigned page = 0; page < SSD_HEIGHT / 8; page++) {
-        // Co=1 for each command, then Co=0/D-C=1 for the pixel bytes.
-        // The visible 128 columns on these modules start at RAM column 2.
-        uint8_t packet[7 + SSD_WIDTH] = {
-            0x80, (uint8_t)(0xb0 | page), 0x80, 0x02, 0x80, 0x10, 0x40
-        };
-        memcpy(packet + 7, display_command + 1 + page * SSD_WIDTH, SSD_WIDTH);
-        disp_queue_transaction(packet, sizeof(packet), NULL, 0);
+    if (display_is_sh1106) {
+        // SH1106 has 132 columns and no SSD1306 horizontal addressing mode.
+        // Each page is self-contained, including its address, so a dropped
+        // transaction cannot shift subsequent updates. Leave room for a frame
+        // before queuing any pages; only this core's main context appends work.
+        disp_ssd_task();
+        if (display_failed || queue_depth > DISPLAY_QUEUE_LIMIT - SSD_HEIGHT / 8)
+            return;
+        for (unsigned page = 0; page < SSD_HEIGHT / 8; page++) {
+            // Co=1 for each command, then Co=0/D-C=1 for the pixel bytes.
+            // The visible 128 columns on these modules start at RAM column 2.
+            uint8_t packet[7 + SSD_WIDTH] = {
+                0x80, (uint8_t)(0xb0 | page), 0x80, 0x02, 0x80, 0x10, 0x40
+            };
+            memcpy(packet + 7, display_command + 1 + page * SSD_WIDTH, SSD_WIDTH);
+            disp_queue_transaction(packet, sizeof(packet), NULL, 0);
+        }
+    } else {
+        disp_queue_transaction(display_command, sizeof(display_command), NULL, 0);
     }
-#else
-    disp_queue_transaction(display_command, sizeof(display_command), NULL, 0);
-#endif
 }
 
 /**
@@ -713,6 +756,10 @@ static inline void write_byte(uint8_t devregister, uint8_t byte)
  */
 void disp_ssd_init(void)
 {
+    // Select the controller before assembling its initialization commands.
+    if (!disp_i2c_init())
+        return;
+
     const uint8_t init_sequence[] = {
         SET_DISP_ON_OFF | 0x00,         // Display off.
         SET_DCLK_FOSC, 0x80,            // Set clock divide ratio and oscillator
@@ -721,35 +768,23 @@ void disp_ssd_init(void)
         SET_DISP_OFFSET, 0x00,          // Set vertical display shift to 0.
         SET_DISP_START_LINE,            // Set display RAM display start line
                                         //   register to 0.
-#ifdef DISPLAY_SH1106
-        0xad, 0x8b,                    // SH1106 DC/DC converter on.
-#else
-        SET_CHARGE_PUMP, 0x14,          // Enable SSD1306 charge pump.
-#endif
+        display_is_sh1106 ? 0xad : SET_CHARGE_PUMP,
+        display_is_sh1106 ? 0x8b : 0x14, // Enable the controller's charge pump.
         SET_SEGMENT_REMAP | 0x01,       // Map col addr 127 to SEG0.
         SET_COM_OUTPUT_DIR | 0x08,      // Scan from N-1 to 0. (N=height)
         SET_COM_PINS_CONFIG, 0x12,      // Set COM pins hardware configuration to
                                         //   0x12.
         SET_CONTRAST, 0xcf,             // Set contrast to 0xcf
-#ifdef DISPLAY_SH1106
-        SET_PRECHARGE_PERIOD, 0x1f,
-#else
-        SET_PRECHARGE_PERIOD, 0xf1,     // Set pre-charge to 0xf1
-#endif
+        SET_PRECHARGE_PERIOD, display_is_sh1106 ? 0x1f : 0xf1,
         SET_VCOM_DESEL_LEVEL, 0x40,     // Set VCOMH deselect to 0x40
         SET_ENTIRE_DISP_ON,             // Output follows RAM content.
         SET_NORMAL_INVERTED | 0x00,     // Normal display.
-#ifndef DISPLAY_SH1106
-        SET_ADDRESSING_MODE, 0x00,      // Set addressing mode to horizontal mode.
-        SET_COLUMN_ADDRESS, 0x00, 0x7f, // Set column start and end address.
-        SET_PAGE_ADDRESS, 0x00, 0x07,   // Set page start and end address.
-#endif
-        SET_DISP_ON_OFF | 0x01,         // Display on.
     };
-
-    // start the i2c device control
-    if (disp_i2c_init() == false)
-        return;
+    const uint8_t horizontal_addressing[] = {
+        SET_ADDRESSING_MODE, 0x00,
+        SET_COLUMN_ADDRESS, 0x00, 0x7f,
+        SET_PAGE_ADDRESS, 0x00, 0x07,
+    };
 
     // commands sent to the ssd1306 are written to a single location on register 0x80, and
     // as such cannot be sent as a block. even command parameters must be sent to the same
@@ -757,6 +792,11 @@ void disp_ssd_init(void)
     // after each byte.
     for (uint pos = 0; pos < sizeof(init_sequence); pos++)
         write_byte(0x80, init_sequence[pos]);
+    if (!display_is_sh1106) {
+        for (uint pos = 0; pos < sizeof(horizontal_addressing); pos++)
+            write_byte(0x80, horizontal_addressing[pos]);
+    }
+    write_byte(0x80, SET_DISP_ON_OFF | 0x01);
 
     // set the command at the beginning of the framebuffer to write out
     display_command[0] = SET_DISP_START_LINE;
