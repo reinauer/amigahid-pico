@@ -1,0 +1,198 @@
+{
+  "lcsc:CAP-SMD_BD6.3-L6.6-W6.6-LS7.4-FD": {
+    "at": [
+      -4.0,
+      -1.0
+    ],
+    "kind": "positive",
+    "refs": [
+      "C4"
+    ]
+  },
+  "lcsc:CRYSTAL-SMD_4P-L3.2-W2.5-BL": {
+    "at": [
+      -1.1,
+      1.9
+    ],
+    "kind": "pin1",
+    "refs": [
+      "Y1",
+      "Y2"
+    ]
+  },
+  "lcsc:HDR-TH_4P-P2.54-V-F": {
+    "at": [
+      -5.1,
+      0.0
+    ],
+    "kind": "pin1",
+    "refs": [
+      "J3"
+    ]
+  },
+  "lcsc:IND-SMD_L2.0-W1.6_AOTA-B201610S3R3-101-T": {
+    "at": [
+      -0.5,
+      -1.2
+    ],
+    "kind": "pin1",
+    "refs": [
+      "L1"
+    ]
+  },
+  "lcsc:LED-SMD_L1.6-W0.8-R-RD": {
+    "at": [
+      0.7,
+      -0.8
+    ],
+    "kind": "cathode",
+    "refs": [
+      "D3"
+    ]
+  },
+  "lcsc:QFN-16_L3.0-W3.0-P0.50-BL-EP1.7": {
+    "at": [
+      -1.1,
+      2.1
+    ],
+    "kind": "pin1",
+    "refs": [
+      "U8"
+    ]
+  },
+  "lcsc:QFN-60_L7.0-W7.0-P0.40-TL-EP3.4": {
+    "at": [
+      -4.3,
+      -3.2
+    ],
+    "kind": "pin1",
+    "refs": [
+      "U1"
+    ]
+  },
+  "lcsc:SOD-123_L2.8-W1.8-LS3.7-RD": {
+    "at": [
+      -2.6,
+      0.0
+    ],
+    "kind": "cathode",
+    "refs": [
+      "D2"
+    ]
+  },
+  "lcsc:SOP-8_L4.9-W3.9-P1.27-LS6.0-BL": {
+    "at": [
+      -2.7,
+      2.7
+    ],
+    "kind": "pin1",
+    "refs": [
+      "U5"
+    ]
+  },
+  "lcsc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR": {
+    "at": [
+      1.0,
+      1.7
+    ],
+    "kind": "pin1",
+    "refs": [
+      "Q3",
+      "Q1",
+      "Q2"
+    ]
+  },
+  "lcsc:SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BR": {
+    "at": [
+      1.3,
+      1.7
+    ],
+    "kind": "pin1",
+    "refs": [
+      "U12"
+    ]
+  },
+  "lcsc:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR": {
+    "at": [
+      1.3,
+      1.7
+    ],
+    "kind": "pin1",
+    "refs": [
+      "U11"
+    ]
+  },
+  "lcsc:SOT-583-8_L2.1-W1.6-P0.50-LS1.6-BL": {
+    "at": [
+      -1.3,
+      0.4
+    ],
+    "kind": "pin1",
+    "refs": [
+      "U10"
+    ]
+  },
+  "lcsc:SOT-9X3-3_L1.0-W0.8-P0.35-LS1.0-BR": {
+    "at": [
+      0.2,
+      0.8
+    ],
+    "kind": "pin1",
+    "refs": [
+      "D6",
+      "D5",
+      "D4"
+    ]
+  },
+  "lcsc:TSOT-26_L2.9-W1.6-P0.95-LS2.8-BL": {
+    "at": [
+      -1.7,
+      1.2
+    ],
+    "kind": "pin1",
+    "refs": [
+      "U6"
+    ]
+  },
+  "lcsc:TSSOP-14_L5.0-W4.5-P0.65-LS6.4-BL": {
+    "at": [
+      -2.6,
+      2.8
+    ],
+    "kind": "pin1",
+    "refs": [
+      "U9"
+    ]
+  },
+  "lcsc:TSSOP-20_L6.5-W4.4-P0.65-LS6.4-BL": {
+    "at": [
+      -3.5,
+      3.3
+    ],
+    "kind": "pin1",
+    "refs": [
+      "U2",
+      "U3"
+    ]
+  },
+  "lcsc:UQFN-10_L2.0-W1.5-P0.50-BL": {
+    "at": [
+      -1.1,
+      1.3
+    ],
+    "kind": "pin1",
+    "refs": [
+      "U7"
+    ]
+  },
+  "lcsc:WIRELM-SMD_RMC20452T": {
+    "at": [
+      -8.4,
+      -5.3
+    ],
+    "kind": "pin1",
+    "refs": [
+      "U4"
+    ]
+  }
+}

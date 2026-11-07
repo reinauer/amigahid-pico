@@ -1,0 +1,2957 @@
+{
+  "parts": [
+    {
+      "ref": "U2",
+      "value": "SN74CB3T3245PWR",
+      "lcsc": "C15298",
+      "symbol": "SN74CB3T3245PWR",
+      "footprint": "lcsc:TSSOP-20_L6.5-W4.4-P0.65-LS6.4-BL",
+      "mpn": "SN74CB3T3245PWR",
+      "manufacturer": "TI(\u5fb7\u5dde\u4eea\u5668)",
+      "datasheet": "https://lcsc.com/product-detail/Logic-ICs_TI_SN74CB3T3245PWR_SN74CB3T3245PWR_C15298.html",
+      "nets": {
+        "20": "+3V3",
+        "10": "GND",
+        "19": "AMIGA_ISOLATE",
+        "2": "L_KCLK",
+        "18": "KCLK",
+        "3": "L_KDAT",
+        "17": "KDAT",
+        "4": "L_P1_RIGHT",
+        "16": "P1_RIGHT",
+        "5": "L_P1_LEFT",
+        "15": "P1_LEFT",
+        "6": "L_P1_DOWN",
+        "14": "P1_DOWN",
+        "7": "L_P1_UP",
+        "13": "P1_UP",
+        "8": "L_P1_FIRE",
+        "12": "P1_FIRE",
+        "9": "L_P1_B2",
+        "11": "P1_B2"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        180.34,
+        63.5
+      ],
+      "source_note": "3V3 bus switch with Ioff; disabled when Amiga keyboard power is absent or ROM recovery is selected. GPIO drives LOW or releases."
+    },
+    {
+      "ref": "U3",
+      "value": "SN74CB3T3245PWR",
+      "lcsc": "C15298",
+      "symbol": "SN74CB3T3245PWR",
+      "footprint": "lcsc:TSSOP-20_L6.5-W4.4-P0.65-LS6.4-BL",
+      "mpn": "SN74CB3T3245PWR",
+      "manufacturer": "TI(\u5fb7\u5dde\u4eea\u5668)",
+      "datasheet": "https://lcsc.com/product-detail/Logic-ICs_TI_SN74CB3T3245PWR_SN74CB3T3245PWR_C15298.html",
+      "nets": {
+        "20": "+3V3",
+        "10": "GND",
+        "19": "AMIGA_ISOLATE",
+        "2": "L_P1_B3",
+        "18": "P1_B3",
+        "3": "L_P2_UP",
+        "17": "P2_UP",
+        "4": "L_P2_DOWN",
+        "16": "P2_DOWN",
+        "5": "L_P2_LEFT",
+        "15": "P2_LEFT",
+        "6": "L_P2_RIGHT",
+        "14": "P2_RIGHT",
+        "7": "L_P2_FIRE",
+        "13": "P2_FIRE",
+        "8": "L_P2_B2",
+        "12": "P2_B2",
+        "9": "L_P2_B3",
+        "11": "P2_B3"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        180.34,
+        124.46
+      ],
+      "source_note": "3V3 bus switch with Ioff; disabled when Amiga keyboard power is absent or ROM recovery is selected. GPIO drives LOW or releases."
+    },
+    {
+      "ref": "RN1",
+      "value": "4x10k isolated",
+      "symbol": "R_Pack04",
+      "footprint": "lcsc:RES-ARRAY-SMD_0603-8P-L3.2-W1.6-BL",
+      "lcsc": "C192513",
+      "mpn": "EXB38V103JV",
+      "manufacturer": "PANASONIC",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/45e874bd934a49da039ce7e7afe0034c.pdf?productCode=C192513",
+      "nets": {
+        "1": "KCLK",
+        "2": "KDAT",
+        "3": "P1_RIGHT",
+        "4": "P1_LEFT",
+        "8": "AMIGA_5V",
+        "7": "AMIGA_5V",
+        "6": "AMIGA_5V",
+        "5": "AMIGA_5V"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        30.48,
+        205.74
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "RN2",
+      "value": "4x10k isolated",
+      "symbol": "R_Pack04",
+      "footprint": "lcsc:RES-ARRAY-SMD_0603-8P-L3.2-W1.6-BL",
+      "lcsc": "C192513",
+      "mpn": "EXB38V103JV",
+      "manufacturer": "PANASONIC",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/45e874bd934a49da039ce7e7afe0034c.pdf?productCode=C192513",
+      "nets": {
+        "1": "P1_DOWN",
+        "2": "P1_UP",
+        "3": "P1_FIRE",
+        "4": "P1_B2",
+        "8": "AMIGA_5V",
+        "7": "AMIGA_5V",
+        "6": "AMIGA_5V",
+        "5": "AMIGA_5V"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        68.58,
+        205.74
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "RN3",
+      "value": "4x10k isolated",
+      "symbol": "R_Pack04",
+      "footprint": "lcsc:RES-ARRAY-SMD_0603-8P-L3.2-W1.6-BL",
+      "lcsc": "C192513",
+      "mpn": "EXB38V103JV",
+      "manufacturer": "PANASONIC",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/45e874bd934a49da039ce7e7afe0034c.pdf?productCode=C192513",
+      "nets": {
+        "1": "P1_B3",
+        "2": "P2_UP",
+        "3": "P2_DOWN",
+        "4": "P2_LEFT",
+        "8": "AMIGA_5V",
+        "7": "AMIGA_5V",
+        "6": "AMIGA_5V",
+        "5": "AMIGA_5V"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        106.68,
+        205.74
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "RN4",
+      "value": "4x10k isolated",
+      "symbol": "R_Pack04",
+      "footprint": "lcsc:RES-ARRAY-SMD_0603-8P-L3.2-W1.6-BL",
+      "lcsc": "C192513",
+      "mpn": "EXB38V103JV",
+      "manufacturer": "PANASONIC",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/45e874bd934a49da039ce7e7afe0034c.pdf?productCode=C192513",
+      "nets": {
+        "1": "P2_RIGHT",
+        "2": "P2_FIRE",
+        "3": "P2_B2",
+        "4": "P2_B3",
+        "8": "AMIGA_5V",
+        "7": "AMIGA_5V",
+        "6": "AMIGA_5V",
+        "5": "AMIGA_5V"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        144.78,
+        205.74
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "RN6",
+      "value": "4x10k isolated",
+      "symbol": "R_Pack04",
+      "footprint": "lcsc:RES-ARRAY-SMD_0603-8P-L3.2-W1.6-BL",
+      "lcsc": "C192513",
+      "mpn": "EXB38V103JV",
+      "manufacturer": "PANASONIC",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/45e874bd934a49da039ce7e7afe0034c.pdf?productCode=C192513",
+      "nets": {
+        "1": "L_KCLK",
+        "2": "L_KDAT",
+        "3": "L_P1_RIGHT",
+        "4": "L_P1_LEFT",
+        "8": "+3V3",
+        "7": "+3V3",
+        "6": "+3V3",
+        "5": "+3V3"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        30.48,
+        246.38
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "RN7",
+      "value": "4x10k isolated",
+      "symbol": "R_Pack04",
+      "footprint": "lcsc:RES-ARRAY-SMD_0603-8P-L3.2-W1.6-BL",
+      "lcsc": "C192513",
+      "mpn": "EXB38V103JV",
+      "manufacturer": "PANASONIC",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/45e874bd934a49da039ce7e7afe0034c.pdf?productCode=C192513",
+      "nets": {
+        "1": "L_P1_DOWN",
+        "2": "L_P1_UP",
+        "3": "L_P1_FIRE",
+        "4": "L_P1_B2",
+        "8": "+3V3",
+        "7": "+3V3",
+        "6": "+3V3",
+        "5": "+3V3"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        68.58,
+        246.38
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "RN8",
+      "value": "4x10k isolated",
+      "symbol": "R_Pack04",
+      "footprint": "lcsc:RES-ARRAY-SMD_0603-8P-L3.2-W1.6-BL",
+      "lcsc": "C192513",
+      "mpn": "EXB38V103JV",
+      "manufacturer": "PANASONIC",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/45e874bd934a49da039ce7e7afe0034c.pdf?productCode=C192513",
+      "nets": {
+        "1": "L_P1_B3",
+        "2": "L_P2_UP",
+        "3": "L_P2_DOWN",
+        "4": "L_P2_LEFT",
+        "8": "+3V3",
+        "7": "+3V3",
+        "6": "+3V3",
+        "5": "+3V3"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        106.68,
+        246.38
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "RN9",
+      "value": "4x10k isolated",
+      "symbol": "R_Pack04",
+      "footprint": "lcsc:RES-ARRAY-SMD_0603-8P-L3.2-W1.6-BL",
+      "lcsc": "C192513",
+      "mpn": "EXB38V103JV",
+      "manufacturer": "PANASONIC",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/45e874bd934a49da039ce7e7afe0034c.pdf?productCode=C192513",
+      "nets": {
+        "1": "L_P2_RIGHT",
+        "2": "L_P2_FIRE",
+        "3": "L_P2_B2",
+        "4": "L_P2_B3",
+        "8": "+3V3",
+        "7": "+3V3",
+        "6": "+3V3",
+        "5": "+3V3"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        144.78,
+        246.38
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "J2",
+      "value": "UART / SWD test pads",
+      "symbol": "Conn_01x06",
+      "footprint": "r7:UART_SWD_TestPads",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {
+        "6": "SWCLK",
+        "4": "SWDIO",
+        "3": "UART_RX",
+        "2": "UART_TX",
+        "1": "GND",
+        "5": "GND"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        271.78,
+        88.9
+      ],
+      "source_note": "Bare top-side test pads, not an assembled component.",
+      "procure": false
+    },
+    {
+      "ref": "J3",
+      "value": "OLED 3V3 I2C",
+      "symbol": "Conn_01x04",
+      "footprint": "lcsc:HDR-TH_4P-P2.54-V-F",
+      "lcsc": "C7509546",
+      "mpn": "DS1023-1x4SF11",
+      "manufacturer": "CONNFLY Elec",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/e746529444b0a48d4f291628523ddcfb.pdf?productCode=C7509546",
+      "nets": {
+        "1": "+3V3",
+        "3": "SCL",
+        "4": "SDA",
+        "2": "GND"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        271.78,
+        119.38
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "J4",
+      "value": "Stacked USB-A / two host ports",
+      "lcsc": "C2341",
+      "symbol": "USB_A_Dual",
+      "footprint": "lcsc:USB-A-TH_USB-M-51",
+      "mpn": "907-111A1012D10200",
+      "manufacturer": "\u7cbe\u62d3\u91d1",
+      "datasheet": "https://lcsc.com/product-detail/USB-Connectors_USB-A-F-Double-layer-DIP-900-Iron-shell-white-Not-high-temperature_C2341.html",
+      "nets": {
+        "1": "USB_5V",
+        "2": "USB1_D-",
+        "3": "USB1_D+",
+        "4": "GND",
+        "5": "USB_5V",
+        "6": "USB2_D-",
+        "7": "USB2_D+",
+        "8": "GND",
+        "9": "GND"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        350.52,
+        53.34
+      ],
+      "source_note": "Both USB-A ports share the Amiga-only 500mA PTC branch. See stock-check.json for dated availability. Confirm the through-hole soldering profile before assembly."
+    },
+    {
+      "ref": "J5",
+      "value": "DE9 female to Amiga",
+      "symbol": "DE9_Female",
+      "footprint": "lcsc:DE9_Female_C50380980",
+      "lcsc": "C50380980",
+      "mpn": "LCK-205A09FJ2A00B1A",
+      "manufacturer": "LCKELEC",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/98ad6adf9b8970a112421d2b06a83c6e.pdf?productCode=C50380980",
+      "nets": {
+        "9": "P1_B2",
+        "5": "P1_B3",
+        "2": "P1_DOWN",
+        "6": "P1_FIRE",
+        "3": "P1_LEFT",
+        "4": "P1_RIGHT",
+        "1": "P1_UP",
+        "8": "GND",
+        "SH": "GND"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        353.06,
+        104.14
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "J6",
+      "value": "DE9 female to Amiga",
+      "symbol": "DE9_Female",
+      "footprint": "lcsc:DE9_Female_C50380980",
+      "lcsc": "C50380980",
+      "mpn": "LCK-205A09FJ2A00B1A",
+      "manufacturer": "LCKELEC",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/98ad6adf9b8970a112421d2b06a83c6e.pdf?productCode=C50380980",
+      "nets": {
+        "9": "P2_B2",
+        "5": "P2_B3",
+        "2": "P2_DOWN",
+        "6": "P2_FIRE",
+        "3": "P2_LEFT",
+        "4": "P2_RIGHT",
+        "1": "P2_UP",
+        "8": "GND",
+        "SH": "GND"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        353.06,
+        152.4
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "J7",
+      "value": "A4000 keyboard link",
+      "symbol": "MiniDIN6_Shield",
+      "footprint": "lcsc:CONN-TH_DS1093-01-PN60",
+      "lcsc": "C77848",
+      "mpn": "DS1093-01-PN60",
+      "manufacturer": "CONNFLY",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/91b259a35bf42e0e40c79aca63cab966.pdf?productCode=C77848",
+      "nets": {
+        "4": "AMIGA_5V",
+        "5": "KCLK",
+        "1": "KDAT",
+        "0": "GND",
+        "3": "GND"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        271.78,
+        152.4
+      ],
+      "source_note": "C77848 replaces unavailable r6 HOOYA C7428703. Supplier drawing sets 13.70mm shield pitch, 2.30mm shield holes and 4.78mm central-tab setback. Standard mini-DIN numbering retained; front face unchanged."
+    },
+    {
+      "ref": "F1",
+      "value": "500mA hold PTC",
+      "symbol": "Polyfuse",
+      "footprint": "lcsc:F1206",
+      "lcsc": "C75464",
+      "mpn": "MF-NSMF050-2",
+      "manufacturer": "BOURNS",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/9de05d43c1e248c08c092bceb30077bc.pdf?productCode=C75464",
+      "nets": {
+        "1": "HOST_POWER_RAW",
+        "2": "USB_5V"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        350.52,
+        246.38
+      ],
+      "source_note": "Shared 500mA hold PTC for both USB-A ports; fed from selected source through U11. This does not increase the keyboard-port current rating."
+    },
+    {
+      "ref": "C1",
+      "value": "100n / 50V",
+      "symbol": "C",
+      "footprint": "lcsc:C0603",
+      "lcsc": "C14663",
+      "mpn": "CC0603KRX7R9BB104",
+      "manufacturer": "YAGEO",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/23ccee80ee542e7cf156a772bb589942.pdf?productCode=C14663",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        238.76,
+        223.52
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "C2",
+      "value": "100n / 50V",
+      "symbol": "C",
+      "footprint": "lcsc:C0603",
+      "lcsc": "C14663",
+      "mpn": "CC0603KRX7R9BB104",
+      "manufacturer": "YAGEO",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/23ccee80ee542e7cf156a772bb589942.pdf?productCode=C14663",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        261.62,
+        223.52
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "C3",
+      "value": "10u / 25V",
+      "symbol": "C",
+      "footprint": "lcsc:C0805",
+      "lcsc": "C15850",
+      "mpn": "CL21A106KAYNNNE",
+      "manufacturer": "Samsung Electro-Mechanics",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/02336ea48ea44ca18c72517dd3cb7b47.pdf?productCode=C15850",
+      "nets": {
+        "1": "AMIGA_5V",
+        "2": "GND"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        284.48,
+        223.52
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "C4",
+      "value": "220u / 10V polymer",
+      "symbol": "C_Polarized",
+      "footprint": "lcsc:CAP-SMD_BD6.3-L6.6-W6.6-LS7.4-FD",
+      "lcsc": "C19270700",
+      "mpn": "JBLM2221M010C058RTM",
+      "manufacturer": "DMBJ",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/25cd8a66a5cec751f287aca4fb3a3d5c.pdf?productCode=C19270700",
+      "nets": {
+        "1": "USB_5V",
+        "2": "GND"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        307.34,
+        223.52
+      ],
+      "source_note": "Shared USB-A bulk reservoir, 35mohm ESR at 100kHz. 176uF minimum at -20% initial tolerance. Amiga-only USB_5V branch; excluded from USB-C recovery load. Verify hot-plug droop and Amiga startup inrush."
+    },
+    {
+      "ref": "C5",
+      "value": "100n / 50V",
+      "symbol": "C",
+      "footprint": "lcsc:C0603",
+      "lcsc": "C14663",
+      "mpn": "CC0603KRX7R9BB104",
+      "manufacturer": "YAGEO",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/23ccee80ee542e7cf156a772bb589942.pdf?productCode=C14663",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        238.76,
+        251.46
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "R1",
+      "value": "4.7k",
+      "symbol": "R",
+      "footprint": "lcsc:R0603",
+      "lcsc": "C23162",
+      "mpn": "0603WAF4701T5E",
+      "manufacturer": "UNI-ROYAL",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/0a975aaa49b7c97f38a963127be4a823.pdf?productCode=C23162",
+      "nets": {
+        "1": "+3V3",
+        "2": "SDA"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        271.78,
+        251.46
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "R2",
+      "value": "4.7k",
+      "symbol": "R",
+      "footprint": "lcsc:R0603",
+      "lcsc": "C23162",
+      "mpn": "0603WAF4701T5E",
+      "manufacturer": "UNI-ROYAL",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/0a975aaa49b7c97f38a963127be4a823.pdf?productCode=C23162",
+      "nets": {
+        "1": "+3V3",
+        "2": "SCL"
+      },
+      "sheet": "interfaces",
+      "sch": [
+        297.18,
+        251.46
+      ],
+      "source_note": "Retained r6 electrical function; LCSC package reviewed for r7."
+    },
+    {
+      "ref": "H1",
+      "value": "OLED / case M3 mount",
+      "symbol": "MountingHole",
+      "footprint": "r7:MountingHole_3.2mm_M3",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {},
+      "sheet": "interfaces",
+      "sch": [
+        30.48,
+        287.02
+      ],
+      "source_note": "Shared PCB/base/OLED mount. M3 nylon spacers; non-purchased mechanical hole."
+    },
+    {
+      "ref": "H2",
+      "value": "OLED / case M3 mount",
+      "symbol": "MountingHole",
+      "footprint": "r7:MountingHole_3.2mm_M3",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {},
+      "sheet": "interfaces",
+      "sch": [
+        83.82,
+        287.02
+      ],
+      "source_note": "Shared PCB/base/OLED mount. M3 nylon spacers; non-purchased mechanical hole."
+    },
+    {
+      "ref": "H3",
+      "value": "OLED / case M3 mount",
+      "symbol": "MountingHole",
+      "footprint": "r7:MountingHole_3.2mm_M3",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {},
+      "sheet": "interfaces",
+      "sch": [
+        137.16,
+        287.02
+      ],
+      "source_note": "Shared PCB/base/OLED mount. M3 nylon spacers; non-purchased mechanical hole."
+    },
+    {
+      "ref": "H4",
+      "value": "OLED / case M3 mount",
+      "symbol": "MountingHole",
+      "footprint": "r7:MountingHole_3.2mm_M3",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {},
+      "sheet": "interfaces",
+      "sch": [
+        190.5,
+        287.02
+      ],
+      "source_note": "Shared PCB/base/OLED mount. M3 nylon spacers; non-purchased mechanical hole."
+    },
+    {
+      "ref": "U1",
+      "value": "RP2350A",
+      "lcsc": "C42411118",
+      "symbol": "RP2350A",
+      "footprint": "lcsc:QFN-60_L7.0-W7.0-P0.40-TL-EP3.4",
+      "mpn": "RP2350A",
+      "manufacturer": "Raspberry Pi(\u6811\u8393\u6d3e)",
+      "datasheet": "https://www.lcsc.com/datasheet/C42411118.pdf",
+      "nets": {
+        "2": "UART_TX",
+        "3": "UART_RX",
+        "4": "SDA",
+        "5": "SCL",
+        "8": "L_KDAT",
+        "9": "L_KCLK",
+        "10": "L_P1_RIGHT",
+        "12": "L_P1_LEFT",
+        "13": "L_P1_DOWN",
+        "14": "L_P1_UP",
+        "15": "L_P1_FIRE",
+        "16": "L_P1_B2",
+        "17": "L_P1_B3",
+        "29": "L_P2_B3",
+        "31": "L_P2_B2",
+        "32": "L_P2_FIRE",
+        "33": "L_P2_RIGHT",
+        "34": "L_P2_LEFT",
+        "40": "L_P2_DOWN",
+        "41": "L_P2_UP",
+        "1": "+3V3",
+        "11": "+3V3",
+        "20": "+3V3",
+        "30": "+3V3",
+        "38": "+3V3",
+        "44": "+3V3",
+        "45": "+3V3",
+        "49": "+3V3",
+        "53": "+3V3",
+        "54": "+3V3",
+        "6": "+1V1",
+        "23": "+1V1",
+        "39": "+1V1",
+        "50": "+1V1",
+        "21": "XIN",
+        "22": "XOUT",
+        "24": "SWCLK",
+        "25": "SWDIO",
+        "26": "RUN",
+        "35": "WL_ON",
+        "36": "WL_DATA",
+        "37": "WL_CS",
+        "43": "WL_CLK",
+        "46": "VREG_AVDD",
+        "47": "GND",
+        "48": "VREG_LX",
+        "51": "USB_DM_MCU",
+        "52": "USB_DP_MCU",
+        "55": "QSPI_SD3",
+        "56": "QSPI_CLK",
+        "57": "QSPI_SD0",
+        "58": "QSPI_SD2",
+        "59": "QSPI_SD1",
+        "60": "QSPI_CS",
+        "61": "GND",
+        "42": "USB_HOST_SELECT"
+      },
+      "sheet": "controller",
+      "sch": [
+        76.2,
+        45.72
+      ],
+      "source_note": "RP2350A QFN-60 plus exposed GND pad 61; GPIO map preserved from r6."
+    },
+    {
+      "ref": "U4",
+      "value": "RMC20452T",
+      "lcsc": "C49451547",
+      "symbol": "RMC20452T",
+      "footprint": "lcsc:WIRELM-SMD_RMC20452T",
+      "mpn": "RMC20452T",
+      "manufacturer": "Raspberry Pi(\u6811\u8393\u6d3e)",
+      "datasheet": "https://www.lcsc.com/datasheet/C49451547.pdf",
+      "nets": {
+        "1": "GND",
+        "3": "WL_CLK",
+        "4": "GND",
+        "5": "WL_DATA",
+        "6": "WL_DOUT",
+        "7": "GND",
+        "8": "WL_LED",
+        "9": "WL_CS",
+        "10": "WL_IRQ",
+        "11": "GND",
+        "12": "WL_ON",
+        "13": "WL_ON",
+        "14": "+3V3",
+        "15": "GND",
+        "16": "+3V3",
+        "21": "GND"
+      },
+      "sheet": "controller",
+      "sch": [
+        284.48,
+        48.26
+      ],
+      "source_note": "RM2 datasheet DS-6 Table 2: shared GP24 data/IRQ via 470R and 10k; GP23 enable, GP25 CS, GP29 CLK."
+    },
+    {
+      "ref": "U5",
+      "value": "W25Q32JVSNIQ / 4MB",
+      "lcsc": "C5355146",
+      "symbol": "W25Q32JVSNIQ",
+      "footprint": "lcsc:SOP-8_L4.9-W3.9-P1.27-LS6.0-BL",
+      "mpn": "W25Q32JVSNIQ",
+      "manufacturer": "Winbond(\u534e\u90a6)",
+      "datasheet": "https://www.lcsc.com/datasheet/C5355146.pdf",
+      "nets": {
+        "1": "QSPI_CS",
+        "2": "QSPI_SD1",
+        "3": "QSPI_SD2",
+        "4": "GND",
+        "5": "QSPI_SD0",
+        "6": "QSPI_CLK",
+        "7": "QSPI_SD3",
+        "8": "+3V3"
+      },
+      "sheet": "controller",
+      "sch": [
+        180.34,
+        48.26
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "U6",
+      "value": "AP63203WU-7 / 3V3",
+      "lcsc": "C780769",
+      "symbol": "AP63203WU-7",
+      "footprint": "lcsc:TSOT-26_L2.9-W1.6-P0.95-LS2.8-BL",
+      "mpn": "AP63203WU-7",
+      "manufacturer": "DIODES(\u7f8e\u53f0)",
+      "datasheet": "https://www.lcsc.com/datasheet/C780769.pdf",
+      "nets": {
+        "1": "+3V3",
+        "2": "SYS_5V",
+        "3": "SYS_5V",
+        "4": "GND",
+        "5": "BUCK_SW",
+        "6": "BUCK_BST"
+      },
+      "sheet": "power",
+      "sch": [
+        76.2,
+        48.26
+      ],
+      "source_note": "3V3 buck from diode-OR SYS_5V. Normal: Amiga power. Recovery: USB-C power. Verify minimum input after diode drop, inrush and USB recovery current."
+    },
+    {
+      "ref": "L1",
+      "value": "3.3uH / dotted end = 1V1",
+      "lcsc": "C42411119",
+      "symbol": "AOTA-B201610S3R3-101-T",
+      "footprint": "lcsc:IND-SMD_L2.0-W1.6_AOTA-B201610S3R3-101-T",
+      "mpn": "AOTA-B201610S3R3-101-T",
+      "manufacturer": "ABRACON",
+      "datasheet": "https://www.lcsc.com/datasheet/C42411119.pdf",
+      "nets": {
+        "1": "+1V1",
+        "2": "VREG_LX"
+      },
+      "sheet": "power",
+      "sch": [
+        180.34,
+        48.26
+      ],
+      "source_note": "Use marked Abracon part. Pad 1 (dot) goes to output, pad 2 to LX; follow Raspberry Pi R4-S1 regulator placement."
+    },
+    {
+      "ref": "L2",
+      "value": "4.7uH / 1.9A",
+      "lcsc": "C780206",
+      "symbol": "SRN4018-4R7M",
+      "footprint": "lcsc:IND-SMD_L4.0-W4.0_SRN4018TA",
+      "mpn": "SRN4018-4R7M",
+      "manufacturer": "BOURNS",
+      "datasheet": "https://www.lcsc.com/datasheet/C780206.pdf",
+      "nets": {
+        "1": "BUCK_SW",
+        "2": "+3V3"
+      },
+      "sheet": "power",
+      "sch": [
+        111.76,
+        48.26
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "Y1",
+      "value": "ABM8-272-T3 / 12MHz",
+      "lcsc": "C20625731",
+      "symbol": "ABM8-272-T3_C20625731",
+      "footprint": "lcsc:CRYSTAL-SMD_4P-L3.2-W2.5-BL",
+      "mpn": "ABM8-272-T3",
+      "manufacturer": "ABRACON",
+      "datasheet": "https://www.lcsc.com/datasheet/C20625731.pdf",
+      "nets": {
+        "1": "XIN",
+        "3": "XTAL_OUT",
+        "2": "GND",
+        "4": "GND"
+      },
+      "sheet": "controller",
+      "sch": [
+        182.88,
+        101.6
+      ],
+      "source_note": "",
+      "function": "RP2350 12MHz clock"
+    },
+    {
+      "ref": "SW1",
+      "value": "RECOVERY",
+      "lcsc": "C393942",
+      "symbol": "TS24CA",
+      "footprint": "lcsc:SW-SMD_2P-TS24CA",
+      "mpn": "TS24CA",
+      "manufacturer": "SHOU HAN(\u9996\u97e9)",
+      "datasheet": "https://lcsc.com/product-detail/Tactile-Switches_SHOU-HAN-TS24CA_C393942.html",
+      "nets": {
+        "1": "RUN",
+        "2": "GND",
+        "3": "GND",
+        "4": "GND"
+      },
+      "sheet": "controller",
+      "sch": [
+        231.14,
+        157.48
+      ],
+      "source_note": "Side-actuated switch beside USB-C, accessible through case pinhole. USB connected: press/release enters ROM recovery. USB absent: normal reset."
+    },
+    {
+      "ref": "D3",
+      "value": "Status / red",
+      "lcsc": "C2286",
+      "symbol": "KT-0603R",
+      "footprint": "lcsc:LED-SMD_L1.6-W0.8-R-RD",
+      "mpn": "KT-0603R",
+      "manufacturer": "KENTO",
+      "datasheet": "https://lcsc.com/product-detail/Light-Emitting-Diodes-LED_Red-LED-0603_C2286.html",
+      "nets": {
+        "1": "GND",
+        "2": "LED_A"
+      },
+      "sheet": "controller",
+      "sch": [
+        353.06,
+        76.2
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R3",
+      "value": "33R",
+      "lcsc": "C25105",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF330JTCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_33R-33R0-1_C25105.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "VREG_AVDD"
+      },
+      "sheet": "power",
+      "sch": [
+        233.68,
+        48.26
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R4",
+      "value": "1k",
+      "lcsc": "C11702",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1001TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_1KR-1001-1_C11702.html",
+      "nets": {
+        "1": "XOUT",
+        "2": "XTAL_OUT"
+      },
+      "sheet": "controller",
+      "sch": [
+        152.4,
+        101.6
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R5",
+      "value": "10k",
+      "lcsc": "C25744",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "QSPI_CS"
+      },
+      "sheet": "controller",
+      "sch": [
+        157.48,
+        73.66
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R6",
+      "value": "1k",
+      "lcsc": "C11702",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1001TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_1KR-1001-1_C11702.html",
+      "nets": {
+        "1": "QSPI_CS",
+        "2": "BOOTSEL"
+      },
+      "sheet": "controller",
+      "sch": [
+        154.94,
+        157.48
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R7",
+      "value": "27R",
+      "lcsc": "C25100",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF270JTCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_27R-27R0-1_C25100.html",
+      "nets": {
+        "1": "USB_DM_MCU",
+        "2": "USB_D-"
+      },
+      "sheet": "controller",
+      "sch": [
+        157.48,
+        210.82
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R8",
+      "value": "27R",
+      "lcsc": "C25100",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF270JTCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_27R-27R0-1_C25100.html",
+      "nets": {
+        "1": "USB_DP_MCU",
+        "2": "USB_D+"
+      },
+      "sheet": "controller",
+      "sch": [
+        205.74,
+        210.82
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R9",
+      "value": "470R",
+      "lcsc": "C25117",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF4700TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://www.lcsc.com/product-detail/C25117.html",
+      "nets": {
+        "1": "WL_DOUT",
+        "2": "WL_DATA"
+      },
+      "sheet": "controller",
+      "sch": [
+        246.38,
+        104.14
+      ],
+      "source_note": "Correct 470-ohm value for RM2 DOUT series combining resistor; C25118 was 47 ohms."
+    },
+    {
+      "ref": "R10",
+      "value": "10k",
+      "lcsc": "C25744",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html",
+      "nets": {
+        "1": "WL_IRQ",
+        "2": "WL_DATA"
+      },
+      "sheet": "controller",
+      "sch": [
+        292.1,
+        104.14
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R11",
+      "value": "1k",
+      "lcsc": "C11702",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1001TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_1KR-1001-1_C11702.html",
+      "nets": {
+        "1": "WL_LED",
+        "2": "LED_A"
+      },
+      "sheet": "controller",
+      "sch": [
+        353.06,
+        48.26
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R12",
+      "value": "10k",
+      "lcsc": "C25744",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "RUN"
+      },
+      "sheet": "controller",
+      "sch": [
+        231.14,
+        182.88
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R13",
+      "value": "10k",
+      "lcsc": "C25744",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html",
+      "nets": {
+        "1": "WL_ON",
+        "2": "GND"
+      },
+      "sheet": "controller",
+      "sch": [
+        246.38,
+        129.54
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C6",
+      "value": "4.7u / 10V",
+      "lcsc": "C23733",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05A475MP5NRNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05A475MP5NRNC_4-7uF-475-20-10V_C23733.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        180.34,
+        73.66
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C7",
+      "value": "4.7u / 10V",
+      "lcsc": "C23733",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05A475MP5NRNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05A475MP5NRNC_4-7uF-475-20-10V_C23733.html",
+      "nets": {
+        "1": "+1V1",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        205.74,
+        73.66
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C8",
+      "value": "4.7u / 10V",
+      "lcsc": "C23733",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05A475MP5NRNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05A475MP5NRNC_4-7uF-475-20-10V_C23733.html",
+      "nets": {
+        "1": "VREG_AVDD",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        233.68,
+        73.66
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C9",
+      "value": "10u / 25V",
+      "lcsc": "C15850",
+      "symbol": "C",
+      "footprint": "lcsc:C0805",
+      "mpn": "CL21A106KAYNNNE",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL21A106KAYNNNE_10uF-106-10-25V_C15850.html",
+      "nets": {
+        "1": "SYS_5V",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        53.34,
+        81.28
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C10",
+      "value": "22u / 25V",
+      "lcsc": "C45783",
+      "symbol": "C",
+      "footprint": "lcsc:C0805",
+      "mpn": "CL21A226MAQNNNE",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://product.samsungsem.com/mlcc/CL21A226MAQNNN.do",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        83.82,
+        81.28
+      ],
+      "source_note": "0805 selected for DC-bias margin: pair approximately 29.8uF typical at 3.3V, versus 19.5uF for former 0603 pair. Verify regulator transients on hardware."
+    },
+    {
+      "ref": "C11",
+      "value": "22u / 25V",
+      "lcsc": "C45783",
+      "symbol": "C",
+      "footprint": "lcsc:C0805",
+      "mpn": "CL21A226MAQNNNE",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://product.samsungsem.com/mlcc/CL21A226MAQNNN.do",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        111.76,
+        81.28
+      ],
+      "source_note": "0805 selected for DC-bias margin: pair approximately 29.8uF typical at 3.3V, versus 19.5uF for former 0603 pair. Verify regulator transients on hardware."
+    },
+    {
+      "ref": "C12",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "BUCK_BST",
+        "2": "BUCK_SW"
+      },
+      "sheet": "power",
+      "sch": [
+        137.16,
+        48.26
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C13",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        30.48,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C14",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+1V1",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        55.88,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C15",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        81.28,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C16",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        106.68,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C17",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+1V1",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        132.08,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C18",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        157.48,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C19",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        182.88,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C20",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+1V1",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        208.28,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C21",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        233.68,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C22",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        259.08,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C23",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        284.48,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C24",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        309.88,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C25",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        335.28,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C26",
+      "value": "10u / 25V",
+      "lcsc": "C15850",
+      "symbol": "C",
+      "footprint": "lcsc:C0805",
+      "mpn": "CL21A106KAYNNNE",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL21A106KAYNNNE_10uF-106-10-25V_C15850.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        335.28,
+        81.28
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C27",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        360.68,
+        152.4
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C28",
+      "value": "15p / C0G",
+      "lcsc": "C86285",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05C150JB5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Others_Samsung-Electro-Mechanics_CL05C150JB5NNNC_Samsung-Electro-Mechanics-CL05C150JB5NNNC_C86285.html",
+      "nets": {
+        "1": "XIN",
+        "2": "GND"
+      },
+      "sheet": "controller",
+      "sch": [
+        175.26,
+        127.0
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C29",
+      "value": "15p / C0G",
+      "lcsc": "C86285",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05C150JB5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Others_Samsung-Electro-Mechanics_CL05C150JB5NNNC_Samsung-Electro-Mechanics-CL05C150JB5NNNC_C86285.html",
+      "nets": {
+        "1": "XTAL_OUT",
+        "2": "GND"
+      },
+      "sheet": "controller",
+      "sch": [
+        203.2,
+        127.0
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "#FLG01",
+      "value": "PWR_FLAG",
+      "symbol": "PWR_FLAG",
+      "footprint": "",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {
+        "1": "AMIGA_5V"
+      },
+      "sheet": "power",
+      "sch": [
+        30.48,
+        228.6
+      ],
+      "source_note": "External input or converter output supply declaration."
+    },
+    {
+      "ref": "#FLG02",
+      "value": "PWR_FLAG",
+      "symbol": "PWR_FLAG",
+      "footprint": "",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {
+        "1": "GND"
+      },
+      "sheet": "power",
+      "sch": [
+        71.12,
+        228.6
+      ],
+      "source_note": "External input or converter output supply declaration."
+    },
+    {
+      "ref": "#FLG04",
+      "value": "PWR_FLAG",
+      "symbol": "PWR_FLAG",
+      "footprint": "",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {
+        "1": "USB_5V"
+      },
+      "sheet": "power",
+      "sch": [
+        152.4,
+        228.6
+      ],
+      "source_note": "External input or converter output supply declaration."
+    },
+    {
+      "ref": "#FLG05",
+      "value": "PWR_FLAG",
+      "symbol": "PWR_FLAG",
+      "footprint": "",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {
+        "1": "+3V3"
+      },
+      "sheet": "power",
+      "sch": [
+        193.04,
+        228.6
+      ],
+      "source_note": "External input or converter output supply declaration."
+    },
+    {
+      "ref": "#FLG06",
+      "value": "PWR_FLAG",
+      "symbol": "PWR_FLAG",
+      "footprint": "",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {
+        "1": "+1V1"
+      },
+      "sheet": "power",
+      "sch": [
+        233.68,
+        228.6
+      ],
+      "source_note": "External input or converter output supply declaration."
+    },
+    {
+      "ref": "#FLG08",
+      "value": "PWR_FLAG",
+      "symbol": "PWR_FLAG",
+      "footprint": "",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {
+        "1": "USB_C_VBUS"
+      },
+      "sheet": "usb",
+      "sch": [
+        124.46,
+        180.34
+      ],
+      "source_note": "External PC USB VBUS input."
+    },
+    {
+      "ref": "J10",
+      "value": "USB-C power / recovery",
+      "lcsc": "C165948",
+      "symbol": "USB_C_Service",
+      "footprint": "lcsc:USB-C_SMD-TYPE-C-31-M-12_1",
+      "mpn": "TYPE-C-31-M-12",
+      "manufacturer": "\u97e9\u56fd\u97e9\u8363",
+      "datasheet": "https://lcsc.com/product-detail/USB-Type-C_Korean-Hroparts-Elec-TYPE-C-31-M-12_C165948.html",
+      "nets": {
+        "A6": "USB_SERVICE_D+",
+        "B6": "USB_SERVICE_D+",
+        "A7": "USB_SERVICE_D-",
+        "B7": "USB_SERVICE_D-",
+        "A5": "USB_CC1",
+        "B5": "USB_CC2",
+        "A4B9": "USB_C_VBUS",
+        "B4A9": "USB_C_VBUS",
+        "A1B12": "GND",
+        "B1A12": "GND",
+        "1": "GND",
+        "2": "GND",
+        "3": "GND",
+        "4": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        76.2,
+        60.96
+      ],
+      "source_note": "VBUS powers SYS_5V through D2 only; isolated from Amiga power and USB-A VBUS."
+    },
+    {
+      "ref": "U7",
+      "value": "TS3USB221ARSER",
+      "lcsc": "C128396",
+      "symbol": "USB_Mux",
+      "footprint": "lcsc:UQFN-10_L2.0-W1.5-P0.50-BL",
+      "mpn": "TS3USB221ARSER",
+      "manufacturer": "TI(\u5fb7\u5dde\u4eea\u5668)",
+      "datasheet": "https://lcsc.com/product-detail/USB_TI_TS3USB221ARSER_TS3USB221ARSER_C128396.html",
+      "nets": {
+        "1": "USB_SERVICE_D+",
+        "2": "USB_SERVICE_D-",
+        "3": "USB_HOST_D+",
+        "4": "USB_HOST_D-",
+        "8": "USB_D+",
+        "7": "USB_D-",
+        "9": "USB_HOST_SELECT",
+        "10": "+3V3",
+        "5": "GND",
+        "6": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        233.68,
+        60.96
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "Q1",
+      "value": "AO3400A",
+      "lcsc": "C20917",
+      "symbol": "AO3400A",
+      "footprint": "lcsc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+      "mpn": "AO3400A",
+      "manufacturer": "Alpha & Omega Semiconductor",
+      "datasheet": "https://www.lcsc.com/product-detail/C20917.html",
+      "nets": {
+        "1": "AMIGA_ENABLE_GATE",
+        "2": "GND",
+        "3": "AMIGA_ISOLATE"
+      },
+      "sheet": "control",
+      "sch": [
+        325.12,
+        60.96
+      ],
+      "source_note": "Enables the bus switches only with keyboard-port power present; Q3 overrides in recovery.",
+      "function": "Amiga interface enable"
+    },
+    {
+      "ref": "R14",
+      "value": "5.1k",
+      "lcsc": "C25905",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF5101TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_5-1KR-5101-1_C25905.html",
+      "nets": {
+        "1": "USB_CC1",
+        "2": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        43.18,
+        116.84
+      ],
+      "source_note": "",
+      "function": "USB-C CC1 pull-down"
+    },
+    {
+      "ref": "R15",
+      "value": "5.1k",
+      "lcsc": "C25905",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF5101TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_5-1KR-5101-1_C25905.html",
+      "nets": {
+        "1": "USB_CC2",
+        "2": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        91.44,
+        116.84
+      ],
+      "source_note": "",
+      "function": "USB-C CC2 pull-down"
+    },
+    {
+      "ref": "R16",
+      "value": "10k",
+      "lcsc": "C25744",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "AMIGA_ISOLATE"
+      },
+      "sheet": "control",
+      "sch": [
+        365.76,
+        60.96
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R17",
+      "value": "100k",
+      "lcsc": "C25741",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1003TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_100KR-1003-1_C25741.html",
+      "nets": {
+        "1": "USB_C_VBUS",
+        "2": "GND"
+      },
+      "sheet": "control",
+      "sch": [
+        30.48,
+        195.58
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "R18",
+      "value": "100k",
+      "lcsc": "C25741",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1003TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_100KR-1003-1_C25741.html",
+      "nets": {
+        "1": "USB_PRESENT",
+        "2": "RECOVERY_CLR"
+      },
+      "sheet": "control",
+      "sch": [
+        99.06,
+        200.66
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C30",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        304.8,
+        60.96
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "C31",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "USB_C_VBUS",
+        "2": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        91.44,
+        180.34
+      ],
+      "source_note": ""
+    },
+    {
+      "ref": "Q2",
+      "value": "AO3400A",
+      "lcsc": "C20917",
+      "symbol": "AO3400A",
+      "footprint": "lcsc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+      "mpn": "AO3400A",
+      "manufacturer": "Alpha & Omega Semiconductor",
+      "datasheet": "https://www.lcsc.com/product-detail/C20917.html",
+      "nets": {
+        "1": "RECOVERY_Q",
+        "2": "GND",
+        "3": "BOOTSEL"
+      },
+      "sheet": "controller",
+      "sch": [
+        180.34,
+        157.48
+      ],
+      "source_note": "3.3V-driven MOSFET has specified RDS(on) at 2.5V; latches QSPI CS low through R6 for hardware ROM entry.",
+      "function": "BOOTSEL"
+    },
+    {
+      "ref": "D2",
+      "value": "BAT54W / reset clamp",
+      "lcsc": "C131469",
+      "symbol": "BAT54W_C131469",
+      "footprint": "lcsc:SOD-123_L2.8-W1.8-LS3.7-RD",
+      "mpn": "BAT54W",
+      "manufacturer": "JSCJ",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/5cc14f52f3174540b8df7dfbd09f2c79.pdf?productCode=C131469",
+      "nets": {
+        "1": "RUN",
+        "2": "USB_HOST_ENABLE"
+      },
+      "sheet": "control",
+      "sch": [
+        228.6,
+        111.76
+      ],
+      "source_note": "Anode USB_HOST_ENABLE, cathode RUN. VF <= 0.24V at 0.1mA and 25C; ON VIL max 0.5V. R20 limits clamp current below 35uA. Verify cold-temperature margin on prototype."
+    },
+    {
+      "ref": "U8",
+      "value": "CH334P / two ports used",
+      "lcsc": "C5373042",
+      "symbol": "CH334P",
+      "footprint": "lcsc:QFN-16_L3.0-W3.0-P0.50-BL-EP1.7",
+      "mpn": "CH334P",
+      "manufacturer": "WCH(\u5357\u4eac\u6c81\u6052)",
+      "datasheet": "https://www.lcsc.com/datasheet/C5373042.pdf",
+      "nets": {
+        "1": "HUB_XO",
+        "2": "HUB_XI",
+        "7": "USB2_D-",
+        "8": "USB2_D+",
+        "9": "USB1_D-",
+        "10": "USB1_D+",
+        "11": "USB_HOST_D-",
+        "12": "USB_HOST_D+",
+        "15": "+3V3",
+        "16": "+3V3",
+        "17": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        294.64,
+        152.4
+      ],
+      "source_note": "CH334P 4-port hub; downstream ports 3/4 unused. External 3V3 feeds V5 and VDD33 per WCH application guide; reset and PGANG left open."
+    },
+    {
+      "ref": "Y2",
+      "value": "ABM8-272-T3 / 12MHz",
+      "lcsc": "C20625731",
+      "symbol": "ABM8-272-T3_C20625731",
+      "footprint": "lcsc:CRYSTAL-SMD_4P-L3.2-W2.5-BL",
+      "mpn": "ABM8-272-T3",
+      "manufacturer": "ABRACON",
+      "datasheet": "https://www.lcsc.com/datasheet/C20625731.pdf",
+      "nets": {
+        "1": "HUB_XI",
+        "3": "HUB_XO",
+        "2": "GND",
+        "4": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        350.52,
+        152.4
+      ],
+      "source_note": "External crystal, hub internal load capacitors. Check effective crystal load against WCH oscillator specification.",
+      "function": "USB hub 12MHz clock"
+    },
+    {
+      "ref": "C32",
+      "value": "100n / 16V",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        281.94,
+        205.74
+      ],
+      "source_note": "",
+      "function": "USB hub decoupling"
+    },
+    {
+      "ref": "C33",
+      "value": "10u / 25V",
+      "lcsc": "C15850",
+      "symbol": "C",
+      "footprint": "lcsc:C0805",
+      "mpn": "CL21A106KAYNNNE",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL21A106KAYNNNE_10uF-106-10-25V_C15850.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        330.2,
+        205.74
+      ],
+      "source_note": "",
+      "function": "USB hub bulk decoupling"
+    },
+    {
+      "ref": "#FLG09",
+      "value": "PWR_FLAG",
+      "symbol": "PWR_FLAG",
+      "footprint": "",
+      "lcsc": "",
+      "mpn": "",
+      "manufacturer": "",
+      "datasheet": "",
+      "nets": {
+        "1": "VREG_AVDD"
+      },
+      "sheet": "power",
+      "sch": [
+        274.32,
+        228.6
+      ],
+      "source_note": "Isolated power OR rail driven through D1/D2."
+    },
+    {
+      "ref": "D4",
+      "value": "TPD2EUSB30DRTR",
+      "symbol": "TPD2EUSB30DRTR",
+      "footprint": "lcsc:SOT-9X3-3_L1.0-W0.8-P0.35-LS1.0-BR",
+      "lcsc": "C97502",
+      "mpn": "TPD2EUSB30DRTR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.ti.com/lit/ds/symlink/tpd2eusb30.pdf",
+      "nets": {
+        "1": "USB1_D+",
+        "2": "USB1_D-",
+        "3": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        45.72,
+        180.34
+      ],
+      "source_note": "Ground-referenced 0.7pF USB ESD array; no supply clamp or unpowered-rail backfeed. Pin 1 D+, 2 D-, 3 GND verified against TI Rev G."
+    },
+    {
+      "ref": "D5",
+      "value": "TPD2EUSB30DRTR",
+      "symbol": "TPD2EUSB30DRTR",
+      "footprint": "lcsc:SOT-9X3-3_L1.0-W0.8-P0.35-LS1.0-BR",
+      "lcsc": "C97502",
+      "mpn": "TPD2EUSB30DRTR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.ti.com/lit/ds/symlink/tpd2eusb30.pdf",
+      "nets": {
+        "1": "USB2_D+",
+        "2": "USB2_D-",
+        "3": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        93.98,
+        180.34
+      ],
+      "source_note": "Ground-referenced 0.7pF USB ESD array; no supply clamp or unpowered-rail backfeed. Pin 1 D+, 2 D-, 3 GND verified against TI Rev G."
+    },
+    {
+      "ref": "D6",
+      "value": "TPD2EUSB30DRTR",
+      "symbol": "TPD2EUSB30DRTR",
+      "footprint": "lcsc:SOT-9X3-3_L1.0-W0.8-P0.35-LS1.0-BR",
+      "lcsc": "C97502",
+      "mpn": "TPD2EUSB30DRTR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.ti.com/lit/ds/symlink/tpd2eusb30.pdf",
+      "nets": {
+        "1": "USB_SERVICE_D+",
+        "2": "USB_SERVICE_D-",
+        "3": "GND"
+      },
+      "sheet": "usb",
+      "sch": [
+        358.14,
+        60.96
+      ],
+      "source_note": "Ground-referenced 0.7pF USB ESD array; no supply clamp or unpowered-rail backfeed. Pin 1 D+, 2 D-, 3 GND verified against TI Rev G."
+    },
+    {
+      "ref": "Q3",
+      "lcsc": "C20917",
+      "symbol": "AO3400A",
+      "footprint": "lcsc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+      "mpn": "AO3400A",
+      "manufacturer": "Alpha & Omega Semiconductor",
+      "datasheet": "https://www.lcsc.com/product-detail/C20917.html",
+      "value": "AO3400A",
+      "nets": {
+        "1": "RECOVERY_Q",
+        "2": "GND",
+        "3": "AMIGA_ENABLE_GATE"
+      },
+      "sch": [
+        325.12,
+        104.14
+      ],
+      "sheet": "control",
+      "source_note": "",
+      "function": "Recovery isolation"
+    },
+    {
+      "ref": "R20",
+      "lcsc": "C25741",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1003TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_100KR-1003-1_C25741.html",
+      "value": "100k",
+      "nets": {
+        "1": "USB_HOST_SELECT",
+        "2": "USB_HOST_ENABLE"
+      },
+      "sch": [
+        190.5,
+        111.76
+      ],
+      "sheet": "control",
+      "source_note": "100k limits reset-clamp current below 35uA; TPS22918 ON input leakage leaves ample enable voltage."
+    },
+    {
+      "ref": "R21",
+      "lcsc": "C25744",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html",
+      "value": "10k",
+      "nets": {
+        "1": "AMIGA_5V",
+        "2": "AMIGA_ENABLE_GATE"
+      },
+      "sch": [
+        287.02,
+        60.96
+      ],
+      "sheet": "control",
+      "source_note": ""
+    },
+    {
+      "ref": "R22",
+      "lcsc": "C25741",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1003TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_100KR-1003-1_C25741.html",
+      "value": "100k",
+      "nets": {
+        "1": "AMIGA_ENABLE_GATE",
+        "2": "GND"
+      },
+      "sch": [
+        287.02,
+        104.14
+      ],
+      "sheet": "control",
+      "source_note": ""
+    },
+    {
+      "ref": "R24",
+      "lcsc": "C25776",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF3002TCE",
+      "manufacturer": "UNI-ROYAL",
+      "datasheet": "https://www.lcsc.com/product-detail/C25776.html",
+      "value": "30k",
+      "nets": {
+        "1": "USB_C_VBUS",
+        "2": "POWER_PRIORITY"
+      },
+      "sch": [
+        30.48,
+        60.96
+      ],
+      "sheet": "control",
+      "source_note": ""
+    },
+    {
+      "ref": "R25",
+      "lcsc": "C25744",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html",
+      "value": "10k",
+      "nets": {
+        "1": "POWER_PRIORITY",
+        "2": "GND"
+      },
+      "sch": [
+        30.48,
+        96.52
+      ],
+      "sheet": "control",
+      "source_note": ""
+    },
+    {
+      "ref": "U9",
+      "lcsc": "C2866652",
+      "symbol": "SN74HCS74PWR",
+      "footprint": "lcsc:TSSOP-14_L5.0-W4.5-P0.65-LS6.4-BL",
+      "mpn": "SN74HCS74PWR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.lcsc.com/product-detail/C2866652.html",
+      "value": "SN74HCS74PWR / recovery latch",
+      "nets": {
+        "1": "RECOVERY_CLR",
+        "2": "GND",
+        "3": "GND",
+        "4": "RUN",
+        "5": "RECOVERY_Q",
+        "6": "USB_HOST_SELECT",
+        "7": "GND",
+        "10": "+3V3",
+        "11": "GND",
+        "12": "GND",
+        "13": "+3V3",
+        "14": "+3V3"
+      },
+      "sch": [
+        177.8,
+        187.96
+      ],
+      "sheet": "control",
+      "source_note": "First flip-flop used as an asynchronous latch; Schmitt inputs accept RC reset. Second flip-flop inputs tied. USB absent clears; RECOVERY/RUN low presets. Both asserted is safe only while RUN holds MCU and host power off."
+    },
+    {
+      "ref": "U10",
+      "lcsc": "C3235557",
+      "symbol": "TPS2116DRLR",
+      "footprint": "lcsc:SOT-583-8_L2.1-W1.6-P0.50-LS1.6-BL",
+      "mpn": "TPS2116DRLR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.lcsc.com/product-detail/C3235557.html",
+      "value": "TPS2116DRLR / automatic power",
+      "nets": {
+        "1": "GND",
+        "2": "SYS_5V",
+        "3": "USB_C_VBUS",
+        "4": "POWER_PRIORITY",
+        "5": "USB_C_VBUS",
+        "6": "AMIGA_5V",
+        "7": "SYS_5V"
+      },
+      "sch": [
+        88.9,
+        60.96
+      ],
+      "sheet": "control",
+      "source_note": "USB-C priority, keyboard connector fallback; 30k/10k sets nominal 4.0V switching threshold. Reverse-current blocking; no guaranteed 100mA input current limit."
+    },
+    {
+      "ref": "U11",
+      "lcsc": "C131941",
+      "symbol": "TPS22918DBVR",
+      "footprint": "lcsc:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR",
+      "mpn": "TPS22918DBVR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.lcsc.com/product-detail/C131941.html",
+      "value": "TPS22918DBVR / USB-A power",
+      "nets": {
+        "1": "SYS_5V",
+        "2": "GND",
+        "3": "USB_HOST_ENABLE",
+        "4": "HOST_SLEW",
+        "6": "HOST_POWER_RAW"
+      },
+      "sch": [
+        208.28,
+        60.96
+      ],
+      "sheet": "control",
+      "source_note": "CT=10nF gives about 26.6ms typical rise; host bulk and peripherals disconnected during recovery. QOD open. Shared 500mA PTC remains downstream."
+    },
+    {
+      "ref": "U12",
+      "lcsc": "C7836",
+      "symbol": "SN74LVC1G17DBVR",
+      "footprint": "lcsc:SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BR",
+      "mpn": "SN74LVC1G17DBVR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.lcsc.com/product-detail/C7836.html",
+      "value": "SN74LVC1G17DBVR / VBUS sense",
+      "nets": {
+        "2": "USB_C_VBUS",
+        "3": "GND",
+        "4": "USB_PRESENT",
+        "5": "+3V3"
+      },
+      "sch": [
+        60.96,
+        165.1
+      ],
+      "sheet": "control",
+      "source_note": "5.5V-tolerant Schmitt input and Ioff avoid back-powering 3V3; full-swing output gives reliable recovery clear without diode-threshold assumptions."
+    },
+    {
+      "ref": "C34",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "value": "100n / 16V",
+      "nets": {
+        "1": "RECOVERY_CLR",
+        "2": "GND"
+      },
+      "sch": [
+        132.08,
+        226.06
+      ],
+      "sheet": "control",
+      "source_note": ""
+    },
+    {
+      "ref": "C35",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "value": "100n / 16V",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sch": [
+        226.06,
+        226.06
+      ],
+      "sheet": "control",
+      "source_note": ""
+    },
+    {
+      "ref": "C36",
+      "lcsc": "C23733",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05A475MP5NRNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05A475MP5NRNC_4-7uF-475-20-10V_C23733.html",
+      "value": "4.7u / 10V",
+      "nets": {
+        "1": "USB_C_VBUS",
+        "2": "GND"
+      },
+      "sch": [
+        66.04,
+        111.76
+      ],
+      "sheet": "control",
+      "source_note": ""
+    },
+    {
+      "ref": "C37",
+      "lcsc": "C23733",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05A475MP5NRNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05A475MP5NRNC_4-7uF-475-20-10V_C23733.html",
+      "value": "4.7u / 10V",
+      "nets": {
+        "1": "AMIGA_5V",
+        "2": "GND"
+      },
+      "sch": [
+        109.22,
+        111.76
+      ],
+      "sheet": "control",
+      "source_note": ""
+    },
+    {
+      "ref": "C38",
+      "lcsc": "C15195",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B103KB5NNNC",
+      "manufacturer": "Samsung Electro-Mechanics",
+      "datasheet": "https://www.lcsc.com/product-detail/C15195.html",
+      "value": "10n / 50V",
+      "nets": {
+        "1": "HOST_SLEW",
+        "2": "GND"
+      },
+      "sch": [
+        248.92,
+        60.96
+      ],
+      "sheet": "control",
+      "source_note": ""
+    },
+    {
+      "ref": "C39",
+      "lcsc": "C23733",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05A475MP5NRNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05A475MP5NRNC_4-7uF-475-20-10V_C23733.html",
+      "value": "4.7u / 10V",
+      "nets": {
+        "1": "SYS_5V",
+        "2": "GND"
+      },
+      "sch": [
+        165.1,
+        60.96
+      ],
+      "sheet": "control",
+      "source_note": ""
+    },
+    {
+      "ref": "C40",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "value": "100n / 16V",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sch": [
+        60.96,
+        226.06
+      ],
+      "sheet": "control",
+      "source_note": ""
+    }
+  ],
+  "catalog": {
+    "C42411118": {
+      "symbol": "RP2350A_C42411118",
+      "footprint": "lcsc:QFN-60_L7.0-W7.0-P0.40-TL-EP3.4",
+      "mpn": "RP2350A",
+      "manufacturer": "Raspberry Pi(\u6811\u8393\u6d3e)",
+      "datasheet": "https://www.lcsc.com/datasheet/C42411118.pdf"
+    },
+    "C49451547": {
+      "symbol": "RMC20452T_C49451547",
+      "footprint": "lcsc:WIRELM-SMD_RMC20452T",
+      "mpn": "RMC20452T",
+      "manufacturer": "Raspberry Pi(\u6811\u8393\u6d3e)",
+      "datasheet": "https://www.lcsc.com/datasheet/C49451547.pdf"
+    },
+    "C42411119": {
+      "symbol": "AOTA-B201610S3R3-101-T",
+      "footprint": "lcsc:IND-SMD_L2.0-W1.6_AOTA-B201610S3R3-101-T",
+      "mpn": "AOTA-B201610S3R3-101-T",
+      "manufacturer": "ABRACON",
+      "datasheet": "https://www.lcsc.com/datasheet/C42411119.pdf"
+    },
+    "C20625731": {
+      "symbol": "ABM8-272-T3_C20625731",
+      "footprint": "lcsc:CRYSTAL-SMD_4P-L3.2-W2.5-BL",
+      "mpn": "ABM8-272-T3",
+      "manufacturer": "ABRACON",
+      "datasheet": "https://www.lcsc.com/datasheet/C20625731.pdf"
+    },
+    "C44508": {
+      "symbol": "SN74CBTD3861DBQR",
+      "footprint": "lcsc:SSOP-24_L8.6-W3.9-P0.65-LS6.0-BL",
+      "mpn": "SN74CBTD3861DBQR",
+      "manufacturer": "TI(\u5fb7\u5dde\u4eea\u5668)",
+      "datasheet": "https://lcsc.com/product-detail/74-Series_TI_SN74CBTD3861DBQR_SN74CBTD3861DBQR_C44508.html"
+    },
+    "C192513": {
+      "symbol": "EXB-38V103JV",
+      "footprint": "lcsc:RES-ARRAY-SMD_0603-8P-L3.2-W1.6-BL",
+      "mpn": "EXB38V103JV",
+      "manufacturer": "PANASONIC(\u677e\u4e0b)",
+      "datasheet": "https://lcsc.com/product-detail/Others_PANASONIC_EXB-38V103JV_PANASONIC-EXB-38V103JV_C192513.html"
+    },
+    "C706880": {
+      "symbol": "X6511WV-08H-C30D60",
+      "footprint": "lcsc:HDR-TH_8P-P2.54-V-M",
+      "mpn": "X6511WV-08H-C60D30",
+      "manufacturer": "XKB Connection(\u4e2d\u56fd\u661f\u5764)",
+      "datasheet": "https://lcsc.com/product-detail/Pin-Header-Female-Header_XKB-Connectivity-X6511WV-08H-C30D60_C706880.html"
+    },
+    "C706878": {
+      "symbol": "X6511WV-06H-C30D60",
+      "footprint": "lcsc:HDR-TH_6P-P2.54-V-M",
+      "mpn": "X6511WV-06H-C60D30",
+      "manufacturer": "XKB Connection(\u4e2d\u56fd\u661f\u5764)",
+      "datasheet": "https://lcsc.com/product-detail/Pin-Header-Female-Header_XKB-Connectivity-X6511WV-06H-C30D60_C706878.html"
+    },
+    "C7509546": {
+      "symbol": "DS1023-1X4SF11",
+      "footprint": "lcsc:HDR-TH_4P-P2.54-V-F",
+      "mpn": "DS1023-1x4SF11",
+      "manufacturer": "CONNFLY",
+      "datasheet": "https://www.lcsc.com/datasheet/C7509546.pdf"
+    },
+    "C7428703": {
+      "symbol": "DIN-603",
+      "footprint": "lcsc:CONN-TH_DIN-603",
+      "mpn": "DIN-603",
+      "manufacturer": "HOOYA(\u7693\u5b87\u7535\u5b50)",
+      "datasheet": "https://www.lcsc.com/datasheet/C7428703.pdf"
+    },
+    "C706876": {
+      "symbol": "X6511WV-04H-C30D60",
+      "footprint": "lcsc:HDR-TH_4P-P2.54-V-M",
+      "mpn": "X6511WV-04H-C60D30",
+      "manufacturer": "XKB Connection(\u4e2d\u56fd\u661f\u5764)",
+      "datasheet": "https://lcsc.com/product-detail/Pin-Header-Female-Header_XKB-Connectivity-X6511WV-04H-C30D60_C706876.html"
+    },
+    "C706874": {
+      "symbol": "X6511WV-02H-C30D60",
+      "footprint": "lcsc:HDR-TH_2P-P2.54-V-M",
+      "mpn": "X6511WV-02H-C60D30",
+      "manufacturer": "XKB Connection(\u4e2d\u56fd\u661f\u5764)",
+      "datasheet": "https://lcsc.com/product-detail/Pin-Header-Female-Header_XKB-Connectivity-X6511WV-02H-C30D60_C706874.html"
+    },
+    "C55099243": {
+      "symbol": "PZ2.0-1X3PZZ-L8.7",
+      "footprint": "lcsc:HDR-TH_3P-P2.00-V-M_1",
+      "mpn": "PZ2.0-1x3PZZ-L8.7",
+      "manufacturer": "SHOU HAN(\u9996\u97e9)",
+      "datasheet": "https://www.lcsc.com/datasheet/C55099243.pdf"
+    },
+    "C8598": {
+      "symbol": "B5819W_C8598",
+      "footprint": "lcsc:SOD-123_L2.7-W1.6-LS3.7-RD-1",
+      "mpn": "B5819W SL",
+      "manufacturer": "CJ(\u6c5f\u82cf\u957f\u7535/\u957f\u6676)",
+      "datasheet": "https://lcsc.com/product-detail/Schottky-Barrier-Diodes-SBD_B5819W-SL_C8598.html"
+    },
+    "C75464": {
+      "symbol": "MF-NSMF050-2",
+      "footprint": "lcsc:F1206",
+      "mpn": "MF-NSMF050-2",
+      "manufacturer": "BOURNS",
+      "datasheet": "https://lcsc.com/product-detail/Surface-Mount-Fuses_BOURNS_MF-NSMF050-2_0-5A-13-2V-Self-healing-fuse_C75464.html"
+    },
+    "C14663": {
+      "symbol": "CC0603KRX7R9BB104",
+      "footprint": "lcsc:C0603",
+      "mpn": "CC0603KRX7R9BB104",
+      "manufacturer": "YAGEO(\u56fd\u5de8)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_100nF-104-10-50V_C14663.html"
+    },
+    "C15850": {
+      "symbol": "CL21A106KAYNNNE",
+      "footprint": "lcsc:C0805",
+      "mpn": "CL21A106KAYNNNE",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL21A106KAYNNNE_10uF-106-10-25V_C15850.html"
+    },
+    "C970688": {
+      "symbol": "RVT1A151M0605150UF10V",
+      "footprint": "lcsc:CAP-SMD_BD6.3-L6.6-W6.6-LS7.2-FD-H5.4",
+      "mpn": "RVT1A151M0605 150UF 10V",
+      "manufacturer": "DMBJ(\u632f\u5b9d\u4f73)",
+      "datasheet": "https://www.lcsc.com/datasheet/C970688.pdf"
+    },
+    "C23162": {
+      "symbol": "0603WAF4701T5E",
+      "footprint": "lcsc:R0603",
+      "mpn": "0603WAF4701T5E",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_4-7KR-4701-1_C23162.html"
+    },
+    "C780769": {
+      "symbol": "AP63203WU-7",
+      "footprint": "lcsc:TSOT-26_L2.9-W1.6-P0.95-LS2.8-BL",
+      "mpn": "AP63203WU-7",
+      "manufacturer": "DIODES(\u7f8e\u53f0)",
+      "datasheet": "https://www.lcsc.com/datasheet/C780769.pdf"
+    },
+    "C5355146": {
+      "symbol": "W25Q32JVSNIQ",
+      "footprint": "lcsc:SOP-8_L4.9-W3.9-P1.27-LS6.0-BL",
+      "mpn": "W25Q32JVSNIQ",
+      "manufacturer": "Winbond(\u534e\u90a6)",
+      "datasheet": "https://www.lcsc.com/datasheet/C5355146.pdf"
+    },
+    "C23733": {
+      "symbol": "CL05A475MP5NRNC",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05A475MP5NRNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05A475MP5NRNC_4-7uF-475-20-10V_C23733.html"
+    },
+    "C25105": {
+      "symbol": "0402WGF330JTCE",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF330JTCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_33R-33R0-1_C25105.html"
+    },
+    "C86285": {
+      "symbol": "CL05C150JB5NNNC",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05C150JB5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Others_Samsung-Electro-Mechanics_CL05C150JB5NNNC_Samsung-Electro-Mechanics-CL05C150JB5NNNC_C86285.html"
+    },
+    "C1525": {
+      "symbol": "CL05B104KO5NNNC",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html"
+    },
+    "C11702": {
+      "symbol": "0402WGF1001TCE",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1001TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_1KR-1001-1_C11702.html"
+    },
+    "C25744": {
+      "symbol": "0402WGF1002TCE",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html"
+    },
+    "C25118": {
+      "symbol": "0402WGF470JTCE",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF470JTCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_47R-47R0-1_C25118.html"
+    },
+    "C25804": {
+      "symbol": "0603WAF1002T5E",
+      "footprint": "lcsc:R0603",
+      "mpn": "0603WAF1002T5E",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25804.html"
+    },
+    "C59461": {
+      "symbol": "CL10A226MQ8NRNC",
+      "footprint": "lcsc:C0603",
+      "mpn": "CL10A226MQ8NRNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A226MQ8NRNC_22uF-226-20-6-3V_C59461.html"
+    },
+    "C720477": {
+      "symbol": "TS-1088-AR02016",
+      "footprint": "lcsc:SW-SMD_L3.9-W3.0-P4.45",
+      "mpn": "TS-1088-AR02016",
+      "manufacturer": "XUNPU(\u8baf\u666e)",
+      "datasheet": "https://lcsc.com/product-detail/Tactile-Switches_XUNPU-TS-1088-AR02016_C720477.html"
+    },
+    "C10418": {
+      "symbol": "microUSBFemale",
+      "footprint": "lcsc:MICRO-USB-SMD_5P-P0.65-H-F_C10418",
+      "mpn": "920-E52A2021S10100",
+      "manufacturer": "\u7cbe\u62d3\u91d1",
+      "datasheet": "https://lcsc.com/product-detail/Micro-USB-Connectors_MICRO-USB-5S-B-Type-horns-High-temperature_C10418.html"
+    },
+    "C780206": {
+      "symbol": "SRN4018-4R7M",
+      "footprint": "lcsc:IND-SMD_L4.0-W4.0_SRN4018TA",
+      "mpn": "SRN4018-4R7M",
+      "manufacturer": "BOURNS",
+      "datasheet": "https://www.lcsc.com/datasheet/C780206.pdf"
+    },
+    "C25100": {
+      "symbol": "0402WGF270JTCE",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF270JTCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_27R-27R0-1_C25100.html"
+    },
+    "C2286": {
+      "symbol": "KT-0603R",
+      "footprint": "lcsc:LED-SMD_L1.6-W0.8-R-RD",
+      "mpn": "KT-0603R",
+      "manufacturer": "KENTO",
+      "datasheet": "https://lcsc.com/product-detail/Light-Emitting-Diodes-LED_Red-LED-0603_C2286.html"
+    },
+    "C393942": {
+      "symbol": "TS24CA",
+      "footprint": "lcsc:SW-SMD_2P-TS24CA",
+      "mpn": "TS24CA",
+      "manufacturer": "SHOU HAN(\u9996\u97e9)",
+      "datasheet": "https://lcsc.com/product-detail/Tactile-Switches_SHOU-HAN-TS24CA_C393942.html"
+    },
+    "C5373042": {
+      "symbol": "CH334P",
+      "footprint": "lcsc:QFN-16_L3.0-W3.0-P0.50-BL-EP1.7",
+      "mpn": "CH334P",
+      "manufacturer": "WCH(\u5357\u4eac\u6c81\u6052)",
+      "datasheet": "https://www.lcsc.com/datasheet/C5373042.pdf"
+    },
+    "C2341": {
+      "symbol": "DoublelayerDIP90\u00b0white",
+      "footprint": "lcsc:USB-A-TH_USB-M-51",
+      "mpn": "907-111A1012D10200",
+      "manufacturer": "\u7cbe\u62d3\u91d1",
+      "datasheet": "https://lcsc.com/product-detail/USB-Connectors_USB-A-F-Double-layer-DIP-900-Iron-shell-white-Not-high-temperature_C2341.html"
+    },
+    "C15298": {
+      "symbol": "SN74CB3T3245PWR",
+      "footprint": "lcsc:TSSOP-20_L6.5-W4.4-P0.65-LS6.4-BL",
+      "mpn": "SN74CB3T3245PWR",
+      "manufacturer": "TI(\u5fb7\u5dde\u4eea\u5668)",
+      "datasheet": "https://lcsc.com/product-detail/Logic-ICs_TI_SN74CB3T3245PWR_SN74CB3T3245PWR_C15298.html"
+    },
+    "C8545": {
+      "symbol": "2N7002",
+      "footprint": "lcsc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+      "mpn": "2N7002",
+      "manufacturer": "CJ(\u6c5f\u82cf\u957f\u7535/\u957f\u6676)",
+      "datasheet": "https://lcsc.com/product-detail/MOSFET_2N7002-7002_C8545.html"
+    },
+    "C50380980": {
+      "symbol": "DE9_Female",
+      "footprint": "lcsc:DE9_Female_C50380980",
+      "mpn": "LCK-205A09FJ2A00B1A",
+      "manufacturer": "LCKELEC",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/98ad6adf9b8970a112421d2b06a83c6e.pdf?productCode=C50380980"
+    },
+    "C77848": {
+      "symbol": "MiniDIN6_Shield",
+      "footprint": "lcsc:CONN-TH_DS1093-01-PN60",
+      "mpn": "DS1093-01-PN60",
+      "manufacturer": "CONNFLY",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/91b259a35bf42e0e40c79aca63cab966.pdf?productCode=C77848"
+    },
+    "C19270700": {
+      "symbol": "C_Polarized",
+      "footprint": "lcsc:CAP-SMD_BD6.3-L6.6-W6.6-LS7.4-FD",
+      "mpn": "JBLM2221M010C058RTM",
+      "manufacturer": "DMBJ",
+      "datasheet": "https://datasheet.lcsc.com/datasheet/pdf/25cd8a66a5cec751f287aca4fb3a3d5c.pdf?productCode=C19270700"
+    },
+    "C25117": {
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF4700TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://www.lcsc.com/product-detail/C25117.html"
+    },
+    "C45783": {
+      "symbol": "C",
+      "footprint": "lcsc:C0805",
+      "mpn": "CL21A226MAQNNNE",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://product.samsungsem.com/mlcc/CL21A226MAQNNN.do"
+    },
+    "C165948": {
+      "symbol": "USB_C_Service",
+      "footprint": "lcsc:USB-C_SMD-TYPE-C-31-M-12_1",
+      "mpn": "TYPE-C-31-M-12",
+      "manufacturer": "\u97e9\u56fd\u97e9\u8363",
+      "datasheet": "https://lcsc.com/product-detail/USB-Type-C_Korean-Hroparts-Elec-TYPE-C-31-M-12_C165948.html"
+    },
+    "C128396": {
+      "symbol": "USB_Mux",
+      "footprint": "lcsc:UQFN-10_L2.0-W1.5-P0.50-BL",
+      "mpn": "TS3USB221ARSER",
+      "manufacturer": "TI(\u5fb7\u5dde\u4eea\u5668)",
+      "datasheet": "https://lcsc.com/product-detail/USB_TI_TS3USB221ARSER_TS3USB221ARSER_C128396.html"
+    },
+    "C25905": {
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF5101TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_5-1KR-5101-1_C25905.html"
+    },
+    "C25741": {
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1003TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_100KR-1003-1_C25741.html"
+    },
+    "C97502": {
+      "symbol": "TPD2EUSB30DRTR",
+      "footprint": "lcsc:SOT-9X3-3_L1.0-W0.8-P0.35-LS1.0-BR",
+      "mpn": "TPD2EUSB30DRTR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.ti.com/lit/ds/symlink/tpd2eusb30.pdf"
+    },
+    "C2866652": {
+      "symbol": "SN74HCS74PWR",
+      "footprint": "lcsc:TSSOP-14_L5.0-W4.5-P0.65-LS6.4-BL",
+      "mpn": "SN74HCS74PWR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.lcsc.com/product-detail/C2866652.html"
+    },
+    "C3235557": {
+      "symbol": "TPS2116DRLR",
+      "footprint": "lcsc:SOT-583-8_L2.1-W1.6-P0.50-LS1.6-BL",
+      "mpn": "TPS2116DRLR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.lcsc.com/product-detail/C3235557.html"
+    },
+    "C131941": {
+      "symbol": "TPS22918DBVR",
+      "footprint": "lcsc:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR",
+      "mpn": "TPS22918DBVR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.lcsc.com/product-detail/C131941.html"
+    },
+    "C20917": {
+      "symbol": "AO3400A",
+      "footprint": "lcsc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+      "mpn": "AO3400A",
+      "manufacturer": "Alpha & Omega Semiconductor",
+      "datasheet": "https://www.lcsc.com/product-detail/C20917.html"
+    },
+    "C7836": {
+      "symbol": "SN74LVC1G17DBVR",
+      "footprint": "lcsc:SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BR",
+      "mpn": "SN74LVC1G17DBVR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.lcsc.com/product-detail/C7836.html"
+    },
+    "C15195": {
+      "symbol": "CL05B103KB5NNNC",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B103KB5NNNC",
+      "manufacturer": "Samsung Electro-Mechanics",
+      "datasheet": "https://www.lcsc.com/product-detail/C15195.html"
+    },
+    "C25776": {
+      "symbol": "0402WGF3002TCE",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF3002TCE",
+      "manufacturer": "UNI-ROYAL",
+      "datasheet": "https://www.lcsc.com/product-detail/C25776.html"
+    }
+  },
+  "notes": [
+    "Keyboard connector pin 4 remains a power input. USB-C automatically takes priority when present; U10 prevents source-to-source backfeed.",
+    "For PC recovery with Amiga off, hold RECOVERY while connecting USB-C, then release after 0.1 seconds. With USB already attached, press/release RECOVERY.",
+    "Recovery is hardware: RUN reset presets U9, Q2 asserts BOOTSEL, U7 selects service data, U11 turns off USB-A power and Q3 isolates Amiga signals.",
+    "USB-C can supply normal operation from an adequately rated 5V USB supply. A PC port is not guaranteed to power normal operation without USB enumeration.",
+    "Keyboard-only operation remains possible; the A4000 documented 100mA limit is the guaranteed budget, and r7/peripheral actual demand must be measured.",
+    "OLED centered; RM2 antenna faces left. All assembled components on top. Two independent 12MHz crystals.",
+    "Both USB-A ports share selected supply through a soft-start switch and one 500mA PTC; this is not 500mA per port.",
+    "Removing USB-C clears the recovery latch; press/release RECOVERY without USB-C to reboot normal firmware from keyboard power."
+  ]
+}

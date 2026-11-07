@@ -1,0 +1,39 @@
+{
+  "status": "Factory quotation and CAM review only; not authorized for manufacture",
+  "revision": "r7 prototype, 2026-10-14",
+  "pcb": {
+    "bounding_size_mm": [70, 66],
+    "outline": "Use Edge.Cuts, including the left antenna recess",
+    "nominal_thickness_mm": 1.0,
+    "copper_layers": 4,
+    "finish": "ENIG",
+    "stackup": "JLC04101H-7628: 35um / 0.2104mm prepreg / 15.2um / 0.5mm core / 15.2um / 0.2104mm prepreg / 35um",
+    "impedance": "90 ohm differential outer-layer USB main runs, 0.2474mm width / 0.1501mm gap. Confirm with factory; local pad escapes and short USB2 neck use narrower copper.",
+    "via_process": "All electrical vias: epoxy filled and copper capped, IPC-4761 Type VII. This includes exposed-pad and other vias in or near solder lands. Soldermask tenting alone is not a substitute.",
+    "via_identification": "Native KiCad source and via-fill-locations.csv distinguish vias from connector holes. Do not fill plated connector holes or NPTH locating/mounting holes.",
+    "soldermask": "Both sides; no bottom silkscreen required",
+    "fabrication_quote": "Four-layer via filling/capping may be an extra-charge process. Confirm capability, price, thickness tolerance and controlled impedance before release."
+  },
+  "assembly": {
+    "side": "Top only",
+    "scope": "Factory assembles all 103 PCB components, including every through-hole connector; display installation and nylon mounting hardware are additional operations.",
+    "soldering": "SMT reflow followed by qualified selective/wave/manual factory THT soldering. Do not put connectors through SMT reflow without their approved temperature/time profiles.",
+    "placement": "Native KiCad position/rotation data supplied. Factory must resolve its component-library rotation convention and return a placement preview for review before assembly.",
+    "polarity": "Check U1/U8 exposed-pad orientation, U10/U11/U12 pin 1, Q1-Q3 pin mapping, D2 cathode, D3 LED polarity, C4 positive terminal and L1 winding polarity against drawings.",
+    "paste": "Use the segmented U1 exposed-pad apertures from F.Paste. Review stencil thickness and fine-pitch apertures for the 0.4mm-pitch MCU.",
+    "connectors": "J4 contacts 0.92mm finished holes, shields 2.30mm. J7 contacts 1.10mm, shields 2.30mm. Verify retention and solder fillets on 1mm board; supplier drawings control dimensions.",
+    "display": "Same r6 SH1106 module; see assembly-accessories.json and original drawings. Pin order 3V3, GND, SCL, SDA. Do not substitute a GND-first module.",
+    "bom_substitutions": "No substitutions without electrical and mechanical review; especially L1, connectors, clocks, flash, power mux and isolation parts.",
+    "inventory": "Public stock is not allocated. Confirm all 43 codes, placement minima and attrition for the actual quantity."
+  },
+  "models": {
+    "coverage": "All 103 purchased parts have models. 41 of 43 active unique part models are LCSC/EasyEDA; RM2 is official Raspberry Pi; DE9 is a detailed KiCad substitute.",
+    "limits": "The DE9 substitute has longer pins than the purchased connector. Use supplier drawings and case clearance envelopes, not substitute pin lengths, for mechanical decisions. OLED assembly is hidden in KiCad; its connector remains visible."
+  },
+  "references": [
+    "https://jlcpcb.com/help/article/pcb-via-covering",
+    "https://jlcpcb.com/capabilities/Capabilities?type=1",
+    "https://jlcpcb.com/help/answers/detail/790-Supported-PCB-formats-%28via-in-pad-related%29",
+    "https://jlcpcb.com/news/free-via-in-pad-6-20-layer-pcbs-pofv"
+  ]
+}

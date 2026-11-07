@@ -1,0 +1,18 @@
+# Local KiCad state and reproducible generated review/export files.
+.DS_Store
+.history/
+*.kicad_prl
+*.lck
+*.bak
+*-backups/
+fp-info-cache
+__pycache__/
+/.easyeda_cache/
+/.history/
+/r6-baseline/
+/review/
+/production/
+/fabrication-prototype/
+/addons/
+# Historical models are not needed by the current r7 project.
+/amigahid-pico.3dshapes/

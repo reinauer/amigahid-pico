@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-14",
+  "scope": "Datasheet, connectivity, layout and nominal mechanical review for a first prototype. No physical board measurements or USB/RF certification.",
+  "power": {
+    "keyboard": "Mini-DIN pin 4 remains an input. TPS2116 selects it when USB-C is absent. DE9 pin 7 supplies are not connected together or used as inputs.",
+    "usb_priority": "USB-C is VIN1; keyboard is VIN2. MODE follows VIN1. 30k/10k PR1 divider gives nominal 4.0V priority threshold, approximately 3.63-4.39V with datasheet reference and resistor tolerances. Reverse-current blocking separates sources.",
+    "takeover_limit": "Source takeover is automatic, but arbitrary supply droop and cable impedance can still reset the board. Do not promise interruption-free operation until measured.",
+    "usb_power_policy": "No PD negotiation or Type-C current-advertisement detection. Use an adequately rated 5V supply for normal operation; >=1A is the prototype test recommendation. Hold RECOVERY before connecting a PC to avoid starting the normal host/peripheral load on an unconfigured USB port.",
+    "amiga_budget": "The A4000 published keyboard rating is 100mA. Prior-board operation does not establish r7's radio/MCU/OLED/two-peripheral budget. Measure board and peripheral current before enabling those loads from the keyboard source.",
+    "host_branch": "TPS22918 disconnects host load and 220uF reservoir during recovery. CT=10nF gives approximately 26.55ms 10-90% rise at 5V and 33mA typical capacitor charging current, excluding peripherals and tolerances. The shared 500mA-hold PTC is not a precise electronic current limit.",
+    "host_voltage_margin": "MF-NSMF050-2 specifies 0.70 ohm maximum post-trip resistance at its stated test conditions: 0.35V loss at 0.5A before switches, copper and connectors. Two ports are not each guaranteed 500mA. Verify USB-A voltage at intended load, source minimum, cable resistance and temperature; reduce allowed load if necessary.",
+    "direct_usb_capacitance": "4.7uF plus 100nF directly on VBUS. Other bulk capacitance is behind power switches. Soft-start is not proof of USB inrush compliance.",
+    "isolation": "Q1 enables U2/U3 only when keyboard power is present. Q3 overrides this in recovery. Bus-switch Ioff behavior prevents signal back-powering when 3V3 is absent. Confirm connector leakage on hardware."
+  },
+  "recovery": {
+    "cold_entry": "Hold the external RECOVERY button while connecting USB-C, wait >=0.1s, then release. Works without Amiga power or valid application firmware, with normal RP2350 OTP configuration.",
+    "warm_entry": "With USB-C already powered, press/release RECOVERY. RUN resets the RP2350, the latch holds BOOTSEL low, and the USB switch selects the PC.",
+    "startup": "USB_PRESENT is produced by a 5V-tolerant, Ioff-rated LVC Schmitt buffer. The HCS74 clear input has 100k/100nF delay. With the button held during startup both asynchronous inputs can be low; the documented Q=Qbar=1 state is safe while RUN holds reset and D2 clamps host enable. Waiting before release lets clear become inactive while preset still holds recovery.",
+    "host_clamp": "R20=100k and BAT54W clamp ON to RUN while reset is held. Clamp current is below 35uA; the selected diode specifies <=0.24V at 0.1mA at 25C, versus U11 VIL(max)=0.5V. Temperature and actual startup ramps remain prototype checks.",
+    "bootsel": "AO3400A pulls QSPI-CS low through 1k against 10k pull-up; nominal strap voltage about 0.3V. This is hardware ROM entry, without firmware double-tap or reset-handler dependence.",
+    "exit": "USB removal clears the latch but does not itself reset the MCU. With Amiga power remaining, press/release the button to boot normally. For USB-only normal operation, unplug/reconnect without holding it.",
+    "limits": "Do not program OTP settings that disable ROM USB boot. Verify erased/invalid application flash recovery on the first board. This review is not a timing simulation or measured startup result."
+  },
+  "clock_and_usb": {
+    "clocks": "Keep two independent 12MHz crystals. RP2350 uses its reference-design load network; CH334P uses its internal approximately 16pF loads per pin. Verify crystal ESR, startup and frequency on hardware with a low-capacitance probe.",
+    "speed": "RP2350 native USB is full speed, 12Mbit/s. The hub does not make its upstream link high speed.",
+    "routing": "USB main pairs remain on outer layers. L2 has no signal tracks. Slow L3 routes were removed from a 0.6mm corridor beyond bottom USB copper; added local ground-return vias at layer transitions. See board-audit.json and plane plots. Pad/via antipads remain and require the normal layout review.",
+    "protection": "TPD2EUSB30 protects each used external data channel. C4 is 220uF/10V low-ESR polymer, 176uF minimum at initial -20% tolerance. No extrapolated compliance claim from DRC."
+  },
+  "prototype_tests_in_order": [
+    "Inspect assembly orientation and resistance to ground before power. Use current-limited bench supply first; measure SYS_5V, 3V3, 1V1 and regulator startup without USB peripherals.",
+    "With Amiga disconnected and application flash erased/invalid, hold RECOVERY, attach PC USB-C, release after 0.1s. Confirm ROM drive, successful flash and repeatability across slow/fast ramps and button bounce.",
+    "Scope RUN, RECOVERY_CLR, BOOTSEL, USB_HOST_ENABLE and host VBUS during cold and warm recovery. Confirm host power is held off and startup current stays within the service-port budget.",
+    "Test keyboard-only, USB-only and both supplies; connect/remove either source and measure reverse current into the inactive connector and signal leakage with Amiga off. Record resets during takeover.",
+    "Measure idle, radio peak and display current. Establish a permitted keyboard-only peripheral budget from the actual Amiga and cable before enabling radio or two devices.",
+    "At intended USB-A loads, measure VBUS droop and hot-plug behavior, including 220uF charging, PTC voltage loss and temperature. Do not infer 500mA per port from the shared fuse.",
+    "Build r7 firmware with the new GPIO map, RM2 control and USB hub support. Implement/test SH1106 addressing if still absent. Verify two USB HID devices, both DE9 ports and mini-DIN keyboard.",
+    "Check both 12MHz oscillators, USB enumeration/recovery reliability, radio operation and antenna clearance in the assembled enclosure.",
+    "Dry-fit the retained OLED, nylon mounts, case, connectors and cables. Check USB shield-tail pockets, 1mm-PCB connector retention, recovery access and snap fits."
+  ],
+  "sources": [
+    "https://www.ti.com/lit/ds/symlink/tps2116.pdf",
+    "https://www.ti.com/lit/ds/symlink/sn74hcs74.pdf",
+    "https://www.ti.com/lit/ds/symlink/sn74lvc1g17.pdf",
+    "https://www.ti.com/lit/ds/symlink/tps22918.pdf",
+    "https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf",
+    "https://datasheets.raspberrypi.com/rp2350/hardware-design-with-rp2350.pdf",
+    "https://www.wch.cn/downloads/CH334DS1_PDF.html",
+    "https://bourns.com/docs/product-datasheets/mf-nsmf.pdf",
+    "https://www.microchip.com/content/dam/mchp/documents/OTH/ApplicationNotes/ApplicationNotes/AN17-APID.pdf"
+  ]
+}

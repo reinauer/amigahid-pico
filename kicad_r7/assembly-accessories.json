@@ -1,0 +1,46 @@
+{
+  "display": {
+    "quantity": 1,
+    "description": "Same SH1106 OLED module specified for kicad_r6; retain existing module",
+    "controller": "SH1106",
+    "interface": "I2C",
+    "supply": "3.3 V",
+    "pin_order": [
+      "3V3",
+      "GND",
+      "SCL",
+      "SDA"
+    ],
+    "outline_mm": [
+      35.5,
+      33.7
+    ],
+    "hole_pitch_mm": [
+      30.5,
+      28.6
+    ],
+    "hole_diameter_mm": 3.1,
+    "drawing": "../case_r7/reference/oled-dimensions-r6.png",
+    "pinout": "../case_r7/reference/oled-pinout-r6.png",
+    "manufacturer_part_number": null,
+    "lcsc_code": null,
+    "procurement_note": "Carry over the existing r6 display. Its drawing and pin table are the purchasing specification; r6 did not record a manufacturer/order code. Include module installation in the factory assembly scope."
+  },
+  "mounting": [
+    {
+      "quantity": 4,
+      "description": "M3 female/female nylon hex spacer",
+      "length_mm": 12,
+      "across_flats_max_mm": 6.35
+    },
+    {
+      "quantity": 4,
+      "description": "M3 x 12 mm nylon 90-degree countersunk screw, head diameter <=6.4 mm, from base into spacer"
+    },
+    {
+      "quantity": 4,
+      "description": "M3 x 5 mm nylon screw, OLED into spacer"
+    }
+  ],
+  "factory_scope": "Assemble all PCB SMT and through-hole components; fit retained display and hardware as an additional assembly operation. No user soldering of connectors is planned."
+}

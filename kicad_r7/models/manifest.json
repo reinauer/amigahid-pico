@@ -1,0 +1,816 @@
+{
+  "C11702": {
+    "file": "vendor-models/C11702/model.3dshapes/R0402_L1.0-W0.5-H0.4.step",
+    "offset": [
+      0.0,
+      -0.0,
+      -0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C11702.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "134d58dd68899b29f9e19def208de6690d06010e01c304866fbd4d81c8640aa6",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C128396": {
+    "file": "vendor-models/C128396/model.3dshapes/UQFN-10_L2.0-W1.5-H0.6-P0.50.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.02
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C128396.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "8f7dabc8233a4ddd5a6c333554e3f5d4dacdbe248366f6b7b0204ea7cc14fe8f",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C14663": {
+    "file": "vendor-models/C14663/model.3dshapes/C0603_L1.6-W0.8-H0.8.step",
+    "offset": [
+      0.0,
+      -0.0,
+      0.4
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C14663.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "f9918dd3888f5ca8b9c906b8cb10b9d8e335f6855513b3e235a18123ae353a78",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C1525": {
+    "file": "vendor-models/C1525/model.3dshapes/C0402_L1.0-W0.5-H0.5.step",
+    "offset": [
+      0.0,
+      -0.0,
+      0.25
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C1525.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "0ca13e031cb175d8dc5c0393959392c0e3213eb099cc9b61fe4118feffcebad8",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C15298": {
+    "file": "vendor-models/C15298/model.3dshapes/TSSOP-20_L6.5-W4.4-H1.0-LS6.4-P0.65.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.02
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      270.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C15298.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "a5e7eefa7f0245d8cfd2f80a92974768a8369a4ad184fe612e8379d22c4c5dca",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C15850": {
+    "file": "vendor-models/C15850/model.3dshapes/C0805_L2.0-W1.3-H1.3.step",
+    "offset": [
+      0.0,
+      -0.0,
+      0.65
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C15850.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "99acc6b12df8e17000d6e7529bddac9ea44e1240f5635482742aae256f49b5df",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C165948": {
+    "file": "vendor-models/C165948/model.3dshapes/USB-C_SMD-TYPE-C-31-M-12_1.step",
+    "offset": [
+      0.0,
+      -0.25,
+      -0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      180.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C165948.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "b083e67ce4d06850a2c3835a6366f4012b2def64f8f2781636381ebcaa33e9a0",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C192513": {
+    "file": "vendor-models/C192513/model.3dshapes/R0603-8P_L3.2-W1.6-H0.6.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C192513.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "707b409dad0bc81e342cde3bc884afdeaa6dc1df7afd711ff034d174afc105ad",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C19270700": {
+    "file": "vendor-models/C19270700/model.3dshapes/CAP-SMD_BD6.3-L6.6-W6.6-LS7.4-FD.step",
+    "offset": [
+      -0.0,
+      0.0,
+      0.02
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      180.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C19270700.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "ab181b3aa8dbd93c3e31de6a0739ff4526bbc80e59b8e5071b5a9ad67e917d3c",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C20625731": {
+    "file": "vendor-models/C20625731/model.3dshapes/CRYSTAL-SMD_4P-L3.2-W2.5-BL.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C20625731.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "46e80157d859ee18098fd27c351039895d29a036f1c1dfadefaf26fa56124a8d",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C2286": {
+    "file": "vendor-models/C2286/model.3dshapes/LED0603_L1.6-W0.8-H0.6.step",
+    "offset": [
+      0.0,
+      -0.01,
+      0.01
+    ],
+    "rotate": [
+      0,
+      0,
+      180
+    ],
+    "source": "https://www.lcsc.com/product-detail/C2286.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "bc7b5c80dea54180b294de289043b7a6224b18dbb4cf2b857d14ad5e3c84660e",
+    "note": "Raw STEP has cathode markings on -X. Rotate 180 degrees to match imported footprint cathode pad 1 on +X."
+  },
+  "C23162": {
+    "file": "vendor-models/C23162/model.3dshapes/R0603.step",
+    "offset": [
+      -0.0,
+      0.01,
+      0.01
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      270.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C23162.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "e52f17888a8c6c2cb8d56dccf25e2ed131a12a241311657622543c405e42826c",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C2341": {
+    "file": "vendor-models/C2341/model.3dshapes/USB-A-TH_8P-L14.7-W17.7-H16.0-S5.7.step",
+    "offset": [
+      0.0,
+      4.05,
+      -0.41
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C2341.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "bd82b663a85a518a555701cb16cac35d3a4198df3e63da6d68cd7db2897539c5",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C23733": {
+    "file": "vendor-models/C23733/model.3dshapes/C0402_L1.0-W0.5-H0.5.step",
+    "offset": [
+      0.0,
+      -0.0,
+      0.25
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C23733.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "0ca13e031cb175d8dc5c0393959392c0e3213eb099cc9b61fe4118feffcebad8",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C25100": {
+    "file": "vendor-models/C25100/model.3dshapes/R0402_L1.0-W0.5-H0.4.step",
+    "offset": [
+      0.0,
+      -0.0,
+      -0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C25100.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "134d58dd68899b29f9e19def208de6690d06010e01c304866fbd4d81c8640aa6",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C25105": {
+    "file": "vendor-models/C25105/model.3dshapes/R0402_L1.0-W0.5-H0.4.step",
+    "offset": [
+      0.0,
+      -0.0,
+      -0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C25105.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "134d58dd68899b29f9e19def208de6690d06010e01c304866fbd4d81c8640aa6",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C25118": {
+    "file": "vendor-models/C25118/model.3dshapes/R0402_L1.0-W0.5-H0.4.step",
+    "offset": [
+      0.0,
+      -0.0,
+      -0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C25118.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "134d58dd68899b29f9e19def208de6690d06010e01c304866fbd4d81c8640aa6",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C25741": {
+    "file": "vendor-models/C25741/model.3dshapes/R0402_L1.0-W0.5-H0.4.step",
+    "offset": [
+      0.0,
+      -0.0,
+      -0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C25741.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "134d58dd68899b29f9e19def208de6690d06010e01c304866fbd4d81c8640aa6",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C25744": {
+    "file": "vendor-models/C25744/model.3dshapes/R0402_L1.0-W0.5-H0.4.step",
+    "offset": [
+      0.0,
+      -0.0,
+      -0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C25744.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "134d58dd68899b29f9e19def208de6690d06010e01c304866fbd4d81c8640aa6",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C25905": {
+    "file": "vendor-models/C25905/model.3dshapes/R0402_L1.0-W0.5-H0.4.step",
+    "offset": [
+      0.0,
+      -0.0,
+      -0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C25905.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "134d58dd68899b29f9e19def208de6690d06010e01c304866fbd4d81c8640aa6",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C393942": {
+    "file": "vendor-models/C393942/model.3dshapes/SW-SMD_2P-TS24CA.step",
+    "offset": [
+      0.0,
+      1.05,
+      0.86
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C393942.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "6fe1ce9207a43d0495f5636970341f40e3779c98fd53f99a2534d119b6755823",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C42411118": {
+    "file": "vendor-models/C42411118/model.3dshapes/QFN-60_L7.0-W7.0-P0.40-TL-EP3.4.step",
+    "offset": [
+      0.0,
+      -0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C42411118.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "58652836f6708990ea1b80038257e0959c1bc19497de40f548d39237852dfc45",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C42411119": {
+    "file": "vendor-models/C42411119/model.3dshapes/IND-SMD_L2.0-W1.6_AOTA-B201610S3R3-101-T.step",
+    "offset": [
+      0.0,
+      0.01,
+      0.05
+    ],
+    "rotate": [
+      0,
+      0,
+      180
+    ],
+    "source": "https://www.lcsc.com/product-detail/C42411119.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "e8bd318382f9369070a83fc01047deeabf4d1de054a6bbfcbd925afc1cdfa91e",
+    "note": "Rotate raw supplier model 180 degrees: its dotted end is +X, while footprint pad 1 (+1V1) is -X. Pad 2 is VREG_LX."
+  },
+  "C45783": {
+    "file": "vendor-models/C45783/model.3dshapes/C0805_L2.0-W1.3-H1.3.step",
+    "offset": [
+      0.0,
+      -0.0,
+      0.65
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C45783.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "99acc6b12df8e17000d6e7529bddac9ea44e1240f5635482742aae256f49b5df",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C5355146": {
+    "file": "vendor-models/C5355146/model.3dshapes/SOP-8_L4.9-W3.9-P1.27-LS6.0-BL-1.step",
+    "offset": [
+      -0.01,
+      0.07,
+      0.8
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C5355146.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "d884c2b3aaea7f93dde52659d3b88cce8b014086c464e36fddcea84c6080f51c",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C5373042": {
+    "file": "vendor-models/C5373042/model.3dshapes/QFN-16_L3.0-W3.0-P0.50-EP1.7.step",
+    "offset": [
+      0.0,
+      -0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      270.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C5373042.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "cbd84bd983b093cf9803fad2250c3162fa2ead5ad6a559c154f81fb9493487a8",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C7428703": {
+    "file": "vendor-models/C7428703/model.3dshapes/CONN-TH_DIN-603.step",
+    "offset": [
+      -0.01,
+      -1.68,
+      13.3
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C7428703.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "77167a96fb066eb97f936aac8f4753fb3e5811a93923ba632a87265791e43b4d",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C7509546": {
+    "file": "vendor-models/C7509546/model.3dshapes/HDR-TH_4P-P2.54-V-F.step",
+    "offset": [
+      0.0,
+      -0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C7509546.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "628eb1d5ff269dcb187cc187d103501a06f4e015cd29e1864783bfbf199a50d3",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C75464": {
+    "file": "vendor-models/C75464/model.3dshapes/F1206_L3.2-W1.7-H0.6.step",
+    "offset": [
+      0.0,
+      0.0,
+      -0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C75464.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "b4aa1c51737817cb825db00ace803703d2022f88e8062722a44807b791b94f1f",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C780206": {
+    "file": "vendor-models/C780206/model.3dshapes/IND-SMD_L4.0-W4.0_SRN4018TA.step",
+    "offset": [
+      0.0,
+      -0.02,
+      0.02
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C780206.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "4ef052e91448bee7b7181f1ecf54a9534b3171940303cb45934f75d29bdcb966",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C780769": {
+    "file": "vendor-models/C780769/model.3dshapes/TSOT-26_L2.9-W1.6-P0.95-LS2.8-BL.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.62
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C780769.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "a8ffb0afc940ec9e0ce869d16f41faa486004f5cc5013e7ecec23d16ffa680ed",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C8545": {
+    "file": "vendor-models/C8545/model.3dshapes/SOT-23-3P_L2.9-W1.3-H1.0-LS2.4-P0.95.step",
+    "offset": [
+      0.0,
+      -0.0,
+      -0.05
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      180.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C8545.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "77ba908a82212855f2a6d38b120604e403137808eaba47113ce858f1831017e5",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C8598": {
+    "file": "vendor-models/C8598/model.3dshapes/SOD-123_L2.7-W1.6-LS3.7-RD-1.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.6
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C8598.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "5026667d41a3720b6c5fdf76487442628aa37ae322451a8c3e299a1e85c07fee",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C86285": {
+    "file": "vendor-models/C86285/model.3dshapes/C0402_L1.0-W0.5-H0.5.step",
+    "offset": [
+      0.0,
+      -0.0,
+      0.25
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C86285.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "0ca13e031cb175d8dc5c0393959392c0e3213eb099cc9b61fe4118feffcebad8",
+    "note": "Raw STEP origin aligned to supplier EasyEDA placement; copper footprint corrections are separate."
+  },
+  "C49451547": {
+    "file": "vendor-models/C49451547/RM2-official/3d_models/rpi_rmc20452t.step",
+    "offset": [
+      0,
+      2.5,
+      0
+    ],
+    "rotate": [
+      0,
+      0,
+      0
+    ],
+    "source": "https://pip.raspberrypi.com/categories/1223-design-files",
+    "kind": "Raspberry Pi official STEP",
+    "note": "LCSC had no model. Official centered model shifted 2.5 mm to corrected LCSC footprint origin."
+  },
+  "C50380980": {
+    "file": "models/DSUB-9_Socket_Horizontal.step",
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "rotate": [
+      0,
+      0,
+      0
+    ],
+    "source": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/tree/master/Connector_Dsub.3dshapes",
+    "kind": "KiCad detailed substitute",
+    "note": "Socket model with matching 2.77 x 2.84 mm contact pitch, 25 mm mounting centres and 9.12 mm mounting offset. Manufacturer external dimensions remain authoritative; model is not an exact LCKELEC part.",
+    "sha256": "e50a3bd20807e5d5d042ded39974157e716267c8b4420364f2c32aaacd1518d7"
+  },
+  "OLED_ASSEMBLY": {
+    "file": "models/OLED_35p5x33p7_envelope.step",
+    "offset": [
+      0.16,
+      -15.31,
+      12
+    ],
+    "rotate": [
+      0,
+      0,
+      0
+    ],
+    "source": "case_r7 mechanical dimensions retained from r6 OLED",
+    "kind": "external assembly envelope",
+    "note": "35.5 x 33.7 mm PCB, shared 30.5 x 28.6 mm holes, 12 mm spacer, 1.2 mm board and 2.6 mm glass."
+  },
+  "C77848": {
+    "file": "vendor-models/C77848/model.3dshapes/CONN-TH_DS1093-01-PN60.step",
+    "offset": [
+      0,
+      -1.58,
+      0
+    ],
+    "rotate": [
+      0,
+      0,
+      0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C77848.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "5f7d8a986a0edcae92a92307743f69dd11aa1ba2a0e865ff4046ba2656737e8c",
+    "note": "Aligned front face to drawing-based footprint at +8.08mm; STEP housing height is 13.0mm versus drawing 12.8mm. Drawing controls holes and seating."
+  },
+  "C97502": {
+    "file": "vendor-models/C97502/model.3dshapes/SOT-9X3-3_L1.0-W0.8-H0.5-LD1.0-P0.35.step",
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "rotate": [
+      0,
+      0,
+      270
+    ],
+    "source": "https://www.lcsc.com/product-detail/C97502.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "e677830ef96baf260b4b336ebe34bc672e4749be823992a0df47d835adddb9f5",
+    "note": "Supplier model placement from raw import; copper verified separately."
+  },
+  "C25117": {
+    "file": "vendor-models/C25117/model.3dshapes/R0402_L1.0-W0.5-H0.4.step",
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "rotate": [
+      0,
+      0,
+      0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C25117.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "134d58dd68899b29f9e19def208de6690d06010e01c304866fbd4d81c8640aa6",
+    "note": "Supplier model placement from raw import; copper verified separately."
+  },
+  "C2866652": {
+    "file": "vendor-models/C2866652/model.3dshapes/TSSOP-14_L5.0-W4.5-P0.65-LS6.4-BL.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C2866652.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "a5556616fb55b9a60b6f83332446e665ac37872d5f9d5534fc545a60710b025b",
+    "note": "Supplier footprint/model; pin numbers checked against manufacturer datasheet."
+  },
+  "C3235557": {
+    "file": "vendor-models/C3235557/model.3dshapes/SOT-583-8_L2.1-W1.6-P0.50-LS1.6-BL.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C3235557.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "7d0088e866122d294644e600f5565ce8afeb36bd1ea92e1d59259727f9200111",
+    "note": "Supplier footprint/model; pin numbers checked against manufacturer datasheet."
+  },
+  "C131941": {
+    "file": "vendor-models/C131941/model.3dshapes/SOT-23-6_L2.9-W1.6-H1.5-LS2.8-P0.95.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      180.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C131941.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "f24d05dd87ac04518fdaed88a57d135441fe22452089387784c4deda2bc09d61",
+    "note": "Supplier footprint/model; pin numbers checked against manufacturer datasheet."
+  },
+  "C20917": {
+    "file": "vendor-models/C20917/model.3dshapes/SOT-23-3P_L2.9-W1.3-H1.0-LS2.4-P0.95.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      180.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C20917.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "77ba908a82212855f2a6d38b120604e403137808eaba47113ce858f1831017e5",
+    "note": "Supplier footprint/model; pin numbers checked against manufacturer datasheet."
+  },
+  "C7836": {
+    "file": "vendor-models/C7836/model.3dshapes/SOT-23-5_L2.9-W1.6-H1.1-LS2.8-P0.95.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      180.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C7836.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "428abdfbc472055993422a992aaa8df42fe862d74021d8cd7cbee9d7277f41b1",
+    "note": "Supplier footprint/model; pin numbers checked against manufacturer datasheet."
+  },
+  "C15195": {
+    "file": "vendor-models/C15195/model.3dshapes/C0402_L1.0-W0.5-H0.5.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C15195.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "0ca13e031cb175d8dc5c0393959392c0e3213eb099cc9b61fe4118feffcebad8",
+    "note": "Supplier footprint/model; pin numbers checked against manufacturer datasheet."
+  },
+  "C25776": {
+    "file": "vendor-models/C25776/model.3dshapes/R0402_L1.0-W0.5-H0.4.step",
+    "offset": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C25776.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "134d58dd68899b29f9e19def208de6690d06010e01c304866fbd4d81c8640aa6",
+    "note": "Supplier footprint/model; pin numbers checked against manufacturer datasheet."
+  },
+  "C131469": {
+    "file": "vendor-models/C131469/model.3dshapes/SOD-123_L2.8-W1.8-LS3.7-RD.step",
+    "offset": [
+      0,
+      0,
+      0
+    ],
+    "rotate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "source": "https://www.lcsc.com/product-detail/C131469.html",
+    "kind": "LCSC/EasyEDA supplier model",
+    "sha256": "39d20e9e6c37049f4a9fa09f8be14334ee9f1d78ffccd660706c8ac0d590dcdc",
+    "note": "Raw supplier model; corrected courtyard encloses pads."
+  }
+}

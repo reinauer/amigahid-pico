@@ -1,0 +1,371 @@
+{
+  "convention": "Counter-clockwise degrees added to the KiCad footprint angle. Disable Fabrication Toolkit automatic translations; explicit FT Rotation Offset fields apply instead.",
+  "review_date": "2026-10-14",
+  "evidence": "Actual PCB pad numbers compared with JLC placement preview; user had already corrected U2/U3/U5/U9. Native LCSC footprints differ from generic KiCad package conventions.",
+  "parts": {
+    "C15298": {
+      "offset_deg": 0,
+      "footprint": "lcsc:TSSOP-20_L6.5-W4.4-P0.65-LS6.4-BL",
+      "refs": [
+        "U2",
+        "U3"
+      ]
+    },
+    "C192513": {
+      "offset_deg": 0,
+      "footprint": "lcsc:RES-ARRAY-SMD_0603-8P-L3.2-W1.6-BL",
+      "refs": [
+        "RN1",
+        "RN2",
+        "RN3",
+        "RN4",
+        "RN6",
+        "RN7",
+        "RN8",
+        "RN9"
+      ]
+    },
+    "C7509546": {
+      "offset_deg": 0,
+      "footprint": "lcsc:HDR-TH_4P-P2.54-V-F",
+      "refs": [
+        "J3"
+      ]
+    },
+    "C2341": {
+      "offset_deg": 0,
+      "footprint": "lcsc:USB-A-TH_USB-M-51",
+      "refs": [
+        "J4"
+      ]
+    },
+    "C50380980": {
+      "offset_deg": 0,
+      "footprint": "lcsc:DE9_Female_C50380980",
+      "refs": [
+        "J5",
+        "J6"
+      ]
+    },
+    "C77848": {
+      "offset_deg": 0,
+      "footprint": "lcsc:CONN-TH_DS1093-01-PN60",
+      "refs": [
+        "J7"
+      ]
+    },
+    "C75464": {
+      "offset_deg": 0,
+      "footprint": "lcsc:F1206",
+      "refs": [
+        "F1"
+      ]
+    },
+    "C14663": {
+      "offset_deg": 0,
+      "footprint": "lcsc:C0603",
+      "refs": [
+        "C1",
+        "C2",
+        "C5"
+      ]
+    },
+    "C15850": {
+      "offset_deg": 0,
+      "footprint": "lcsc:C0805",
+      "refs": [
+        "C3",
+        "C9",
+        "C26",
+        "C33"
+      ]
+    },
+    "C19270700": {
+      "offset_deg": 0,
+      "footprint": "lcsc:CAP-SMD_BD6.3-L6.6-W6.6-LS7.4-FD",
+      "refs": [
+        "C4"
+      ]
+    },
+    "C23162": {
+      "offset_deg": 0,
+      "footprint": "lcsc:R0603",
+      "refs": [
+        "R1",
+        "R2"
+      ]
+    },
+    "C42411118": {
+      "offset_deg": 0,
+      "footprint": "lcsc:QFN-60_L7.0-W7.0-P0.40-TL-EP3.4",
+      "refs": [
+        "U1"
+      ]
+    },
+    "C49451547": {
+      "offset_deg": 0,
+      "footprint": "lcsc:WIRELM-SMD_RMC20452T",
+      "refs": [
+        "U4"
+      ]
+    },
+    "C5355146": {
+      "offset_deg": 0,
+      "footprint": "lcsc:SOP-8_L4.9-W3.9-P1.27-LS6.0-BL",
+      "refs": [
+        "U5"
+      ]
+    },
+    "C780769": {
+      "offset_deg": 0,
+      "footprint": "lcsc:TSOT-26_L2.9-W1.6-P0.95-LS2.8-BL",
+      "refs": [
+        "U6"
+      ]
+    },
+    "C42411119": {
+      "offset_deg": 180,
+      "footprint": "lcsc:IND-SMD_L2.0-W1.6_AOTA-B201610S3R3-101-T",
+      "refs": [
+        "L1"
+      ],
+      "note": "JLC dot is at +X at zero degrees; PCB marked pad 1 is -X (+1V1)."
+    },
+    "C780206": {
+      "offset_deg": 0,
+      "footprint": "lcsc:IND-SMD_L4.0-W4.0_SRN4018TA",
+      "refs": [
+        "L2"
+      ]
+    },
+    "C20625731": {
+      "offset_deg": 0,
+      "footprint": "lcsc:CRYSTAL-SMD_4P-L3.2-W2.5-BL",
+      "refs": [
+        "Y1",
+        "Y2"
+      ]
+    },
+    "C393942": {
+      "offset_deg": 0,
+      "footprint": "lcsc:SW-SMD_2P-TS24CA",
+      "refs": [
+        "SW1"
+      ]
+    },
+    "C2286": {
+      "offset_deg": 180,
+      "footprint": "lcsc:LED-SMD_L1.6-W0.8-R-RD",
+      "refs": [
+        "D3"
+      ],
+      "note": "JLC cathode is -X at zero degrees; imported PCB cathode pad 1 is +X. At board angle 90 cathode must be above the anode."
+    },
+    "C25105": {
+      "offset_deg": 0,
+      "footprint": "lcsc:R0402",
+      "refs": [
+        "R3"
+      ]
+    },
+    "C11702": {
+      "offset_deg": 0,
+      "footprint": "lcsc:R0402",
+      "refs": [
+        "R4",
+        "R6",
+        "R11"
+      ]
+    },
+    "C25744": {
+      "offset_deg": 0,
+      "footprint": "lcsc:R0402",
+      "refs": [
+        "R5",
+        "R10",
+        "R12",
+        "R13",
+        "R16",
+        "R21",
+        "R25"
+      ]
+    },
+    "C25100": {
+      "offset_deg": 0,
+      "footprint": "lcsc:R0402",
+      "refs": [
+        "R7",
+        "R8"
+      ]
+    },
+    "C25117": {
+      "offset_deg": 0,
+      "footprint": "lcsc:R0402",
+      "refs": [
+        "R9"
+      ]
+    },
+    "C23733": {
+      "offset_deg": 0,
+      "footprint": "lcsc:C0402",
+      "refs": [
+        "C6",
+        "C7",
+        "C8",
+        "C36",
+        "C37",
+        "C39"
+      ]
+    },
+    "C45783": {
+      "offset_deg": 0,
+      "footprint": "lcsc:C0805",
+      "refs": [
+        "C10",
+        "C11"
+      ]
+    },
+    "C1525": {
+      "offset_deg": 0,
+      "footprint": "lcsc:C0402",
+      "refs": [
+        "C12",
+        "C13",
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C18",
+        "C19",
+        "C20",
+        "C21",
+        "C22",
+        "C23",
+        "C24",
+        "C25",
+        "C27",
+        "C30",
+        "C31",
+        "C32",
+        "C34",
+        "C35",
+        "C40"
+      ]
+    },
+    "C86285": {
+      "offset_deg": 0,
+      "footprint": "lcsc:C0402",
+      "refs": [
+        "C28",
+        "C29"
+      ]
+    },
+    "C165948": {
+      "offset_deg": 0,
+      "footprint": "lcsc:USB-C_SMD-TYPE-C-31-M-12_1",
+      "refs": [
+        "J10"
+      ]
+    },
+    "C128396": {
+      "offset_deg": 0,
+      "footprint": "lcsc:UQFN-10_L2.0-W1.5-P0.50-BL",
+      "refs": [
+        "U7"
+      ]
+    },
+    "C20917": {
+      "offset_deg": 0,
+      "footprint": "lcsc:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+      "refs": [
+        "Q1",
+        "Q2",
+        "Q3"
+      ]
+    },
+    "C25905": {
+      "offset_deg": 0,
+      "footprint": "lcsc:R0402",
+      "refs": [
+        "R14",
+        "R15"
+      ]
+    },
+    "C25741": {
+      "offset_deg": 0,
+      "footprint": "lcsc:R0402",
+      "refs": [
+        "R17",
+        "R18",
+        "R20",
+        "R22"
+      ]
+    },
+    "C131469": {
+      "offset_deg": 0,
+      "footprint": "lcsc:SOD-123_L2.8-W1.8-LS3.7-RD",
+      "refs": [
+        "D2"
+      ],
+      "note": "At board angle 90 the JLC cathode stripe and minus sign are below the anode, matching pad 1 RUN. No offset."
+    },
+    "C5373042": {
+      "offset_deg": 0,
+      "footprint": "lcsc:QFN-16_L3.0-W3.0-P0.50-BL-EP1.7",
+      "refs": [
+        "U8"
+      ]
+    },
+    "C97502": {
+      "offset_deg": 0,
+      "footprint": "lcsc:SOT-9X3-3_L1.0-W0.8-P0.35-LS1.0-BR",
+      "refs": [
+        "D4",
+        "D5",
+        "D6"
+      ]
+    },
+    "C25776": {
+      "offset_deg": 0,
+      "footprint": "lcsc:R0402",
+      "refs": [
+        "R24"
+      ]
+    },
+    "C2866652": {
+      "offset_deg": 0,
+      "footprint": "lcsc:TSSOP-14_L5.0-W4.5-P0.65-LS6.4-BL",
+      "refs": [
+        "U9"
+      ]
+    },
+    "C3235557": {
+      "offset_deg": 0,
+      "footprint": "lcsc:SOT-583-8_L2.1-W1.6-P0.50-LS1.6-BL",
+      "refs": [
+        "U10"
+      ]
+    },
+    "C131941": {
+      "offset_deg": 0,
+      "footprint": "lcsc:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR",
+      "refs": [
+        "U11"
+      ]
+    },
+    "C7836": {
+      "offset_deg": 0,
+      "footprint": "lcsc:SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BR",
+      "refs": [
+        "U12"
+      ]
+    },
+    "C15195": {
+      "offset_deg": 0,
+      "footprint": "lcsc:C0402",
+      "refs": [
+        "C38"
+      ]
+    }
+  }
+}
