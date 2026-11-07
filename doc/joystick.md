@@ -1,6 +1,6 @@
 # Joystick mode
 
-The `features` firmware supports a three-button digital joystick and CD32 pad emulation. On REV5 boards,
+The firmware supports a three-button digital joystick and CD32 pad emulation. On REV5 boards,
 port 1 defaults to mouse and port 2 to joystick, working simultaneously. Use a
 `BOARD_HIDPICO_REV5` build for this arrangement. Keyboard input continues normally,
 including access to the settings menu.
@@ -22,8 +22,8 @@ The stick/D-pad provides up, down, left, right and diagonals. Generic HID Button
 1, 2 and 3 supply the three fire buttons; Button 4 is used for the third fire when
 Button 3 is absent from the descriptor (as on Stadia). PS3 USB mode retains its
 four-face-buttons-as-fire-1 mapping for the Competition Pro. The saved
-mode survives power loss. Port 2 can be turned Off independently. If port 1 is
-configured as Joystick, select Mouse there to restore mouse input.
+mode survives power loss. Port 2 can be turned Off independently. Select Mouse
+on port 1 to enable mouse input.
 
 REV2 and REV4 builds support only controller port 1, where Mouse and Joystick
 remain alternative modes. REV4's second port has a hardware wiring error; see
@@ -77,7 +77,7 @@ state. Opposing directions cancel when multiple controllers are active.
 
 ## Stadia Bluetooth
 
-The Stadia controller must be converted to Bluetooth mode before pairing.
+Stadia controllers must already be converted to Bluetooth mode.
 Use the Pico W USB + Bluetooth build for your board revision.
 
 1. Keep **Controller port 1: Mouse** and **Controller port 2: Joystick** on REV5.
@@ -97,11 +97,8 @@ Use the Pico W USB + Bluetooth build for your board revision.
 Only one LE device can be connected at a time in this implementation. USB and
 Classic Bluetooth keyboards/mice can remain connected. Rumble, right-stick
 mapping and separate player assignments are not implemented.
-
-The LE path reads HID Report Maps and Report References and subscribes to input
-notifications using BTstack's HIDS host. Existing LE boot keyboards/mice retain
-their boot-report path. Standard gamepad reports use the same bounded decoder as
-USB; gamepad axes are never passed to the mouse decoder on this LE path.
+Stadia pairing and A/B/X buttons have been tested on REV5. Reconnection and
+extended use remain unverified.
 
 ## PS4 Bluetooth
 
@@ -140,11 +137,10 @@ All gamepads still share one joystick output state. Touch gestures,
 rumble, light-bar control and motion sensors are not supported. Controller
 clones with different descriptors are not identified as DualShock 4.
 
-Mouse-button holds are tracked independently across USB and Bluetooth sources:
-releasing one device cannot release a button held on another.
-Wire-format references are
-[hid-tools' Sony controller definitions](https://github.com/bentiss/hid-tools/blob/master/hidtools/device/sony_gamepad.py)
-and [Bluepad32's DS4 driver](https://github.com/ricardoquesada/bluepad32/blob/main/src/components/bluepad32/parser/uni_hid_parser_ds4.c).
+DualShock 4 joystick buttons and touchpad mouse input have been tested on REV5.
+Reconnection and extended use remain unverified. Mouse-button holds are tracked
+independently across USB and Bluetooth devices: releasing one device cannot
+release a button held on another.
 
 ## Diagnosing missing input
 
@@ -153,7 +149,7 @@ With a supported controller connected, the two diagnostic rows show, for example
 
 ```text
 j002a l09/09 d+ r+
-in01 out01 p2
+in001 out001 p2
 ```
 
 - `j`: received report count in hexadecimal, wrapping after `ffff`. It resets on
@@ -161,10 +157,10 @@ in01 out01 p2
 - `l`: actual/descriptor report length in decimal, including any report ID byte.
   An unknown report ID shows an expected length of zero.
 - `d+` / `d-`: the latest packet decoded successfully / did not decode. Before
-  the first packet, `d-` and `in--` mean no input has been decoded yet.
+  the first packet, `d-` and `in---` mean no input has been decoded yet.
 - `r+` / `r-`: the last request for the next USB report succeeded / failed.
   Success means the transfer was queued; it does not prove packets are arriving.
-- `in`: decoded controls; `--` means the latest packet could not be decoded.
+- `in`: decoded controls; `---` means the latest packet could not be decoded.
 - `out`: combined controls submitted to the output core after routing and menu
   capture. This is a software state, not a measurement of the DB9 signals.
 - `p`: enabled joystick ports: `0` none, `1` first, `2` second, `3` both.
@@ -172,8 +168,8 @@ in01 out01 p2
   leaving it. Centre the stick and release all buttons; move it and centre it
   again if it sends reports only when controls change.
 
-Controls are hexadecimal bit masks: up `01`, down `02`, left `04`, right `08`,
-fire 1 `10`, fire 2 `20`, fire 3 `40`; combinations add together. Neutral is `00`.
+Controls are hexadecimal bit masks: up `001`, down `002`, left `004`, right `008`,
+fire 1 `010`, fire 2 `020`, fire 3 `040`; combinations add together. Neutral is `000`.
 The input diagnostics follow the first mounted controller slot; output includes
 all controllers. Reconnect resets that controller's counters. Updates are limited
 to ten per second and Bluetooth pairing messages take priority on the fourth row.
@@ -188,7 +184,7 @@ With a Bluetooth gamepad and no USB joystick connected, the rows show:
 
 ```text
 b002a l11/11 d+
-in01 out01 p2
+in001 out001 p2
 ```
 
 `b` counts Bluetooth reports; the other fields have the same meanings as above.
@@ -198,29 +194,18 @@ diagnostics take priority if both are connected; unplug the USB joystick when
 checking Bluetooth reports. A Classic gamepad takes precedence over an LE gamepad
 in diagnostics. The first line's USB device counts exclude Bluetooth.
 
-## Controller compatibility and references
+## Controller compatibility
 
 Competition Pro controllers can expose different USB report formats. The
-Competition Pro Extra (`0079:181c`, identifying as
-`SPEEDLINK COMPETITION PRO Game Controller for Android`) reports its digital
-stick as X/Y values of 0, 128 and 255. PS3-compatible mode uses a different
-report layout and needs the startup command described below. If diagnostics
-show `j0000 l00/49 d- r+`, check the initialization status: a queued receive
-request alone does not mean the controller has started sending input.
+Competition Pro Extra (`0079:181c`) reports its digital stick as X/Y values of
+0, 128 and 255 in generic HID mode. Its PS3-compatible mode uses a different
+report layout and requires the firmware's startup command. If diagnostics show
+`j0000 l00/49 d- r+`, check the initialization status: a queued receive request
+does not mean the controller has started sending input.
 
-Stadia report-format references are the published
-[Bluetooth descriptor](https://github.com/libsdl-org/SDL/issues/7224#issuecomment-1445457085)
-and [SDL's Stadia driver](https://github.com/libsdl-org/SDL/blob/main/src/joystick/hidapi/SDL_hidapi_stadia.c).
-
-The PS3 startup transfer is feature report `f4`, payload `42 0c 00 00`, as used
-by the [USB Host Shield PS3 driver](https://github.com/felis/USB_Host_Shield_2.0/blob/master/PS3USB.cpp#L444).
-A [Competition Pro adapter implementation](https://www.hackster.io/DocSnyderde/connect-usb-joystick-to-commodore-c64-2fb5ba)
-uses that driver and maps the physical fire buttons to the PS3 face buttons.
-
-The parser follows [USB HID 1.11](https://www.usb.org/sites/default/files/hid1_11.pdf)
-and the [HID Usage Tables](https://www.usb.org/sites/default/files/hut1_2.pdf).
-Output uses the digital joystick pin assignments in Commodore's
-[Amiga Hardware Reference Manual, Appendix E](https://www.theflatnet.de/pub/cbm/amiga/AmigaDevDocs/hard_e.html).
+Competition Pro joystick input, Stadia and DualShock 4 have been tested on REV5.
+Other controllers may work when they use a supported HID layout; compatibility
+is not guaranteed by the device being described as a USB or Bluetooth gamepad.
 
 ## Gamepad settings
 
@@ -232,7 +217,7 @@ stick movement. These settings apply to USB and Bluetooth controllers.
 Each of seven output buttons has an Auto mapping, a HID button number 1–16, or
 Disabled. The first three are the ordinary joystick buttons; the other four
 are retained for CD32 output. Mappings are global across connected controllers.
-Auto retains the tested PS4 Cross/Circle/Square and Stadia A/B/X mapping.
+Auto uses the PS4 Cross/Circle/Square and Stadia A/B/X mapping.
 PS4's additional defaults are Triangle, L2, R2, Options; Stadia's are Y, L1,
 R1, Menu. The Competition Pro retains all four face buttons as fire 1.
 
@@ -243,9 +228,9 @@ Stadia uses A=1, B=2, X=4, Y=5, L1=7, R1=8, Menu=12.
 Touchpad only, or Off, so shoulders can be dedicated to gamepad use.
 
 Save and exit applies these choices. Release held controls before resuming.
-Schema 5 preserves older settings and selects the previous direction, deadzone,
-and mouse defaults. Diagnostics use three hexadecimal digits; extra output
-bits are fourth button `080`, rewind `100`, forward `200`, and play `400`.
+Diagnostics use three hexadecimal digits; extra output bits are fourth button
+`080`, rewind `100`, forward `200`, and play `400`.
+Custom gamepad settings still require hardware validation.
 
 ## CD32 pad mode
 
@@ -284,7 +269,6 @@ ports. PIO0 remains available to CYW43. Clock handling continues through CPU
 interrupts and flash lockout. Direction pins remain serviced by the output core.
 Reference: [Amiga Test Kit's read_gamepad implementation](https://github.com/keirf/amiga-stuff/blob/master/testkit/joymouse.c).
 
-Driving serial data high charges the Amiga POT input capacitance between bits;
-a slow rise can cause adjacent buttons to appear pressed. Check each button
-individually in Amiga Test Kit when setting up CD32 mode. Electrical compatibility
-with the connected Amiga and adapter requires hardware verification.
+CD32 serial output is implemented but remains unverified on physical hardware
+with the current data-line drive behavior. Check pad detection and each button
+in Amiga Test Kit before relying on CD32 mode in games.

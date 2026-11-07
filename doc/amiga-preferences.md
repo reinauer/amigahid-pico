@@ -1,9 +1,9 @@
 # AmigaHID Preferences
 
 `AmigaHIDPrefs` is a native Workbench utility for reading and editing settings
-on the Pico through its existing second controller cable. This first version
-requires AmigaOS 2.04 or newer, a standard Amiga controller port, and an AmigaHID
-REV5 board running the matching firmware. The executable supports the 68000
+on the Pico through its existing second controller cable. It requires AmigaOS
+2.04 or newer, a standard Amiga controller port, and an AmigaHID REV5 board
+running the matching firmware. The executable supports the 68000
 and later CPUs, including the A3000's 68030. No `lowlevel.library` is required.
 
 ## Using the utility
@@ -74,65 +74,17 @@ plus its Workbench `.info` icon. The icon generator requires Python 3.
 Firmware builds use the existing Pico CMake workflow. REV2/REV4 firmware keeps
 its existing behavior and does not offer the port-2 preferences action.
 
-## Link implementation
+## Compatibility
 
-The link is explicitly enabled from the OLED menu. It uses DE-9 pin 5 as the
-Amiga-driven clock, pin 9 as half-duplex data, and pin 6 as the Pico's
-acknowledgement. Pico outputs only sink or release these lines in this mode.
-The Amiga keeps its POT pins in current-limited output mode, driving data high
-while receiving. This prevents the analogue counters from discharging the data
-line during a transfer. The host waits at least 50 us for data to settle and
-waits for each rising/falling edge to be acknowledged, allowing CPU/IRQ delays.
+The utility uses the existing port-2 cable; no serial adapter is required.
+It claims the Amiga's second gameport and POT resources while open, and releases
+them on exit. Other software must leave that controller port available.
 
-The first frame contains the `AH` signature, protocol version, command, and
-sequence number. The same fixed 64-byte format is used for every request and
-reply, with a length, status, zero padding and CRC16-CCITT-FALSE. All multi-byte
-protocol values are explicitly little-endian. Settings wire version 1 contains
-48 byte fields; it is independent of the on-flash record header and CRC.
+The utility and firmware must support the same settings format. An incompatible
+reply is rejected; install matching versions if the utility reports a format
+mismatch. REV2/REV4 firmware does not provide this link.
 
-Commands: Hello, Read, Defaults, Use, Save, End. The host makes at most two
-attempts with the same sequence number. The firmware caches the last request
-and response so a retried Save does not write flash twice. Partial transfers
-reset after 500 ms without an edge; waiting for core0 permits two seconds.
-The final End acknowledgement is held for 250 ms so the Amiga can release its
-pins before normal controller output resumes. Complete inactivity ends the
-session after five minutes. Canceling from the OLED menu releases the pins too.
-
-Core1 owns the pins and disables CD32 PIO for port 2 before taking them over.
-Core0 validates complete requests, handles flash writes using the existing
-alternating records, releases held input, and applies the settings. A generation
-number discards requests/replies left behind by a canceled transfer. Port 1
-continues mouse operation; port 2 waits for neutral controls on restoration.
-
-On the Amiga, the utility claims gameport.device unit 1 as a custom controller
-and allocates only port 2's POT bits through potgo.resource. It refuses a busy
-port. It restores its CIA direction bit, releases the POT allocation and frees
-the gameport unit on exit. Communication does not disable Amiga interrupts.
-
-References: [gameport ownership](https://wiki.amigaos.net/wiki/Gameport_Device),
-Commodore's `potgo.resource/AllocPotBits` and `WritePotgo` autodocs, and
-[Amiga Test Kit's controller reader](https://github.com/keirf/amiga-stuff/blob/master/testkit/joymouse.c).
-
-## Validation and first hardware trial
-
-Software checks cover the actual host transport against the Pico transport and
-settings server, CRC corruption at every bit, every partial-frame length,
-settings validation, defaults without applying, Use versus Save, persistence,
-failed saves, duplicate requests, stale requests, cancellation and timeouts.
-GPIO checks cover port-2 takeover and restoration from joystick/CD32 modes,
-concurrent mouse operation, and release of held controls. Tests are temporary
-and are not added to the repository.
-
-Physical communication and the Workbench window still require hardware testing:
-
-1. Read and confirm the displayed firmware version and watchdog setting.
-2. Use a changed setting, Read it back, and power-cycle: the last saved setting
-   should return.
-3. Save a changed setting and power-cycle: the new setting should persist.
-4. Load Defaults and Cancel: nothing should change on the Pico.
-5. Close the window and verify mouse, keyboard and joystick/CD32 operation.
-6. Re-enable the link and cancel it with F12; verify recovery without a reboot.
-
-The previously delivered CD32/DS4 trial is separate. Its button fix is also in
-this combined firmware, but neither physical link timing nor the CD32 electrical
-change is proven by software simulation alone.
+The port-2 link and Workbench interface are experimental and still need testing
+on an Amiga. Before relying on saved changes, use Read to verify them and check
+that they persist after power cycling. Closing the utility or holding F12 must
+restore normal controller operation.

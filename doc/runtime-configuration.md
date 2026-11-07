@@ -1,7 +1,7 @@
 # Runtime configuration
 
-The `features` branch adds a settings menu to the existing USB and Bluetooth
-firmware. It works with the OLED on REV2, REV4 and REV5 boards. Board selection and
+The firmware provides an OLED settings menu for USB and Bluetooth input.
+It works with the OLED on REV2, REV4 and REV5 boards. Board selection and
 GPIO wiring remain build-time options.
 
 ## Open and use the menu
@@ -52,8 +52,9 @@ Faster mouse intervals change the rate at which queued movement is emitted,
 not mouse sensitivity. They require testing with the connected Amiga. The
 watchdog restarts the Pico if its main loop stops completing; it does not
 independently detect a stalled mouse core. It starts after normal initialization
-and pauses when a debugger halts the CPU. A watchdog reboot is reported on the
-OLED and UART.
+and pauses when a debugger halts the CPU. The OLED and UART report "Watchdog
+reboot" when the previous reset was caused by the watchdog; this message does
+not mean the watchdog is currently enabled.
 
 HID diagnostics show mount/receive status on the third line. With a supported USB
 gamepad connected, the third and fourth lines show its report count, packet length,
@@ -79,27 +80,20 @@ keyboard is the most direct way to enter this recovery mode at startup.
 Invalid or missing saved settings automatically use defaults. If the display
 itself has failed, the firmware continues using saved settings without a menu.
 
-## Storage and validation
+## Saving settings
 
-Settings use schema version 7 and a CRC32. Two alternating 4 KiB sectors keep
-the previous valid record intact while a new record is erased/programmed. On
-boot, the newest valid record is selected, including across sequence rollover.
-Unchanged saves do not erase flash. Failed saves leave the menu open and do not
-apply the edited values.
+Settings are saved in two alternating flash records. A failed save leaves the
+menu open and does not apply the edited values. Saving unchanged settings does
+not erase flash.
 
-The last 16 KiB of flash is reserved by a linker assertion: two settings sectors
-followed by the SDK's two Bluetooth pairing sectors. USB-only and Bluetooth
-builds use the same layout. Settings writes run through the SDK's flash-safe
-execution API with core1 registered for lockout. Normal UF2 updates below this
-region preserve settings; erasing the entire flash removes them.
+Normal UF2 firmware updates preserve saved settings and Bluetooth pairing data;
+erasing the entire flash removes them. Compatible older settings are migrated
+when loaded and written in the current format on the next explicit save.
+Invalid or incompatible records fall back to another valid record or defaults.
+If mouse input is unavailable after an update, check that port 1 is set to Mouse.
 
-Schema 1–6 records are migrated in RAM, preserving existing settings,
-including the watchdog timeout and any saved port 1 choice. Port 1 defaults to
-Mouse when migrating schema 1, which had no port setting. The new port 2 option
-defaults to Joystick on REV5 and Off on other revisions. If port 1 is saved as
-Joystick, change that setting to Mouse for simultaneous
-mouse/joystick use. The next explicit save writes schema 7. Unknown schemas are
-rejected, falling back to a compatible record or defaults.
+Startup recovery and watchdog-triggered restarts still require hardware
+validation.
 
 ## Bluetooth controls
 
@@ -116,8 +110,7 @@ disconnects devices, clears Classic and LE bonds, and restarts Bluetooth. In
 paired-only mode, use Pair afterwards to enrol devices again. These actions do
 not save unrelated menu edits. USB-only builds omit these menu items.
 
-Settings schema 4 migrates schemas 1–3, preserving previous choices and defaulting
-Bluetooth to On with Automatic pairing.
+Bluetooth radio and pairing-policy controls still require hardware validation.
 
 ## Keyboard mappings
 
@@ -139,13 +132,18 @@ reserved menu/recovery keys; destination choices include Amiga modifiers. Right
 GUI keeps its separate setting and the default Ctrl-Amiga-Amiga chord is preserved.
 Two keys or keyboards mapped to the same Amiga key retain it until both release.
 
-Schema 6 migrates schemas 1–5 with original keyboard behavior and empty custom
-slots.
+Custom keyboard settings still require hardware validation.
 
-## CD32 and migration
+## CD32 pad mode
 
-Both controller-port menus include CD32 pad; ordinary joystick remains the
-port 2 default on REV5. See [CD32 setup and mappings](joystick.md#cd32-pad-mode).
-Schema 7 adds this mode and reads every previous settings schema. Migration keeps
-your watchdog, port choices, keyboard behavior and wheel settings. New choices
-use the defaults described above. Save and exit commits the migrated record.
+Select CD32 pad in the controller-port menu to enable seven-button output.
+Port 2 defaults to ordinary Joystick on REV5. See
+[CD32 setup, mappings and compatibility](joystick.md#cd32-pad-mode).
+
+## Amiga-side preferences
+
+REV5 provides **Amiga preferences** beside the controller-port settings. Save or
+cancel pending OLED edits before enabling it. The action temporarily hands port
+2 to the native Workbench utility; port 1 mouse and keyboard remain available.
+Hold F12 to cancel, or close the utility to restore controller output.
+See [AmigaHIDPrefs setup](amiga-preferences.md).
