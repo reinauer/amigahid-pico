@@ -18,6 +18,9 @@
 #endif
 #include "util/debug_cons.h"
 #include "util/output.h"
+#ifdef HAS_MENU_LEVER
+#include "menu_lever.h"
+#endif
 
 #define MENU_HOLD_US 1000000u
 #define RECOVERY_HOLD_US 2000000u
@@ -52,6 +55,10 @@ static unsigned item, remap_slot;
 static bool remap_learning;
 static uint32_t watchdog_timeout;
 static char const *notice;
+#ifdef HAS_MENU_LEVER
+static menu_lever_t lever;
+static bool lever_editing;
+#endif
 
 static bool key_down(hid_keyboard_report_t const *report, uint8_t key)
 {
@@ -101,6 +108,9 @@ static void open_menu(bool recovery)
         apply_settings();
     }
     remap_learning = false;
+#ifdef HAS_MENU_LEVER
+    lever_editing = false;
+#endif
     opened = true;
     item = 0;
     notice = recovery ? "Defaults (unsaved)" : NULL;
@@ -115,6 +125,9 @@ static void close_menu(void)
     opened = false;
     holding = recovering = false;
     save_pending = false;
+#ifdef HAS_MENU_LEVER
+    lever_editing = false;
+#endif
     for (unsigned slot = 0; slot < INPUT_BRIDGE_MAX_SLOTS; slot++)
         quarantine[slot] = !report_empty(&keyboards[slot]);
     input_bridge_capture(false);
@@ -144,6 +157,9 @@ static void render_menu(void)
     static char const *const watchdog[] = {"Off (default)", "2 seconds", "5 seconds"};
     char heading[22], custom[22];
     char const *value = "Enter to select";
+#ifdef HAS_MENU_LEVER
+    value = "Push / Enter";
+#endif
     switch (item) {
         case MENU_KEY: value = keys[edited.menu_key]; break;
         case MENU_ENTRY: value = entry[edited.menu_entry]; break;
@@ -200,7 +216,12 @@ static void render_menu(void)
             break;
     }
     snprintf(heading, sizeof(heading), "Settings %u/%u", item + 1, MENU_ITEM_COUNT);
-    disp_ssd_menu(heading, names[item], value, notice ? notice : "Arrows Enter Esc");
+    char const *hint = "Arrows Enter Esc";
+#ifdef HAS_MENU_LEVER
+    hint = remap_learning ? "Push cancels learning" :
+        lever_editing ? "Rock +/-; push done" : "Rock browse; push edit";
+#endif
+    disp_ssd_menu(heading, names[item], value, notice ? notice : hint);
     redraw = false;
 }
 
@@ -281,7 +302,14 @@ static void menu_key(uint8_t key)
                 pair_pending = true;
             } else if (item == MENU_BT_FORGET) {
                 if (forget_confirm) { forget_pending = true; forget_confirm = false; }
-                else { forget_confirm = true; notice = "Enter again to forget"; }
+                else {
+                    forget_confirm = true;
+#ifdef HAS_MENU_LEVER
+                    notice = "Push/Enter to forget";
+#else
+                    notice = "Enter again to forget";
+#endif
+                }
             }
 #endif
 #ifdef HAS_JOYSTICK_PORT2
@@ -296,7 +324,12 @@ static void menu_key(uint8_t key)
                 remote_seen = false;
                 remote_started = time_us_64();
                 disp_ssd_set_overlay(true);
-                disp_ssd_menu("Amiga preferences", "Port 2 link enabled", "Open AmigaHIDPrefs", "F12 menu to cancel");
+                disp_ssd_menu("Amiga preferences", "Port 2 link enabled", "Open AmigaHIDPrefs",
+#ifdef HAS_MENU_LEVER
+                    "Hold push/F12: menu");
+#else
+                    "F12 menu to cancel");
+#endif
             }
 #endif
             else if (item == MENU_REMAP_SOURCE) remap_learning = true;
@@ -317,8 +350,77 @@ static void menu_key(uint8_t key)
     redraw = true;
 }
 
+#ifdef HAS_MENU_LEVER
+static uint8_t lever_contacts(void)
+{
+    return (!gpio_get(MENU_LEVER_PIN_LEFT) ? MENU_LEVER_LEFT : 0) |
+        (!gpio_get(MENU_LEVER_PIN_RIGHT) ? MENU_LEVER_RIGHT : 0) |
+        (!gpio_get(MENU_LEVER_PIN_PUSH) ? MENU_LEVER_PUSH : 0);
+}
+
+static bool lever_value_item(void)
+{
+    switch (item) {
+        case MENU_SAVE: case MENU_DEFAULTS: case MENU_CANCEL:
+        case MENU_REMAP_SOURCE: case MENU_REMAP_CLEAR:
+#ifdef HAS_JOYSTICK_PORT2
+        case MENU_AMIGA_PREFS:
+#endif
+#ifdef ENABLE_BLUETOOTH_HID
+        case MENU_BT_PAIR: case MENU_BT_FORGET:
+#endif
+            return false;
+        default:
+            return true;
+    }
+}
+
+static void lever_task(void)
+{
+    enum menu_lever_event event = menu_lever_update(&lever,
+        lever_contacts(), time_us_64());
+    if (!disp_ssd_available() || event == MENU_LEVER_NONE)
+        return;
+    if (!opened) {
+        /* The physical control remains available with boot-only key entry. */
+        if (event == MENU_LEVER_HOLD)
+            open_menu(false);
+        return;
+    }
+    if (event == MENU_LEVER_HOLD) {
+        lever_editing = false;
+        menu_key(HID_KEY_ESCAPE);
+    } else if (remap_learning) {
+        /* Rocking must never be learned as a synthetic keyboard arrow. */
+        if (event == MENU_LEVER_CLICK)
+            menu_key(HID_KEY_ESCAPE);
+    } else if (event == MENU_LEVER_CLICK) {
+        if (lever_value_item()) {
+            lever_editing = !lever_editing;
+            notice = NULL;
+            redraw = true;
+        } else {
+            menu_key(HID_KEY_ENTER);
+        }
+    } else if (lever_editing) {
+        menu_key(event == MENU_LEVER_PREVIOUS ? HID_KEY_ARROW_LEFT : HID_KEY_ARROW_RIGHT);
+    } else {
+        menu_key(event == MENU_LEVER_PREVIOUS ? HID_KEY_ARROW_UP : HID_KEY_ARROW_DOWN);
+    }
+}
+#endif
+
 void runtime_menu_init(void)
 {
+#ifdef HAS_MENU_LEVER
+    const uint pins[] = {MENU_LEVER_PIN_LEFT, MENU_LEVER_PIN_RIGHT, MENU_LEVER_PIN_PUSH};
+    for (unsigned i = 0; i < sizeof(pins) / sizeof(pins[0]); i++) {
+        gpio_init(pins[i]);
+        gpio_set_dir(pins[i], GPIO_IN);
+        gpio_pull_up(pins[i]);
+    }
+    menu_lever_init(&lever, lever_contacts(), time_us_64());
+#endif
     boot_deadline = time_us_64() + BOOT_MENU_US;
     apply_settings();
     if (watchdog_caused_reboot()) {
@@ -335,8 +437,15 @@ bool runtime_menu_keyboard(uint8_t slot, hid_keyboard_report_t const *report)
     keyboards[slot] = *report;
     if (opened) {
         for (unsigned i = 0; i < 6 && opened; i++)
-            if (report->keycode[i] && !key_down(&previous, report->keycode[i]))
+            if (report->keycode[i] && !key_down(&previous, report->keycode[i])) {
+#ifdef HAS_MENU_LEVER
+                if (lever_editing) {
+                    lever_editing = false;
+                    redraw = true;
+                }
+#endif
                 menu_key(report->keycode[i]);
+            }
         return true;
     }
     if (quarantine[slot]) {
@@ -394,6 +503,9 @@ void runtime_menu_task(void)
             disp_ssd_set_overlay(false);
         }
     }
+#ifdef HAS_MENU_LEVER
+    lever_task();
+#endif
     if (opened) {
 #ifdef ENABLE_BLUETOOTH_HID
         if (pair_pending) {

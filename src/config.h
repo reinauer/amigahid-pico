@@ -13,6 +13,10 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#ifdef BOARD_HIDPICO_REV7
+#include "pico.h"
+#endif
+
 // the pico has an onboard led on gp25; use this as a default indicator
 #ifndef INDICATOR_LED
 #  define INDICATOR_LED PICO_DEFAULT_LED_PIN
@@ -40,7 +44,7 @@
 #  define QM1_AMIGA_B1  22
 #  define QM1_AMIGA_B2  26
 #  define QM1_AMIGA_B3  27
-#elif defined(BOARD_HIDPICO_REV4) || defined(BOARD_HIDPICO_REV5)
+#elif defined(BOARD_HIDPICO_REV4) || defined(BOARD_HIDPICO_REV5) || defined(BOARD_HIDPICO_REV7)
 #  define HAS_SCREEN
 #  define HAS_KEYBOARD
 #  define HAS_PORT1
@@ -63,7 +67,7 @@
 #  define QM1_AMIGA_B2  12
 #  define QM1_AMIGA_B3  13
 
-#  if defined(BOARD_HIDPICO_REV5)
+#  if defined(BOARD_HIDPICO_REV5) || defined(BOARD_HIDPICO_REV7)
 // REV5 fixes port 2's Down connection to RUN on REV4. Never enable this
 // mapping for an unmodified REV4 board; RUN is not a programmable GPIO.
 #    define HAS_JOYSTICK_PORT2
@@ -74,6 +78,16 @@
 #    define QM2_AMIGA_B1 20
 #    define QM2_AMIGA_B2 19
 #    define QM2_AMIGA_B3 18
+#  endif
+#  if defined(BOARD_HIDPICO_REV7)
+#    if !defined(AMIGAHID_R7) || !PICO_RP2350
+#      error REV7 requires the amigahid_r7 RP2350 board profile
+#    endif
+// GPIO4 is unconnected on r7; big-box Amiga reset uses KCLK instead.
+#    define HAS_MENU_LEVER
+#    define MENU_LEVER_PIN_LEFT 14
+#    define MENU_LEVER_PIN_RIGHT 15
+#    define MENU_LEVER_PIN_PUSH 16
 #  endif
 #else
 #  error Board type has not been defined; check cmake command line

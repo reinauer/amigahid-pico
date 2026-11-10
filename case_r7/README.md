@@ -88,7 +88,8 @@ ordering PCBs or printing a final enclosure.
 
 SW2 on the r7 PCB occupies this position. The power circuitry sits around its
 movement envelope. GPIO14/15/16 connect the CCW, CW and push contacts with
-10 kΩ pull-ups; menu handling and debounce still require firmware support.
+10 kΩ pull-ups. The REV7 firmware provides debounce and
+[lever menu controls](../doc/runtime-configuration.md#rev7-menu-lever).
 The case collision check verifies the modeled switch against the shell, not
 against every PCB component. PCB courtyard checks cover the reserved movement
 envelope; a soldered sample remains necessary to confirm actual fit.

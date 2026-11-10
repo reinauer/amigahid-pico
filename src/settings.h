@@ -23,7 +23,7 @@ typedef struct {
     uint8_t display;
     uint8_t watchdog;         /* off, 2 seconds, 5 seconds */
     uint8_t port_mode;        /* port 1: mouse, joystick or CD32 */
-    uint8_t joystick_port2;   /* port 2: off, joystick or CD32; REV5 only */
+    uint8_t joystick_port2;   /* port 2: off, joystick or CD32; REV5/REV6/REV7 */
     uint8_t reserved[2];
     uint8_t bluetooth_enabled;
     uint8_t bluetooth_pairing; /* 0: automatic, 1: paired devices / timed pairing */

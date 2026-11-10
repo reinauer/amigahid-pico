@@ -8,6 +8,7 @@ add_executable(amigahid-pico
   prefs_server.c
   ../common/prefs_protocol.c
   runtime_menu.c
+  menu_lever.c
   usb_hid.c
 )
 
@@ -58,7 +59,13 @@ target_link_libraries(amigahid-pico PUBLIC
   tinyusb_board
 )
 
+if (PICO_PLATFORM MATCHES "^rp2350")
+  set(AMIGAHID_FLASH_STORAGE_BYTES 20480)
+else ()
+  set(AMIGAHID_FLASH_STORAGE_BYTES 16384)
+endif ()
 target_link_options(amigahid-pico PRIVATE
+  "LINKER:--defsym=__amigahid_flash_storage_bytes=${AMIGAHID_FLASH_STORAGE_BYTES}"
   "LINKER:--script=${CMAKE_SOURCE_DIR}/cmake/settings_flash.ld"
 )
 set_property(TARGET amigahid-pico APPEND PROPERTY LINK_DEPENDS "${CMAKE_SOURCE_DIR}/cmake/settings_flash.ld")

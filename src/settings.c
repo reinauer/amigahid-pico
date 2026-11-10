@@ -14,11 +14,17 @@
 #include "pico/btstack_flash_bank.h"
 #endif
 
-/* The final two sectors belong to BTstack, also in USB-only builds so
+/* Two sectors belong to BTstack, also in USB-only builds so
  * switching firmware variants preserves both settings and pairing data.
  * Two preceding sectors alternate: an interrupted write leaves the previous
- * valid record intact. The linker also reserves this 16 KiB region. */
+ * valid record intact. RP2350 keeps the last sector free for the SDK's E10
+ * workaround. Reserve it even in builds that disable A2 support so changing
+ * firmware variants does not move settings or pairing data. */
+#if PICO_RP2350
+#define SETTINGS_FLASH_OFFSET (PICO_FLASH_SIZE_BYTES - 5u * FLASH_SECTOR_SIZE)
+#else
 #define SETTINGS_FLASH_OFFSET (PICO_FLASH_SIZE_BYTES - 4u * FLASH_SECTOR_SIZE)
+#endif
 #define SETTINGS_MAGIC 0x41484346u
 #define SETTINGS_SCHEMA 7u
 #define SETTINGS_V1_SIZE 8u

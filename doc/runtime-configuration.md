@@ -1,7 +1,7 @@
 # Runtime configuration
 
 The firmware provides an OLED settings menu for USB and Bluetooth input.
-It works with the OLED on REV2, REV4 and REV5 boards. Board selection and
+It works with the OLED on REV2, REV4, REV5/REV6 and REV7 boards. Board selection and
 GPIO wiring remain build-time options.
 
 ## Open and use the menu
@@ -13,6 +13,31 @@ settings to flash and applies them. **Esc** or **Cancel changes** discards edits
 
 Factory defaults changes the values in the editor; select Save and exit to
 apply and preserve them. Values are not previewed while editing.
+
+### REV7 menu lever
+
+The ALPS lever beside RECOVERY works without a USB or Bluetooth keyboard:
+
+- Hold the inward push for one second, then release, to open the menu.
+- Rock left/right to browse items. Holding a direction repeats after a pause.
+- Tap push on a setting to edit it; rock left/right to change its value,
+  then tap push again to return to browsing. The bottom line shows the mode.
+- Tap push on an action to activate it. **Save and exit** saves and applies
+  edits; **Cancel changes** discards them. Forget BT devices needs two taps.
+- Hold push for one second inside the menu to cancel and exit. While learning
+  a custom source key, tap or hold push cancels learning first; a keyboard is
+  still needed to supply the actual source key.
+
+The lever can open the menu even with boot-only keyboard entry or Display Off
+saved. It requires a working OLED. A lever held during startup must be released
+before it operates. Contacts are debounced for 20 ms; simultaneous contacts
+are ignored until the lever returns to neutral. RECOVERY remains a separate
+hardware reset/BOOTSEL button. Keyboard menu controls continue to work.
+
+REV7 firmware and lever operation still need testing on the assembled board;
+host tests and successful builds do not establish physical operation.
+
+### Settings and input capture
 
 While the menu is open, keyboard, mouse and joystick input is captured locally.
 Previously forwarded keys, buttons and directions are released, and queued mouse
@@ -31,14 +56,14 @@ version stays visible, and normal status/pairing text is restored on exit.
 | Display | Status, HID diagnostics, mouse diagnostics, off | Status |
 | Watchdog | Off, 2 seconds, 5 seconds | Off |
 | Controller port 1 | Mouse, Joystick, CD32 pad | Mouse |
-| Controller port 2 (REV5 only) | Off, Joystick, CD32 pad | Joystick |
+| Controller port 2 (REV5/REV6/REV7) | Off, Joystick, CD32 pad | Joystick |
 
 The selected menu key is reserved for configuration while a working OLED is
 present. The Right GUI setting affects the right Windows/Command modifier;
 Application/Menu retains its existing Right Amiga mapping unless selected as
 the menu key. The default Amiga reset chord is unchanged.
 
-On REV5, mouse on port 1 and joystick on port 2 work simultaneously by default.
+On REV5/REV6/REV7, mouse on port 1 and joystick on port 2 work simultaneously by default.
 Joystick uses a supported USB or Bluetooth HID controller's stick/D-pad and
 up to three fire buttons. See [joystick setup](joystick.md) for mappings and compatibility.
 Port 2 can be disabled with its own setting. Selecting Joystick on port 1
@@ -92,6 +117,11 @@ when loaded and written in the current format on the next explicit save.
 Invalid or incompatible records fall back to another valid record or defaults.
 If mouse input is unavailable after an update, check that port 1 is set to Mouse.
 
+REV7 reserves the last 20 KiB of its 4 MiB flash: two settings sectors, two
+Bluetooth sectors, and the final sector for the RP2350 SDK workaround. USB-only
+and Bluetooth REV7 builds use the same locations. RP2040 builds retain their
+existing 16 KiB reservation and settings locations.
+
 Startup recovery and watchdog-triggered restarts still require hardware
 validation.
 
@@ -142,7 +172,7 @@ Port 2 defaults to ordinary Joystick on REV5. See
 
 ## Amiga-side preferences
 
-REV5 provides **Amiga preferences** beside the controller-port settings. Save or
+REV5/REV6/REV7 provide **Amiga preferences** beside the controller-port settings. Save or
 cancel pending OLED edits before enabling it. The action temporarily hands port
 2 to the native Workbench utility; port 1 mouse and keyboard remain available.
 Hold F12 to cancel, or close the utility to restore controller output.

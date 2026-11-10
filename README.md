@@ -12,7 +12,8 @@ it currently supports keyboards and mice and provides connection via the interna
 
 ## **important note**
 
-* current kicad files are for r5 pcb. on the `features` branch, select `BOARD_HIDPICO_REV5` to enable both controller ports: port 1 defaults to mouse and port 2 to USB joystick. REV4 firmware supports the same keyboard and first port, but leaves the second port unused. see [USB joystick mode](./doc/joystick.md).
+* r7 uses the native RP2350A/RM2 board and an ALPS menu lever. See [r7 firmware setup](./doc/installation.md#rev7-rp2350a-and-rm2) and [lever controls](./doc/runtime-configuration.md#rev7-menu-lever).
+* for r5/r6 carriers on the `features` branch, select `BOARD_HIDPICO_REV5` to enable both controller ports: port 1 defaults to mouse and port 2 to USB joystick. REV4 firmware supports the same keyboard and first port, but leaves the second port unused. see [USB joystick mode](./doc/joystick.md).
 
 * **always read the [errata](./doc/errata.md) section for the current pcb layout before deciding whether or not to build.**
 

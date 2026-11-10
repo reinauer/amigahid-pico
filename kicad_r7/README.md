@@ -331,11 +331,11 @@ not guarantee 500 mA at either USB port. At 0.5 A its specified 0.70 Ω maximum
 post-trip resistance alone would lose 0.35 V; switches, cable and copper add
 further loss. Establish the intended load from measurements.
 
-The first order should be a small prototype batch. Bring-up needs a custom r7
-firmware pin/power configuration and SH1106 display support, followed by tests
-of USB-C-only recovery with invalid flash, two peripherals, Amiga supply
-current/droop/backfeed, radio operation and case fit. Existing firmware has not
-been changed by this hardware work.
+The first order should be a small prototype batch. Build the
+[`BOARD_HIDPICO_REV7` firmware](../doc/installation.md#rev7-rp2350a-and-rm2), then test
+USB-C-only recovery with invalid flash, two peripherals, Amiga supply
+current/droop/backfeed, radio operation and case fit. The firmware has not
+been physically validated on r7.
 
 ### Cost discussion
 
@@ -398,10 +398,11 @@ mechanical anchors connect to ground. The three contacts are active low:
 | 2 / CW | MENU_RIGHT_N | 15 | R28, 10 kΩ to 3.3 V |
 | T / push | MENU_PUSH_N | 16 | R29, 10 kΩ to 3.3 V |
 
-These contacts need firmware debounce and menu handling. RECOVERY remains a
+The REV7 firmware debounces these contacts and provides
+[lever menu controls](../doc/runtime-configuration.md#rev7-menu-lever). RECOVERY remains a
 separate hardware function. With the board powered, check each input is high
 at rest and goes low only for its corresponding action before enabling menu
-handling. Confirm the desired left/right sense with the assembled enclosure.
+operation. Confirm the desired left/right sense with the assembled enclosure.
 
 The switch footprint/model originated in the
 [JLCEDA](https://lceda.cn/)/[EasyEDA Official Library](https://easyeda.com/),

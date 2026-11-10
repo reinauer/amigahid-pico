@@ -39,11 +39,39 @@ for a revision 5 pcb, select its dedicated target to enable the second controlle
 $ cmake -B build/ -S . -DBOARD_TYPE=BOARD_HIDPICO_REV5
 ```
 
-supported targets are revision 2, revision 4 and revision 5. choose the revision
+supported targets are revision 2, revision 4, revision 5 (also for REV6), and
+revision 7. choose the revision
 printed on the carrier PCB, separately from the Pico/Pico W module. REV5 defaults
 to mouse on controller port 1 and joystick on controller port 2. REV4 has a
 port-2 wiring error, so its firmware leaves that port unused; see the
 [errata](errata.md#board-revision-4).
+
+### REV7: RP2350A and RM2
+
+Use a fresh build directory for the native r7 board. Its dedicated profile
+selects RP2350A, 4 MiB flash, the RM2 wireless pins, and the three menu contacts:
+
+```shell
+cmake -S . -B build/r7-menu -DBOARD_TYPE=BOARD_HIDPICO_REV7 \
+  -DENABLE_BLUETOOTH_HID=ON -DDISPLAY_CONTROLLER=AUTO -DCMAKE_BUILD_TYPE=Release
+cmake --build build/r7-menu -j
+```
+
+This selects `PICO_BOARD=amigahid_r7` and `PICO_PLATFORM=rp2350-arm-s`.
+Use `-DENABLE_BLUETOOTH_HID=OFF` for a USB-only build. Both variants reserve
+the same settings and pairing sectors. The output is
+`build/r7-menu/src/amigahid-pico.uf2`; it is **not for REV6/Pico W**.
+See [lever controls](runtime-configuration.md#rev7-menu-lever).
+
+For flashing, hold RECOVERY while attaching USB-C and release after at least
+0.1 seconds. Copy the UF2 to the ROM drive. The hardware recovery circuit works
+without application firmware. GPIO4 has no reset connection on r7; the Amiga
+keyboard reset chord uses the clock-line reset supported by big-box Amigas.
+
+The r7 target builds for USB and Bluetooth but still needs physical bring-up
+of the RM2, USB hub, display, Amiga interfaces, power and lever.
+
+### Build options
 
 you can also enable generation of debug symbols so as to use `openocd` and `gdb` to debug a running target over serial-wire debug (swd). to do this, add the parameter `-DCMAKE_BUILD_TYPE=Debug`, e.g.:
 

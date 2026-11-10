@@ -68,7 +68,7 @@
     },
     "pullups": "R27/R28/R29: 10k to +3V3",
     "assembly": "1x1.6mm contact lands; 1.1mm NPTH locating holes. Verify factory rotation and physical motion in case.",
-    "firmware": "Debounce and menu handling not implemented.",
+    "firmware": "BOARD_HIDPICO_REV7: 20ms debounce, hold push to open/cancel, rock to browse or edit, tap push to select. Physical validation pending.",
     "validation": "Check contact voltages, direction, 20 degree rocking and 0.7mm push travel; regulator startup/ripple/load transients after power placement changes. Physical validation pending."
   }
 }
