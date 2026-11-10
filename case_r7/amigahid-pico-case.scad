@@ -28,6 +28,7 @@ port_clearance = 0.6; // per side, beyond supplier nominal dimensions
 mount_bore = 3.4; // clearance for M3 screws through base and PCB
 mount_head = 6.4; // 90-degree countersink, measure selected nylon screw heads
 recovery_bore = 1.6; // recessed actuator; use a blunt nonconductive probe
+snap_clearance = 0.05; // tab tip to recess back; increase if snaps are too tight
 // Board top to underside of the OLED PCB, using H1-H4 nylon spacers.
 oled_standoff = 12;
 oled_board_thickness = 1.2;
@@ -66,7 +67,7 @@ ridgeHeight = 4.5;
 ridgeSlack = 0.25;
 ridgeGap = 0.25;
 yappSnapOuterSkin = 0.8; // blind snap pockets: continuous exterior wall
-yappSnapRadialSlack = 0.15; // clearance between pocket and shortened base bump
+yappSnapRadialSlack = snap_clearance;
 roundRadius = 2;
 boxType = 3;
 renderQuality = 12;
@@ -88,6 +89,7 @@ alphaLid = 1;
 assert(ceiling - (board_top+oled_standoff+oled_board_thickness+oled_glass_height) >= 0.4,
        "OLED glass needs at least 0.4 mm clearance under lid");
 assert(port_clearance >= 0.3);
+assert(snap_clearance >= 0 && snap_clearance <= 0.3);
 assert(!menu_lever || (menu_x >= 30 && menu_x <= 35),
        "Review snaps, recovery opening and PCB placement outside X=30..35");
 assert(menu_slot_width >= 15.4 && menu_slot_height >= 3.4);

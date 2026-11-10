@@ -63,6 +63,9 @@ The Amiga-style sloping shoulder, broad roof ribs, recessed front band and
 window to leave its border intact. The reference styling was based on the
 [RGBtoHDMI Amiga 500 housing](https://www.printables.com/model/63688-rgbtohdmi-adapter-housing-for-amiga-500).
 Blind internal snap recesses retain a continuous 0.8 mm exterior wall.
+The base tabs leave 0.05 mm nominal clearance to the backs of those recesses.
+Adjust `snap_clearance` for your printer/material: increase it for easier
+opening, or reduce it for more engagement. Check snap force on a printed pair.
 Use the matching new base and lid together.
 
 ## ALPS menu lever
