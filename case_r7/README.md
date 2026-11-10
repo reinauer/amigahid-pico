@@ -52,6 +52,11 @@ header engagement or use short insulated leads. Keep solder tails within the
 | OLED mounts | (19.75,17.3), (50.25,17.3), (19.75,45.9), (50.25,45.9) mm |
 | OLED window | 32.22 × 17.5 mm, centered at (35,32.15) mm |
 
+The keyboard, USB-A and USB-C openings have 0.5 mm exterior fillets; the DE9
+openings and RECOVERY pinhole have 0.3 mm exterior fillets. These lead-ins
+preserve the opening sizes listed above through the rest of the wall and
+leave the recovery actuator recessed.
+
 Use a blunt nonconductive probe for RECOVERY. Its actuator is recessed behind
 the wall; there is no loose printed plunger to lose. USB-C supplies recovery
 power with the Amiga off. Connecting USB-C while the Amiga is already on
@@ -73,8 +78,9 @@ Use the matching new base and lid together.
 The case fits the modeled position of the
 [ALPS SLLB510100](https://tech.alpsalpine.com/e/products/detail/SLLB510100/)
 on the USB-C/RECOVERY edge, left of RECOVERY. Its lever rocks left/right and
-pushes inward through the wall. A shallow 18 × 6.4 mm finger recess surrounds
-the slot. The top and the DE9 wall remain closed apart from their existing
+pushes inward through the wall. A 1.3 mm radius fillet rounds the slot into an
+18 × 6 mm exterior finger recess, leaving 0.9 mm of straight slot through the
+wall. The top and the DE9 wall remain closed apart from their existing
 openings. A 10 mm wide support beneath the PCB limits downward flex at the
 switch; the nearby snap is moved beside RECOVERY and shortened to 3 mm.
 

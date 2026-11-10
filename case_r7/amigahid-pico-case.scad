@@ -11,6 +11,7 @@ menu_x = sw2[0]; // extracted switch position; PCB and opening move together
 menu_tip_y = sw2[1]-6.5024; // neutral tip offset from footprint/model datum
 menu_slot_width = 15.4;
 menu_slot_height = 3.4;
+menu_fillet = 1.3; // roundover radius at the exterior mouth
 /* [Amiga styling] */
 amiga_style = true;
 edge_bevel = 2.6; // sloping shoulder around the lid
@@ -28,6 +29,11 @@ port_clearance = 0.6; // per side, beyond supplier nominal dimensions
 mount_bore = 3.4; // clearance for M3 screws through base and PCB
 mount_head = 6.4; // 90-degree countersink, measure selected nylon screw heads
 recovery_bore = 1.6; // recessed actuator; use a blunt nonconductive probe
+recovery_fillet = 0.3; // exterior lead-in, preserving the straight bore
+usb_c_fillet = 0.5; // exterior lead-in, preserving plug clearance
+keyboard_fillet = 0.5;
+usb_a_fillet = 0.5;
+de9_fillet = 0.3;
 snap_clearance = 0.05; // tab tip to recess back; increase if snaps are too tight
 // Board top to underside of the OLED PCB, using H1-H4 nylon spacers.
 oled_standoff = 12;
@@ -93,6 +99,12 @@ assert(snap_clearance >= 0 && snap_clearance <= 0.3);
 assert(!menu_lever || (menu_x >= 30 && menu_x <= 35),
        "Review snaps, recovery opening and PCB placement outside X=30..35");
 assert(menu_slot_width >= 15.4 && menu_slot_height >= 3.4);
+assert(menu_fillet > 0 && menu_fillet <= 1.3);
+assert(recovery_fillet > 0 && recovery_fillet <= 0.3);
+assert(usb_c_fillet > 0 && usb_c_fillet <= 0.5);
+assert(keyboard_fillet > 0 && keyboard_fillet <= 0.5);
+assert(usb_a_fillet > 0 && usb_a_fillet <= 0.5);
+assert(de9_fillet > 0 && de9_fillet <= 0.3);
 if (amiga_style) {
     assert(edge_bevel >= 0 && edge_bevel <= 2.6);
     assert(oled_window_bevel >= 0 && oled_window_bevel <= 1.0);
@@ -159,17 +171,52 @@ module hookBaseInside() {
             cube([10,1.4,standoffHeight+0.01]);
 }
 
-// Finger access through the USB-C wall; dimensions are in assembled space.
-// The shallow flare leaves the rest of the 2.2 mm wall and roof intact.
-module menu_finger_cut() {
-    if (menu_lever) hull() {
-        translate([ox+menu_x,-0.05,board_top+1.1]) rotate([90,0,0])
-            linear_extrude(0.1) offset(r=1)
-                square([menu_slot_width+2.6-2,6.4-2],center=true);
-        translate([ox+menu_x,1,board_top+1.1]) rotate([90,0,0])
-            linear_extrude(0.01) offset(r=0.6)
-                square([menu_slot_width-1.2,menu_slot_height-1.2],center=true);
+// Exterior lead-ins, centered at the origin with depth along local +Y.
+// A quarter-circle roundover meets both the exterior and slot tangentially.
+// Zero width/height selects a circular bore with the given corner radius.
+module port_fillet_cut(width, height, corner, radius) {
+    steps = 24;
+    module profile(angle, thickness=0.001) {
+        depth = radius*(1-cos(angle));
+        expansion = radius*(1-sin(angle));
+        translate([0,depth,0]) rotate([90,0,0])
+            linear_extrude(thickness)
+                if (width == 0 && height == 0)
+                    circle(r=corner+expansion,$fn=64);
+                else offset(r=corner+expansion,$fn=64)
+                    square([width-2*corner,height-2*corner],center=true);
     }
+    // Collapse the sampled roundover before YAPP's preview CSG expansion.
+    render(convexity=4) union() {
+        profile(0,0.1); // extend beyond the exterior for a clean subtraction
+        for (i=[0:steps-1]) hull() {
+            profile(90*i/steps);
+            profile(90*(i+1)/steps);
+        }
+    }
+}
+
+module port_fillet_cuts() {
+    // -Y service wall: depth runs toward +Y.
+    translate([ox+j10[0],0,board_top+1.63])
+        port_fillet_cut(8.94+2*port_clearance,3.26+2*port_clearance,
+                        0.7,usb_c_fillet);
+    translate([ox+sw1[0],0,board_top+1.2])
+        port_fillet_cut(0,0,recovery_bore/2,recovery_fillet);
+    // Retain 0.9 mm of straight slot at the nominal 1.3 mm lever fillet.
+    if (menu_lever) translate([ox+menu_x,0,board_top+1.1])
+        port_fillet_cut(menu_slot_width,menu_slot_height,0.6,menu_fillet);
+    // +X keyboard/USB-A wall: depth runs toward -X.
+    translate([case_x,oy+j7[1],board_top+6.4]) rotate([0,0,90])
+        port_fillet_cut(0,0,7.5,keyboard_fillet);
+    translate([case_x,oy+usb_y,board_top+7.85]) rotate([0,0,90])
+        port_fillet_cut(15.7+2*port_clearance,15.7+2*port_clearance,
+                        0.5,usb_a_fillet);
+    // +Y DE9 wall: depth runs toward -Y.
+    for (x=de9_centres)
+        translate([ox+x,case_y,board_top+6.25]) rotate([0,0,180])
+            port_fillet_cut(30.8+2*port_clearance,12.5+2*port_clearance,
+                            0.4,de9_fillet);
 }
 
 // Drawing-based approximation, not a supplier solid model. Includes a generous
@@ -306,11 +353,11 @@ module lid_style_cuts() {
 module case_shell() {
     difference() {
         YAPPgenerate();
-        if (printBaseShell) { base_mount_cuts(); menu_finger_cut(); }
+        if (printBaseShell) { base_mount_cuts(); port_fillet_cuts(); }
         if (printLidShell) {
-            if ($preview && !showSideBySide) menu_finger_cut();
+            if ($preview && !showSideBySide) port_fillet_cuts();
             else translate([0,2*case_y+10+shiftLid,case_z])
-                rotate([180,0,0]) menu_finger_cut();
+                rotate([180,0,0]) port_fillet_cuts();
         }
         if (amiga_style && printLidShell) color(colorLid) {
             if ($preview && !showSideBySide) lid_style_cuts();
