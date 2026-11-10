@@ -3,8 +3,14 @@
 include <pcb-mechanics.scad>
 
 /* [Output] */
-view = "print"; // [print,base,lid,assembled,fit,mounts,collision]
+view = "print"; // [print,base,lid,assembled,fit,mounts,menu,collision]
 oled = true;
+/* [Menu lever] */
+menu_lever = true;
+menu_x = sw2[0]; // extracted switch position; PCB and opening move together
+menu_tip_y = sw2[1]-6.5024; // neutral tip offset from footprint/model datum
+menu_slot_width = 15.4;
+menu_slot_height = 3.4;
 /* [Amiga styling] */
 amiga_style = true;
 edge_bevel = 2.6; // sloping shoulder around the lid
@@ -82,6 +88,9 @@ alphaLid = 1;
 assert(ceiling - (board_top+oled_standoff+oled_board_thickness+oled_glass_height) >= 0.4,
        "OLED glass needs at least 0.4 mm clearance under lid");
 assert(port_clearance >= 0.3);
+assert(!menu_lever || (menu_x >= 30 && menu_x <= 35),
+       "Review snaps, recovery opening and PCB placement outside X=30..35");
+assert(menu_slot_width >= 15.4 && menu_slot_height >= 3.4);
 if (amiga_style) {
     assert(edge_bevel >= 0 && edge_bevel <= 2.6);
     assert(oled_window_bevel >= 0 && oled_window_bevel <= 1.0);
@@ -110,7 +119,10 @@ cutoutsLeft = [
     [j10[0], 1.63, 8.94+2*port_clearance, 3.26+2*port_clearance,
      0.7, yappRoundedRect, 0, 0, yappCenter, yappCoordPCB],
     [sw1[0], 1.2, 0, 0, recovery_bore/2, yappCircle,
-     0, 0, yappCenter, yappCoordPCB]
+     0, 0, yappCenter, yappCoordPCB],
+    if (menu_lever)
+        [menu_x, 1.1, menu_slot_width, menu_slot_height, 0.6,
+         yappRoundedRect, 0, 0, yappCenter, yappCoordPCB]
 ];
 cutoutsBack = [];
 cutoutsLid = oled ? [
@@ -119,7 +131,8 @@ cutoutsLid = oled ? [
 ] : [];
 // Snap locations avoid the connector apertures and the antenna end.
 snapJoins = [[18+oy,6,yappBack], [48+oy,6,yappBack],
-             [18+ox,6,yappLeft], [36+ox,6,yappLeft]];
+             [18+ox,6,yappLeft],
+             menu_lever ? [46+ox,3,yappLeft] : [36+ox,6,yappLeft]];
 pcbStands = [];
 connectors = [];
 
@@ -138,6 +151,39 @@ module hookBaseInside() {
         cube([3,0.6+paddingRight+0.1,standoffHeight+0.01]);
     translate([paddingBack+67,paddingLeft-0.1,-0.01])
         cube([2,paddingLeft+0.7,standoffHeight+0.01]);
+    // Support the PCB below the switch; keep the moving actuator unobstructed.
+    if (menu_lever)
+        translate([paddingBack+menu_x-5,paddingLeft-0.7,-0.01])
+            cube([10,1.4,standoffHeight+0.01]);
+}
+
+// Finger access through the USB-C wall; dimensions are in assembled space.
+// The shallow flare leaves the rest of the 2.2 mm wall and roof intact.
+module menu_finger_cut() {
+    if (menu_lever) hull() {
+        translate([ox+menu_x,-0.05,board_top+1.1]) rotate([90,0,0])
+            linear_extrude(0.1) offset(r=1)
+                square([menu_slot_width+2.6-2,6.4-2],center=true);
+        translate([ox+menu_x,1,board_top+1.1]) rotate([90,0,0])
+            linear_extrude(0.01) offset(r=0.6)
+                square([menu_slot_width-1.2,menu_slot_height-1.2],center=true);
+    }
+}
+
+// Drawing-based approximation, not a supplier solid model. Includes a generous
+// 14.2 mm lateral sweep and the 0.7 mm inward push stroke for clearance checks.
+module menu_envelope(sweep=false) {
+    if (menu_lever) translate([ox+menu_x,oy+menu_tip_y,board_top]) {
+        if (sweep) translate([-7.1,0,0.01]) cube([14.2,9.5,2.19]);
+        else {
+            color("DimGray") translate([-4.75,4.3,0.01]) cube([9.5,4.5,2.19]);
+            color("Ivory") translate([0,6.65,0.2]) linear_extrude(1.8)
+                intersection() {
+                    difference() { circle(r=6.65,$fn=96); circle(r=5.4,$fn=96); }
+                    translate([-7,-7]) square([14,7]);
+                }
+        }
+    }
 }
 
 module base_mount_cuts() {
@@ -164,6 +210,7 @@ module pcb_envelope() {
 }
 module hardware_envelopes() {
     color("ForestGreen") pcb_envelope();
+    menu_envelope();
     // Supplier full-body envelopes, conservative at connector corners.
     // LCK-205A09FJ2A00B1A: rear 1.38 mm behind pin 1, flange 10.92 mm
     // toward the cable, then a 5.90 mm nose. Use placement, not board depth.
@@ -257,7 +304,12 @@ module lid_style_cuts() {
 module case_shell() {
     difference() {
         YAPPgenerate();
-        if (printBaseShell) base_mount_cuts();
+        if (printBaseShell) { base_mount_cuts(); menu_finger_cut(); }
+        if (printLidShell) {
+            if ($preview && !showSideBySide) menu_finger_cut();
+            else translate([0,2*case_y+10+shiftLid,case_z])
+                rotate([180,0,0]) menu_finger_cut();
+        }
         if (amiga_style && printLidShell) color(colorLid) {
             if ($preview && !showSideBySide) lid_style_cuts();
             else
@@ -268,12 +320,17 @@ module case_shell() {
     }
 }
 
-if(view=="collision") intersection() { let($preview=true) case_shell(); hardware_envelopes(); }
+if(view=="collision") intersection() {
+    let($preview=true) case_shell();
+    union() { hardware_envelopes(); menu_envelope(sweep=true); }
+}
 else {
-    if(view=="assembled") let($preview=true) case_shell();
+    if(view=="menu") color("Gainsboro") render() let($preview=true) case_shell();
+    else if(view=="assembled") let($preview=true) case_shell();
     else if(view=="lid") translate([0,-(case_y+10+shiftLid),0]) case_shell();
     else case_shell();
     if(view=="fit") hardware_envelopes();
+    if(view=="menu") menu_envelope();
     if(view=="mounts") {
         color([0.1,0.5,0.2,0.35]) pcb_envelope();
         for(h=oled_mounts) color("Ivory")

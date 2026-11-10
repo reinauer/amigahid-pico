@@ -48,6 +48,7 @@ header engagement or use short insulated leads. Keep solder tails within the
 | Stacked USB-A | Right edge, Y=41.5 mm; 16.9 × 16.9 mm opening |
 | USB-C | Bottom edge, X=60 mm; 10.14 × 4.46 mm opening |
 | RECOVERY | Bottom edge, X=49 mm; Ø1.6 mm pinhole |
+| Menu lever | USB-C edge, X=35 mm; 15.4 × 3.4 mm slot, centered 1.1 mm above the PCB |
 | OLED mounts | (19.75,17.3), (50.25,17.3), (19.75,45.9), (50.25,45.9) mm |
 | OLED window | 32.22 × 17.5 mm, centered at (35,32.15) mm |
 
@@ -64,6 +65,38 @@ window to leave its border intact. The reference styling was based on the
 Blind internal snap recesses retain a continuous 0.8 mm exterior wall.
 Use the matching new base and lid together.
 
+## ALPS menu lever
+
+The case fits the modeled position of the
+[ALPS SLLB510100](https://tech.alpsalpine.com/e/products/detail/SLLB510100/)
+on the USB-C/RECOVERY edge, left of RECOVERY. Its lever rocks left/right and
+pushes inward through the wall. A shallow 18 × 6.4 mm finger recess surrounds
+the slot. The top and the DE9 wall remain closed apart from their existing
+openings. A 10 mm wide support beneath the PCB limits downward flex at the
+switch; the nearby snap is moved beside RECOVERY and shortened to 3 mm.
+
+The intended placement has its neutral actuator tip 2 mm beyond the PCB edge
+(KiCad Y=62), recessed 0.8 mm behind the case exterior. The body extends inward
+to approximately KiCad Y=53.2. The clearance envelope includes the specified
+0.7 mm push travel. Its 14.2 mm lateral envelope is a conservative estimate
+from the supplier drawing, not a dimensioned full-motion supplier model.
+Check rocking travel, finger access and soldered height with a sample before
+ordering PCBs or printing a final enclosure.
+
+SW2 on the r7 PCB occupies this position. The power circuitry sits around its
+movement envelope. GPIO14/15/16 connect the CCW, CW and push contacts with
+10 kΩ pull-ups; menu handling and debounce still require firmware support.
+The case collision check verifies the modeled switch against the shell, not
+against every PCB component. PCB courtyard checks cover the reserved movement
+envelope; a soldered sample remains necessary to confirm actual fit.
+
+Set `menu_lever=false` in OpenSCAD for a closed wall and the original snap
+arrangement. Extraction reads SW2 from the PCB and sets the slot and support
+position together. `menu_x` allows adjustment within X=30..35 mm, but any
+manual override must match the PCB. `view="menu"` shows the assembled service edge
+with an approximate switch model. The switch solders to the PCB; there is no
+loose printed cap or plunger.
+
 ## Files and rebuilding
 
 - [Base STL](build/base.stl), floor down.
@@ -72,6 +105,7 @@ Use the matching new base and lid together.
 - [Shared-mount preview](build/mounts.png).
 - [Hardware fit preview](build/fit.png).
 - [Assembled case](build/assembled.png).
+- [Menu lever preview](build/menu.png).
 - [Editable source](amigahid-pico-case.scad).
 
 ```sh

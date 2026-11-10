@@ -14,7 +14,9 @@ src = ROOT / 'kicad_r7/amigahid-pico.kicad_pcb'
 b = p.LoadBoard(str(src))
 fs = {f.GetReference(): f for f in b.GetFootprints()}
 assert 'H5' not in fs and 'H6' not in fs, 'Shared mounts replace H5/H6'
-refs = ['H1', 'H2', 'H3', 'H4', 'J3', 'J4', 'J5', 'J6', 'J7', 'J10', 'SW1', 'U1', 'U4', 'C4']
+refs = ['H1', 'H2', 'H3', 'H4', 'J3', 'J4', 'J5', 'J6', 'J7', 'J10', 'SW1', 'SW2', 'U1', 'U4', 'C4']
+assert fs['SW2'].GetValue() == 'SLLB510100 / menu'
+assert abs(abs(fs['SW2'].GetOrientationDegrees()) - 180) < 0.001
 def xy(f):
     return [round(f.GetPosition().x / 1e6, 4), round(f.GetPosition().y / 1e6, 4)]
 points = []
@@ -54,6 +56,13 @@ data['mount_pitch_mm'] = [
     data['positions']['H2'][0] - data['positions']['H1'][0],
     data['positions']['H3'][1] - data['positions']['H1'][1],
 ]
+data['menu_lever'] = {
+    'reference': 'SW2', 'part': 'SLLB510100',
+    'tip_offset_toward_edge_mm': 6.5024,
+    'tip_kicad_y_mm': round(data['positions']['SW2'][1] + 6.5024, 4),
+    'sweep_envelope_mm': [14.2, 9.5, 2.2],
+    'envelope_is_approximate': True,
+}
 assert all(abs(a - z) < 0.001 for a, z in zip(data['mount_pitch_mm'], [30.5, 28.6]))
 (case / 'pcb-mechanics.json').write_text(json.dumps(data, indent=2) + '\n')
 lines = ['// Generated from kicad_r7 by tools/extract_pcb.py; units mm.',

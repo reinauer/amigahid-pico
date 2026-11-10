@@ -21,8 +21,17 @@ def run(view,ext,extra=(),defs=(),empty=False):
 for view in ['base','lid','print']:run(view,'stl')
 for view in ['base','lid']:run(view,'csg')
 run('collision','stl',empty=True)
-(out/'fit-validation.json').write_text(json.dumps({'hardware_intersection':'empty','intentional_support_contact_tolerance_mm':0.01,'physical_fit_tested':False},indent=2)+'\n')
+mechanics=json.loads((R/'pcb-mechanics.json').read_text())
+(out/'fit-validation.json').write_text(json.dumps({
+ 'hardware_intersection':'empty',
+ 'intentional_support_contact_tolerance_mm':0.01,
+ 'menu_lever': {'part':'SLLB510100', 'pcb_x_mm':mechanics['positions']['SW2'][0],
+                'sweep_envelope_mm':[14.2,9.5,2.2],
+                'fitted_in_current_pcb':True,
+                'pcb_component_clearance_verified':False},
+ 'physical_fit_tested':False},indent=2)+'\n')
 for view in ['assembled','fit','mounts','print']:
  run(view,'png',extra=['--imgsize=1400,1100','--autocenter','--viewall','--projection=ortho','--camera=0,0,0,55,0,35,0'])
+run('menu','png',extra=['--render','--imgsize=1400,1100','--autocenter','--viewall','--projection=ortho','--camera=0,0,0,80,0,0,0'])
 subprocess.run([sys.executable,str(R/'tools/verify_mesh.py')],check=True)
 print('Built and verified:',out)
