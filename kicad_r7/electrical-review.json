@@ -57,5 +57,18 @@
     "nets": "RESET -> RUN; MR and U9 /PRE -> RECOVERY_N; SENSE and VDD -> +3V3",
     "bypass": "C41 100nF; R26 10k RECOVERY_N pull-up; existing R12 10k RUN pull-up",
     "validation": "Scope flash supply, RUN and QSPI-CS on cold start, brownout, short power interruptions and manual recovery. Physical validation pending."
+  },
+  "menu_switch": {
+    "part": "SW2 SLLB510100 / C125039",
+    "contacts": {
+      "1": "GPIO14 / MENU_LEFT_N",
+      "2": "GPIO15 / MENU_RIGHT_N",
+      "T": "GPIO16 / MENU_PUSH_N",
+      "C": "GND"
+    },
+    "pullups": "R27/R28/R29: 10k to +3V3",
+    "assembly": "1x1.6mm contact lands; 1.1mm NPTH locating holes. Verify factory rotation and physical motion in case.",
+    "firmware": "Debounce and menu handling not implemented.",
+    "validation": "Check contact voltages, direction, 20 degree rocking and 0.7mm push travel; regulator startup/ripple/load transients after power placement changes. Physical validation pending."
   }
 }

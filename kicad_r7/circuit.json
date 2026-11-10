@@ -726,7 +726,10 @@
         "59": "QSPI_SD1",
         "60": "QSPI_CS",
         "61": "GND",
-        "42": "USB_HOST_SELECT"
+        "42": "USB_HOST_SELECT",
+        "18": "MENU_LEFT_N",
+        "19": "MENU_RIGHT_N",
+        "27": "MENU_PUSH_N"
       },
       "sheet": "controller",
       "sch": [
@@ -2607,6 +2610,96 @@
       "sheet": "controller",
       "source_note": "",
       "function": "Supervisor bypass"
+    },
+    {
+      "ref": "SW2",
+      "value": "SLLB510100 / menu",
+      "lcsc": "C125039",
+      "symbol": "SLLB510100",
+      "footprint": "r7:SLLB510100",
+      "mpn": "SLLB510100",
+      "manufacturer": "Alps Alpine",
+      "datasheet": "https://tech.alpsalpine.com/e/products/detail/SLLB510100/",
+      "nets": {
+        "1": "MENU_LEFT_N",
+        "2": "MENU_RIGHT_N",
+        "T": "MENU_PUSH_N",
+        "C": "GND",
+        "4": "GND",
+        "5": "GND",
+        "6": "GND",
+        "7": "GND"
+      },
+      "sheet": "controller",
+      "sch": [
+        76.2,
+        195.58
+      ],
+      "source_note": "C is common; 1=CCW, 2=CW, T=push. External 10k pull-ups; firmware debounce required. Ground mechanical anchors. Imported footprint corrected to 1x1.6mm contact lands and unplated locator holes.",
+      "function": "OLED menu navigation"
+    },
+    {
+      "ref": "R27",
+      "value": "10k",
+      "lcsc": "C25744",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "MENU_LEFT_N"
+      },
+      "sheet": "controller",
+      "sch": [
+        30.48,
+        154.94
+      ],
+      "source_note": "",
+      "function": "Menu contact pull-up"
+    },
+    {
+      "ref": "R28",
+      "value": "10k",
+      "lcsc": "C25744",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "MENU_RIGHT_N"
+      },
+      "sheet": "controller",
+      "sch": [
+        71.12,
+        154.94
+      ],
+      "source_note": "",
+      "function": "Menu contact pull-up"
+    },
+    {
+      "ref": "R29",
+      "value": "10k",
+      "lcsc": "C25744",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "MENU_PUSH_N"
+      },
+      "sheet": "controller",
+      "sch": [
+        111.76,
+        154.94
+      ],
+      "source_note": "",
+      "function": "Menu contact pull-up"
     }
   ],
   "catalog": {
@@ -3015,6 +3108,13 @@
       "mpn": "TPS3808G33DBVR",
       "manufacturer": "Texas Instruments",
       "datasheet": "https://www.ti.com/lit/ds/symlink/tps3808.pdf"
+    },
+    "C125039": {
+      "symbol": "SLLB510100",
+      "footprint": "r7:SLLB510100",
+      "mpn": "SLLB510100",
+      "manufacturer": "Alps Alpine",
+      "datasheet": "https://tech.alpsalpine.com/e/products/detail/SLLB510100/"
     }
   },
   "notes": [

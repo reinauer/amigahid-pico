@@ -170,11 +170,11 @@ Sources: [SOIC flash](https://www.lcsc.com/product-detail/C5355146.html) and
 
 ## Sourcing and footprint provenance
 
-[BOM.csv](BOM.csv) and [SOURCING.csv](SOURCING.csv) list **106 assembled parts** (44 unique LCSC codes).
+[BOM.csv](BOM.csv) and [SOURCING.csv](SOURCING.csv) list **110 assembled parts** (45 unique LCSC codes).
 Every purchased schematic part has an `LCSC Part #` field. Holes and bare test
 pads are non-BOM geometry and have no part number. The OLED module and enclosure
 hardware are external assemblies, as in r6; the PCB BOM includes J3.
-`assembly-accessories.json` specifies the retained r6 SH1066 module and mounting
+`assembly-accessories.json` specifies the retained r6 SH1106 module and mounting
 hardware. The r6 records give its drawings and pinout, but no manufacturer
 part number or LCSC code; do not invent a purchasing code or substitute a
 GND-first module.
@@ -183,7 +183,7 @@ GND-first module.
 Original imports are retained in `vendor-originals`. The DE9 footprint was
 reconstructed from its LCSC supplier drawing because no usable imported model
 was available. The local `r7.pretty` library also contains the reset supervisor
-footprint.
+and ALPS menu-switch footprints.
 
 Corrections are reproducible in `scripts/prepare_libraries.py`: RM2 pad geometry
 and antenna keepout, connector shield pin numbers, USB-C combined power lands,
@@ -194,8 +194,8 @@ its reference PCB and license are in `reference/`.
 
 Factory assembly was selected on 2026-10-14. The public JLC assembly stock
 snapshot in [assembly-stock-check.json](assembly-stock-check.json) covers all
-43 of the 44 part numbers and records stock at that check. The supervisor
-needs a fresh availability check. Direct retail stock is recorded
+43 of the 45 part numbers and records stock at that check. The supervisor
+and menu switch need a fresh availability check. Direct retail stock is recorded
 separately in [stock-check.json](stock-check.json). Retail unavailability is
 not the same as unavailability in the assembler's inventory. These snapshots
 are dated evidence, not reserved material or an accepted assembly quote.
@@ -255,7 +255,7 @@ profile. [LCSC Chinese listing](https://item.szlcsc.com/2717.html).
 
 The final configured KiCad checks report **zero ERC violations, zero DRC
 violations, zero unconnected items and zero schematic parity issues**.
-`scripts/audit_board.py` additionally checks all 106 purchased parts are on top,
+`scripts/audit_board.py` additionally checks all 110 purchased parts are on top,
 all have project-relative models, the 70 × 66 mm outline, connector drills,
 absence of bottom silkscreen and absence of L3 signal crossings beneath the
 bottom USB pairs. USB layer transitions have ground holes within 2 mm.
@@ -284,7 +284,7 @@ and [manufacturing-requirements.json](manufacturing-requirements.json).
 Before ordering, obtain the factory's acceptance of:
 
 1. The stackup, filled/capped via process, impedance target and thickness.
-2. All 44 part numbers, actual batch allocation, placement minima and attrition.
+2. All 45 part numbers, actual batch allocation, placement minima and attrition.
 3. Factory through-hole soldering after SMT reflow, 1 mm connector retention,
    and a placement preview confirming the explicit JLC rotations and polarity.
 4. Installation of the retained r6 OLED and specified nylon hardware.
@@ -298,7 +298,7 @@ It is marked for quotation/CAM review, pending manufacturing acceptance.
 
 Identical purchased parts now have identical Value, Footprint and LCSC fields.
 Circuit roles such as CC1, BOOTSEL and hub decoupling are in the separate
-`Function` field. Fabrication Toolkit therefore emits **44 BOM rows for 106
+`Function` field. Fabrication Toolkit therefore emits **45 BOM rows for 110
 components**, without splitting identical LCSC parts across multiple rows.
 
 The project saves **Apply automatic translations = off** in
@@ -315,8 +315,8 @@ bars or a positive-terminal mark on top silkscreen; the numbered-pad drawing
 is `production/assembly-orientation.svg`.
 
 Regenerate manufacturing files from the checked board before ordering.
-Existing stock/rotation snapshots do not cover the supervisor.
-Check U13 pin 1 in the factory placement preview.
+Existing stock/rotation snapshots do not cover the supervisor and menu switch.
+Check U13 pin 1 and SW2 contact orientation in the factory placement preview.
 
 For a new upload use `production/gerbers.zip`, `production/bom.csv` and
 `production/positions.csv`, generated together after the checks below.
@@ -332,7 +332,7 @@ post-trip resistance alone would lose 0.35 V; switches, cable and copper add
 further loss. Establish the intended load from measurements.
 
 The first order should be a small prototype batch. Bring-up needs a custom r7
-firmware pin/power configuration and SH1066 display support, followed by tests
+firmware pin/power configuration and SH1106 display support, followed by tests
 of USB-C-only recovery with invalid flash, two peripherals, Amiga supply
 current/droop/backfeed, radio operation and case fit. Existing firmware has not
 been changed by this hardware work.
@@ -358,7 +358,8 @@ once to that fresh board. Do not rerun these board builders on hand-edited
 routing without retaining a backup. `scripts/configure_rules.py` sets the board
 constraints and power net classes.
 
-Run `scripts/audit_board.py` and `scripts/check_reset.py` with pcbnew Python
+Run `scripts/audit_board.py`, `scripts/check_reset.py` and
+`scripts/check_menu.py` with pcbnew Python
 after filling zones. The reset check verifies the supervisor pinout and keeps
 automatic RUN resets separate from the manual recovery request. Run KiCad
 ERC and DRC with schematic parity, then `scripts/export_factory_review.py`
@@ -384,3 +385,35 @@ normal keyboard-powered and USB-C-powered starts must boot application flash;
 held RECOVERY with USB-C must enter ROM recovery. Repeat with slow supply ramps,
 short power interruptions and source handover. Supervisor addition has not
 been physically validated.
+
+### Menu lever wiring and assembly
+
+SW2 is an [ALPS SLLB510100](https://tech.alpsalpine.com/e/products/detail/SLLB510100/)
+on the USB-C edge, aligned with the case slot at X=35 mm. Terminal C and the
+mechanical anchors connect to ground. The three contacts are active low:
+
+| Contact | Net | RP2350 GPIO | Pull-up |
+|---|---|---|---|
+| 1 / CCW | MENU_LEFT_N | 14 | R27, 10 kΩ to 3.3 V |
+| 2 / CW | MENU_RIGHT_N | 15 | R28, 10 kΩ to 3.3 V |
+| T / push | MENU_PUSH_N | 16 | R29, 10 kΩ to 3.3 V |
+
+These contacts need firmware debounce and menu handling. RECOVERY remains a
+separate hardware function. With the board powered, check each input is high
+at rest and goes low only for its corresponding action before enabling menu
+handling. Confirm the desired left/right sense with the assembled enclosure.
+
+The switch footprint/model originated in the
+[JLCEDA](https://lceda.cn/)/[EasyEDA Official Library](https://easyeda.com/),
+part C125039. The four signal/common lands use the ALPS 1.0 × 1.6 mm dimensions;
+the two 1.1 mm locator holes are unplated. The courtyard reserves the case's
+conservative 14.2 × 9.5 mm motion envelope with 0.1 mm assembly clearance.
+Check the supplier drawing and a physical sample before production.
+The project-relative WRL model has a -0.2 mm Z correction to put the body top
+at 2.2 mm and the locating lugs 0.6 mm below the seating plane. The importer's
+untransformed STEP is deliberately not used; check exported factory 3D files
+for the switch rather than assuming WRL inclusion in a STEP export.
+
+The power components leave this movement envelope clear. Verify regulator
+startup, ripple and load transients on the revised placement. Procurement
+stock and tape orientation for C125039 still require factory confirmation.

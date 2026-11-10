@@ -93,6 +93,8 @@ for sheet in names:
                ('RM2: 470R and 10k combine DOUT / IRQ with GPIO24 per datasheet Table 2.',225,230),
                ('Hold RECOVERY while connecting USB-C; release after 0.1s. No working firmware required.',20,248),
                ('USB-C already connected: press/release RECOVERY. Amiga power is optional.',20,256)]
+        notes += [('SW2 menu: CCW / CW / push use GPIO14 / 15 / 16, active low with 10k pull-ups.',20,268),
+                  ('Debounce menu contacts in firmware. RECOVERY remains an independent hardware function.',20,276)]
     elif sheet=='power':
         notes=[('Power: automatic Amiga / USB-C mux -> 3V3 buck -> internal 1V1 regulator',20,20),
                ('L1 marked end (pad 1) goes to 1V1. Copy Raspberry Pi regulator placement.',165,104),
