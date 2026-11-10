@@ -892,7 +892,7 @@
       "manufacturer": "SHOU HAN(\u9996\u97e9)",
       "datasheet": "https://lcsc.com/product-detail/Tactile-Switches_SHOU-HAN-TS24CA_C393942.html",
       "nets": {
-        "1": "RUN",
+        "1": "RECOVERY_N",
         "2": "GND",
         "3": "GND",
         "4": "GND"
@@ -2315,7 +2315,7 @@
         "1": "RECOVERY_CLR",
         "2": "GND",
         "3": "GND",
-        "4": "RUN",
+        "4": "RECOVERY_N",
         "5": "RECOVERY_Q",
         "6": "USB_HOST_SELECT",
         "7": "GND",
@@ -2330,7 +2330,7 @@
         187.96
       ],
       "sheet": "control",
-      "source_note": "First flip-flop used as an asynchronous latch; Schmitt inputs accept RC reset. Second flip-flop inputs tied. USB absent clears; RECOVERY/RUN low presets. Both asserted is safe only while RUN holds MCU and host power off."
+      "source_note": "USB absent clears latch; only RECOVERY_N presets it. Supervisor RUN output does not request recovery. Both asynchronous inputs may assert while button holds supervisor reset."
     },
     {
       "ref": "U10",
@@ -2541,6 +2541,72 @@
       ],
       "sheet": "control",
       "source_note": ""
+    },
+    {
+      "ref": "U13",
+      "value": "TPS3808G33DBVR",
+      "lcsc": "C43698",
+      "symbol": "TPS3808G33DBVR",
+      "footprint": "r7:SOT-23-6",
+      "mpn": "TPS3808G33DBVR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.ti.com/lit/ds/symlink/tps3808.pdf",
+      "nets": {
+        "1": "RUN",
+        "2": "GND",
+        "3": "RECOVERY_N",
+        "5": "+3V3",
+        "6": "+3V3"
+      },
+      "sheet": "controller",
+      "sch": [
+        292.1,
+        190.5
+      ],
+      "source_note": "3.07V supervisor; CT intentionally open for 20ms typical delayed release. RESET open drain; R12 pulls RUN high. MR is independent of RUN/recovery latch preset.",
+      "function": "Flash power-on reset"
+    },
+    {
+      "ref": "R26",
+      "value": "10k",
+      "lcsc": "C25744",
+      "symbol": "R",
+      "footprint": "lcsc:R0402",
+      "mpn": "0402WGF1002TCE",
+      "manufacturer": "UNI-ROYAL(\u539a\u58f0)",
+      "datasheet": "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html",
+      "nets": {
+        "1": "+3V3",
+        "2": "RECOVERY_N"
+      },
+      "sheet": "controller",
+      "sch": [
+        231.14,
+        208.28
+      ],
+      "source_note": "",
+      "function": "Recovery button pull-up"
+    },
+    {
+      "ref": "C41",
+      "lcsc": "C1525",
+      "symbol": "C",
+      "footprint": "lcsc:C0402",
+      "mpn": "CL05B104KO5NNNC",
+      "manufacturer": "SAMSUNG(\u4e09\u661f)",
+      "datasheet": "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html",
+      "value": "100n / 16V",
+      "nets": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "sch": [
+        350.52,
+        190.5
+      ],
+      "sheet": "controller",
+      "source_note": "",
+      "function": "Supervisor bypass"
     }
   ],
   "catalog": {
@@ -2942,6 +3008,13 @@
       "mpn": "0402WGF3002TCE",
       "manufacturer": "UNI-ROYAL",
       "datasheet": "https://www.lcsc.com/product-detail/C25776.html"
+    },
+    "C43698": {
+      "symbol": "TPS3808G33DBVR",
+      "footprint": "r7:SOT-23-6",
+      "mpn": "TPS3808G33DBVR",
+      "manufacturer": "Texas Instruments",
+      "datasheet": "https://www.ti.com/lit/ds/symlink/tps3808.pdf"
     }
   },
   "notes": [

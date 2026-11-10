@@ -109,7 +109,7 @@ cost = round(sum(len(s['refs']) * s['initialPrice'] for s in stock), 4)
     'No purchase or manufacturing release is authorized by this package.\n'
     'Read kicad_r7/manufacturing-requirements.json and electrical-review.json.\n'
     'Four layers, nominal 1mm, ENIG, all electrical vias epoxy filled and copper capped.\n'
-    'All 103 PCB parts are assembled on top; factory must solder THT connectors.\n'
+    f'All {len(parts)} PCB parts are assembled on top; factory must solder THT connectors.\n'
     'Use CPL.csv: explicit JLC rotations, with generic package translations disabled.\n'
     'Use BOM.csv or BOM-assembly.csv: both contain exactly one row per LCSC part.\n'
     'See assembly-orientation.svg for numbered pads and pin-1/polarity silk.\n'

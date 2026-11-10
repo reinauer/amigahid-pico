@@ -50,17 +50,29 @@ the actual Amiga/cable budget; adding USB-C power does not raise that rating.
 | Return to keyboard-powered operation | Remove USB-C, then press/release RECOVERY to reboot normally. |
 | Return to USB-C-only normal operation | Unplug/reconnect USB-C without holding RECOVERY. |
 
-Recovery is implemented in hardware. RUN low presets the SN74HCS74 latch;
+Recovery is implemented in hardware. RECOVERY_N low presets the SN74HCS74 latch;
 Q2 pulls QSPI-CS low through R6, U7 selects the PC data path, and U11 removes
 USB-A power. The Amiga signal switches are disabled whenever keyboard power
 is absent or recovery is selected. Thus invalid application flash does not
 prevent button-based ROM recovery. This assumes normal RP2350 OTP settings;
 permanently disabling ROM USB boot in OTP is outside this prototype design.
 
-The latch uses Schmitt inputs and a 100 kΩ/100 nF reset delay. U12 translates
+U13 (TPS3808G33DBVR) monitors the shared 3.3 V rail and holds RUN low
+until the rail exceeds its nominal 3.07 V threshold and the reset-release
+delay expires. CT is intentionally unconnected for a nominal 20 ms delay.
+C41 provides local 100 nF bypassing; R12 remains the 10 kΩ RUN pull-up.
+This allows the external flash to power up before the MCU starts its boot ROM.
+
+The switch grounds RECOVERY_N, pulled up by R26 (10 kΩ). This net drives
+both U13's manual-reset input and U9's preset input. U13's automatic reset
+output drives RUN only, so cold-start and brownout resets do not themselves
+request BOOTSEL. Button release also receives the supervisor's reset delay.
+The recovery latch still retains the requested USB mode after release.
+
+The latch uses Schmitt inputs and a separate 100 kΩ/100 nF clear delay. U12 translates
 USB VBUS to 3.3 V with power-off protection. At power-up with the button held,
 both asynchronous latch inputs can be asserted: the documented state has
-both outputs high, while RUN keeps the MCU reset and D2 keeps USB-A power off.
+both outputs high, while U13 holds RUN low to keep the MCU reset and D2 keeps USB-A power off.
 Hold the button until the clear delay has expired, then release. The same
 button without USB-C performs a normal reset. There is no firmware timing or
 double-tap dependency.
@@ -158,11 +170,11 @@ Sources: [SOIC flash](https://www.lcsc.com/product-detail/C5355146.html) and
 
 ## Sourcing and footprint provenance
 
-[BOM.csv](BOM.csv) and [SOURCING.csv](SOURCING.csv) list **103 assembled parts** (43 unique LCSC codes).
+[BOM.csv](BOM.csv) and [SOURCING.csv](SOURCING.csv) list **106 assembled parts** (44 unique LCSC codes).
 Every purchased schematic part has an `LCSC Part #` field. Holes and bare test
 pads are non-BOM geometry and have no part number. The OLED module and enclosure
 hardware are external assemblies, as in r6; the PCB BOM includes J3.
-`assembly-accessories.json` specifies the retained r6 SH1106 module and mounting
+`assembly-accessories.json` specifies the retained r6 SH1066 module and mounting
 hardware. The r6 records give its drawings and pinout, but no manufacturer
 part number or LCSC code; do not invent a purchasing code or substitute a
 GND-first module.
@@ -170,7 +182,8 @@ GND-first module.
 `lcsc.pretty` contains LCSC/EasyEDA imports plus supplier-drawing corrections.
 Original imports are retained in `vendor-originals`. The DE9 footprint was
 reconstructed from its LCSC supplier drawing because no usable imported model
-was available. The local `r7.pretty` library contains holes and test pads only.
+was available. The local `r7.pretty` library also contains the reset supervisor
+footprint.
 
 Corrections are reproducible in `scripts/prepare_libraries.py`: RM2 pad geometry
 and antenna keepout, connector shield pin numbers, USB-C combined power lands,
@@ -181,7 +194,8 @@ its reference PCB and license are in `reference/`.
 
 Factory assembly was selected on 2026-10-14. The public JLC assembly stock
 snapshot in [assembly-stock-check.json](assembly-stock-check.json) covers all
-43 current part numbers; all have stock. Direct retail stock is recorded
+43 of the 44 part numbers and records stock at that check. The supervisor
+needs a fresh availability check. Direct retail stock is recorded
 separately in [stock-check.json](stock-check.json). Retail unavailability is
 not the same as unavailability in the assembler's inventory. These snapshots
 are dated evidence, not reserved material or an accepted assembly quote.
@@ -241,7 +255,7 @@ profile. [LCSC Chinese listing](https://item.szlcsc.com/2717.html).
 
 The final configured KiCad checks report **zero ERC violations, zero DRC
 violations, zero unconnected items and zero schematic parity issues**.
-`scripts/audit_board.py` additionally checks all 103 purchased parts are on top,
+`scripts/audit_board.py` additionally checks all 106 purchased parts are on top,
 all have project-relative models, the 70 × 66 mm outline, connector drills,
 absence of bottom silkscreen and absence of L3 signal crossings beneath the
 bottom USB pairs. USB layer transitions have ground holes within 2 mm.
@@ -270,7 +284,7 @@ and [manufacturing-requirements.json](manufacturing-requirements.json).
 Before ordering, obtain the factory's acceptance of:
 
 1. The stackup, filled/capped via process, impedance target and thickness.
-2. All 43 part numbers, actual batch allocation, placement minima and attrition.
+2. All 44 part numbers, actual batch allocation, placement minima and attrition.
 3. Factory through-hole soldering after SMT reflow, 1 mm connector retention,
    and a placement preview confirming the explicit JLC rotations and polarity.
 4. Installation of the retained r6 OLED and specified nylon hardware.
@@ -284,7 +298,7 @@ It is marked for quotation/CAM review, pending manufacturing acceptance.
 
 Identical purchased parts now have identical Value, Footprint and LCSC fields.
 Circuit roles such as CC1, BOOTSEL and hub decoupling are in the separate
-`Function` field. Fabrication Toolkit therefore emits **43 BOM rows for 103
+`Function` field. Fabrication Toolkit therefore emits **44 BOM rows for 106
 components**, without splitting identical LCSC parts across multiple rows.
 
 The project saves **Apply automatic translations = off** in
@@ -300,6 +314,10 @@ the physical pins. Twenty-five footprints have physical pin-1 dots, cathode
 bars or a positive-terminal mark on top silkscreen; the numbered-pad drawing
 is `production/assembly-orientation.svg`.
 
+Regenerate manufacturing files from the checked board before ordering.
+Existing stock/rotation snapshots do not cover the supervisor.
+Check U13 pin 1 in the factory placement preview.
+
 For a new upload use `production/gerbers.zip`, `production/bom.csv` and
 `production/positions.csv`, generated together after the checks below.
 The current browser order retains its earlier upload and manual corrections;
@@ -314,7 +332,7 @@ post-trip resistance alone would lose 0.35 V; switches, cable and copper add
 further loss. Establish the intended load from measurements.
 
 The first order should be a small prototype batch. Bring-up needs a custom r7
-firmware pin/power configuration and SH1106 display support, followed by tests
+firmware pin/power configuration and SH1066 display support, followed by tests
 of USB-C-only recovery with invalid flash, two peripherals, Amiga supply
 current/droop/backfeed, radio operation and case fit. Existing firmware has not
 been changed by this hardware work.
@@ -340,7 +358,9 @@ once to that fresh board. Do not rerun these board builders on hand-edited
 routing without retaining a backup. `scripts/configure_rules.py` sets the board
 constraints and power net classes.
 
-Run `scripts/audit_board.py` with pcbnew Python after filling zones. Run KiCad
+Run `scripts/audit_board.py` and `scripts/check_reset.py` with pcbnew Python
+after filling zones. The reset check verifies the supervisor pinout and keeps
+automatic RUN resets separate from the manual recovery request. Run KiCad
 ERC and DRC with schematic parity, then `scripts/export_factory_review.py`
 with pcbnew Python to
 export the quotation package; it refuses stale checks or reported violations.
@@ -353,3 +373,14 @@ enabled. DRC does not prove electrical correctness or physical fit.
 USB recovery current/suspend behavior, clock startup, RF behavior, two-device
 operation, Amiga backfeed isolation and connector insertion forces require the
 hardware tests in `electrical-review.json`.
+
+### Cold-start reset verification
+
+The supervisor threshold and delay follow the
+[TI TPS3808 datasheet](https://www.ti.com/lit/ds/symlink/tps3808.pdf).
+The selected W25Q32JV requires 20 µs from VCC(min) to chip select going low.
+Check +3V3 at the flash, RUN, RECOVERY_N and QSPI-CS on an oscilloscope:
+normal keyboard-powered and USB-C-powered starts must boot application flash;
+held RECOVERY with USB-C must enter ROM recovery. Repeat with slow supply ramps,
+short power interruptions and source handover. Supervisor addition has not
+been physically validated.

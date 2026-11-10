@@ -14,8 +14,8 @@
   },
   "recovery": {
     "cold_entry": "Hold the external RECOVERY button while connecting USB-C, wait >=0.1s, then release. Works without Amiga power or valid application firmware, with normal RP2350 OTP configuration.",
-    "warm_entry": "With USB-C already powered, press/release RECOVERY. RUN resets the RP2350, the latch holds BOOTSEL low, and the USB switch selects the PC.",
-    "startup": "USB_PRESENT is produced by a 5V-tolerant, Ioff-rated LVC Schmitt buffer. The HCS74 clear input has 100k/100nF delay. With the button held during startup both asynchronous inputs can be low; the documented Q=Qbar=1 state is safe while RUN holds reset and D2 clamps host enable. Waiting before release lets clear become inactive while preset still holds recovery.",
+    "warm_entry": "With USB-C already powered, press/release RECOVERY. U13 asserts RUN and resets the RP2350, the latch holds BOOTSEL low, and the USB switch selects the PC.",
+    "startup": "USB_PRESENT is produced by a 5V-tolerant, Ioff-rated LVC Schmitt buffer. The HCS74 clear input has 100k/100nF delay. With the button held during startup both asynchronous inputs can be low; the documented Q=Qbar=1 state is safe while RUN holds reset and D2 clamps host enable. Waiting before release lets clear become inactive while preset still holds recovery. RECOVERY_N now drives MR and latch preset; RUN no longer presets the latch.",
     "host_clamp": "R20=100k and BAT54W clamp ON to RUN while reset is held. Clamp current is below 35uA; the selected diode specifies <=0.24V at 0.1mA at 25C, versus U11 VIL(max)=0.5V. Temperature and actual startup ramps remain prototype checks.",
     "bootsel": "AO3400A pulls QSPI-CS low through 1k against 10k pull-up; nominal strap voltage about 0.3V. This is hardware ROM entry, without firmware double-tap or reset-handler dependence.",
     "exit": "USB removal clears the latch but does not itself reset the MCU. With Amiga power remaining, press/release the button to boot normally. For USB-only normal operation, unplug/reconnect without holding it.",
@@ -48,5 +48,14 @@
     "https://www.wch.cn/downloads/CH334DS1_PDF.html",
     "https://bourns.com/docs/product-datasheets/mf-nsmf.pdf",
     "https://www.microchip.com/content/dam/mchp/documents/OTH/ApplicationNotes/ApplicationNotes/AN17-APID.pdf"
-  ]
+  ],
+  "power_on_reset": {
+    "part": "U13 TPS3808G33DBVR / C43698",
+    "threshold_V": 3.07,
+    "delay_typ_ms": 20,
+    "CT": "Intentionally unconnected",
+    "nets": "RESET -> RUN; MR and U9 /PRE -> RECOVERY_N; SENSE and VDD -> +3V3",
+    "bypass": "C41 100nF; R26 10k RECOVERY_N pull-up; existing R12 10k RUN pull-up",
+    "validation": "Scope flash supply, RUN and QSPI-CS on cold start, brownout, short power interruptions and manual recovery. Physical validation pending."
+  }
 }

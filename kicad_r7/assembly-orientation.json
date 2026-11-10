@@ -366,6 +366,11 @@
       "refs": [
         "C38"
       ]
+    },
+    "C43698": {
+      "offset_deg": 0,
+      "footprint": "r7:SOT-23-6",
+      "note": "KiCad standard SOT-23-6; pin 1 bottom-left in footprint coordinates. Confirm JLC placement preview before ordering."
     }
   }
 }

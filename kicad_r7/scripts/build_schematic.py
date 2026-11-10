@@ -88,6 +88,8 @@ for sheet in names:
                ('J2 is a group of bare top-side test pads, not a fitted pin header.',20,350)]
     elif sheet=='controller':
         notes=[('RP2350A controller, 4MB QSPI flash, 12MHz crystal, RM2 wireless',20,20),
+               ('U13 monitors 3V3: 3.07V threshold, CT open = 20ms typical RUN release delay.',20,235),
+               ('RECOVERY_N drives MR and latch preset; automatic RUN reset does not select BOOTSEL.',20,243),
                ('RM2: 470R and 10k combine DOUT / IRQ with GPIO24 per datasheet Table 2.',225,230),
                ('Hold RECOVERY while connecting USB-C; release after 0.1s. No working firmware required.',20,248),
                ('USB-C already connected: press/release RECOVERY. Amiga power is optional.',20,256)]
@@ -107,7 +109,7 @@ for sheet in names:
         notes=[('Automatic source selection and firmware-independent recovery',20,20),
                ('USB-C priority: 4.0V nominal threshold. Keyboard pin 4 remains the fallback input.',20,250),
                ('Hold RECOVERY while plugging USB-C, release after 0.1s; or press with USB-C present.',20,258),
-               ('U9 /PRE=/CLR=0: both outputs high; RUN keeps MCU reset and D2 holds host power OFF.',20,266),
+               ('U9 /PRE=/CLR=0: both outputs high; U13 keeps MCU reset and D2 holds host power OFF.',20,266),
                ('USB absent clears latch. Q1 enables Amiga signals only if keyboard power is present.',20,274)]
     for i,(txt,x,y) in enumerate(notes):
         out.append(f'(text {q(txt)} (at {x} {y} 0) (effects (font (size 1.1 1.1)) (justify left bottom)) (uuid {q(uid(sheet+"note"+str(i)))}))')
