@@ -45,10 +45,13 @@ int main(void)
         .role = TUSB_ROLE_HOST,
         .speed = TUH_OPT_HIGH_SPEED ? TUSB_SPEED_HIGH : TUSB_SPEED_FULL,
     };
-    tusb_init(BOARD_TUH_RHPORT, &rhport_init);
+    bool usb_host_ready = tusb_init(BOARD_TUH_RHPORT, &rhport_init);
 
     disp_ssd_init();
     dbgcons_init();
+    if (!usb_host_ready)
+        ahprintf("[usb] host initialization failed on rhport %d; USB input disabled\n",
+            BOARD_TUH_RHPORT);
 
 #ifdef ENABLE_BLUETOOTH_HID
     bt_hid_init();
@@ -58,8 +61,10 @@ int main(void)
     // Input callbacks can use the display, menu and routing from this point.
     while (1) {
         // run host mode jobs (hotplug events, packet io callbacks)
-        tuh_task();
-        hid_app_task();
+        if (usb_host_ready) {
+            tuh_task();
+            hid_app_task();
+        }
 
 #ifdef ENABLE_BLUETOOTH_HID
         bt_hid_task();

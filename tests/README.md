@@ -25,6 +25,10 @@ The keyboard tests use the HID definitions from the `lib/tinyusb` submodule.
 Gamepad checks exercise the parser and mapping code with repeated X/Y/hat
 usages, implicit usage repetition, separate Input items and report IDs,
 truncated reports, and ordinary axes/buttons.
+Entry-point tests inject USB host initialization success and failure. They
+verify that USB tasks require a working host, input callbacks follow menu
+setup, and keyboard, menu, display, watchdog and Bluetooth servicing continue
+after a host failure. Both Bluetooth and USB-only configurations are checked.
 
 These checks do not exercise the RP2350, electrical contacts, OLED, RM2,
 flash controller or Amiga hardware. Build the firmware separately as

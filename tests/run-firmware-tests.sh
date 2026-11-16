@@ -13,3 +13,10 @@ trap 'rm -rf "$out"' EXIT HUP INT TERM
     tests/hid_gamepad_test.c src/hid_gamepad.c src/gamepad_config.c \
     -o "$out/gamepad"
 "$out/gamepad"
+for bluetooth in '' '-DENABLE_BLUETOOTH_HID=1'; do
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror \
+        -DCFG_TUSB_MCU=0 -DBOARD_HIDPICO_REV5 $bluetooth \
+        -Itests/main-stubs -Isrc -Ilib/tinyusb/src \
+        tests/main_startup_test.c -o "$out/main"
+    "$out/main"
+done
