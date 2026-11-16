@@ -22,6 +22,7 @@ end_rib_depth = 0.5; // additional groove depth below the recessed rib tops
 pcb_clearance = 0.6;
 port_clearance = 0.6; // per side, beyond supplier nominal dimensions
 pilot_diameter = 1.7; // M2 tapped pilot; use M2x4 nylon screws
+snap_clearance = 0.05; // tab tip to recess back; increase if snaps are too tight
 // Board top to underside of the OLED PCB, using H1-H4 nylon spacers.
 oled_standoff = 12;
 oled_board_thickness = 1.2;
@@ -60,7 +61,7 @@ ridgeHeight = 4.5;
 ridgeSlack = 0.25;
 ridgeGap = 0.25;
 yappSnapOuterSkin = 0.8; // blind snap pockets: continuous exterior wall
-yappSnapRadialSlack = 0.15; // clearance between pocket and shortened base bump
+yappSnapRadialSlack = snap_clearance;
 roundRadius = 2;
 boxType = 3;
 renderQuality = 12;
@@ -82,6 +83,7 @@ alphaLid = 1;
 assert(ceiling - (board_top+oled_standoff+oled_board_thickness+oled_glass_height) >= 0.4,
        "OLED glass needs at least 0.4 mm clearance under lid");
 assert(port_clearance >= 0.3);
+assert(snap_clearance >= 0 && snap_clearance <= 0.3);
 if (amiga_style) {
     assert(edge_bevel >= 0 && edge_bevel <= 2.6);
     assert(oled_window_bevel >= 0 && oled_window_bevel <= 1.0);

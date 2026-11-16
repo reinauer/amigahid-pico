@@ -3,7 +3,9 @@
 Amiga-styled YAPP enclosure using the inherited r6 PCB mechanics. Outside dimensions are
 **75.6 × 76.0 × 26.5 mm**. The base and lid are separate snap-fit parts. The lid uses **blind internal clip
 recesses**, leaving 0.8 mm of continuous exterior wall. Matching base clips are
-shortened with 0.15 mm clearance; print the updated base and lid together.
+shortened with 0.05 mm clearance. Adjust `snap_clearance` for your printer and
+material: increase it for easier opening, or reduce it for more engagement.
+Check snap force on a printed pair; print the matching base and lid together.
 
 Run the build command below to generate the STL files and previews locally.
 Generated `build/` files are intentionally excluded from Git.
