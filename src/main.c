@@ -35,11 +35,10 @@ int main(void)
     board_init();
     settings_init();
 
-    // initialise the i2c controller and send the init sequence to the display
-    disp_ssd_init();
-
-    // say hello, trevor ("hello, trevor")
-    dbgcons_init();
+    // Release the Amiga-facing pins before bringing up input devices.
+    // The keyboard power-up handshake advances later in amiga_service().
+    amiga_init();
+    amiga_quad_mouse_init();
 
     // initialise the usb host stack on the rhport from tusb_config.h
     const tusb_rhport_init_t rhport_init = {
@@ -48,18 +47,15 @@ int main(void)
     };
     tusb_init(BOARD_TUH_RHPORT, &rhport_init);
 
-    // we're single arch right now, but in future this should hand off to whatever the
-    // configured arch is
-    amiga_init();
-
-    // start amiga mouse emulation
-    amiga_quad_mouse_init();
+    disp_ssd_init();
+    dbgcons_init();
 
 #ifdef ENABLE_BLUETOOTH_HID
     bt_hid_init();
 #endif
     runtime_menu_init();
 
+    // Input callbacks can use the display, menu and routing from this point.
     while (1) {
         // run host mode jobs (hotplug events, packet io callbacks)
         tuh_task();

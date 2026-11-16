@@ -67,6 +67,18 @@ static bool wanted_keys[AKB_KEY_COUNT];
 static bool sent_keys[AKB_KEY_COUNT];
 static bool keyboard_resync;
 
+enum startup_state { STARTUP_WAIT_INIT, STARTUP_WAIT_TERM, STARTUP_READY };
+static enum startup_state startup_state;
+static uint64_t startup_deadline;
+
+static void amiga_restart_startup(void)
+{
+    if (startup_state != STARTUP_READY) {
+        startup_state = STARTUP_WAIT_INIT;
+        startup_deadline = time_us_64() + 1000000;
+    }
+}
+
 static inline void amiga_reset_stateful_flags(void)
 {
     if (caps_lock) {
@@ -229,18 +241,27 @@ void amiga_init()
 
     queue_init(&keyboard_event_queue, sizeof(amiga_keyboard_event_t), AKB_EVENT_QUEUE_DEPTH);
 
-    // now the pins are setup, setup the timer callback to maintain keyboard comms in sync.
-    // @todo add_alarm_in_ms() here
+    // Keep USB input servicing active during the keyboard power-up delays.
+    startup_state = STARTUP_WAIT_INIT;
+    amiga_restart_startup();
+}
 
-    // wait a full second then send initpower, pause 200ms and then termpower. unlike the amiga kbd 6502, we're
-    // not doing anything during this time, so it's just so the computer is happy in the knowledge that we are
-    // here.
-    sleep_ms(1000);
-    amiga_send_immediate(AMIGA_INITPOWER, false);
-    sleep_ms(200);
-    amiga_send_immediate(AMIGA_TERMPOWER, false);
+static bool amiga_startup_service(void)
+{
+    if (startup_state == STARTUP_READY)
+        return false;
+    if (time_us_64() < startup_deadline)
+        return true;
 
-    // fin.
+    if (startup_state == STARTUP_WAIT_INIT) {
+        amiga_send_immediate(AMIGA_INITPOWER, false);
+        startup_state = STARTUP_WAIT_TERM;
+        startup_deadline = time_us_64() + 200000;
+    } else {
+        amiga_send_immediate(AMIGA_TERMPOWER, false);
+        startup_state = STARTUP_READY;
+    }
+    return true;
 }
 
 bool amiga_caps_lock()
@@ -363,6 +384,8 @@ void amiga_release_reset()
     _keyboard_gpio_set(KBD_AMIGA_RST, HIGH);
     _keyboard_gpio_set(KBD_AMIGA_CLK, HIGH);
     reset_output_active = false;
+    reset_line_was_low = gpio_get(KBD_AMIGA_RST) == 0;
+    amiga_restart_startup();
 }
 
 void amiga_service()
@@ -380,9 +403,13 @@ void amiga_service()
             in_reset = true;
             amiga_clear_queued_events();
             amiga_reset_stateful_flags();
-        } else if (!reset_line_low && reset_line_was_low && external_reset_active) {
-            external_reset_active = false;
-            in_reset = false;
+        } else if (!reset_line_low && reset_line_was_low) {
+            if (external_reset_active) {
+                external_reset_active = false;
+                in_reset = false;
+            }
+            // Also handles a reset already asserted when amiga_init() ran.
+            amiga_restart_startup();
         }
     }
 
@@ -396,6 +423,20 @@ void amiga_service()
     }
 
     amiga_keyboard_event_t event;
+
+    // Reset controls must not wait behind the power-up handshake. Asserting
+    // a local reset clears ordinary queued keys before adding its event.
+    if (queue_try_peek(&keyboard_event_queue, &event) && event.type != AKB_EVENT_SEND) {
+        queue_try_remove(&keyboard_event_queue, &event);
+        if (event.type == AKB_EVENT_ASSERT_RESET)
+            amiga_assert_reset();
+        else
+            amiga_release_reset();
+        return;
+    }
+
+    if (in_reset || reset_output_active || reset_line_low || amiga_startup_service())
+        return;
 
     if (!queue_try_remove(&keyboard_event_queue, &event)) {
         if (in_reset || reset_output_active || !amiga_next_resync_event(&event))

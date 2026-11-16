@@ -92,6 +92,14 @@ on the `features` branch, hold F12 for one second to open the OLED settings menu
 see [runtime configuration](runtime-configuration.md) for settings, saving and
 the F12+Esc recovery gesture.
 
+USB input processing runs during the Amiga keyboard's power-up handshake:
+the firmware sends the initialization code after one second, then waits
+200 ms before the completion code. Keyboard input is queued until that
+sequence completes; USB mouse buttons can work as soon as their device has
+enumerated. This improves access to the Amiga's early startup menu, but does
+not hold the Amiga in reset or guarantee that every USB or Bluetooth device
+will be ready in time.
+
 for usb and bluetooth input on a pico w, enable the bluetooth host explicitly:
 
 ```shell
