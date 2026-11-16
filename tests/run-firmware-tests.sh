@@ -9,3 +9,7 @@ trap 'rm -rf "$out"' EXIT HUP INT TERM
     -Itests/keyboard-stubs -Isrc -Ilib/tinyusb/src \
     tests/keyboard_startup_test.c -o "$out/startup"
 "$out/startup"
+"${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Isrc \
+    tests/hid_gamepad_test.c src/hid_gamepad.c src/gamepad_config.c \
+    -o "$out/gamepad"
+"$out/gamepad"

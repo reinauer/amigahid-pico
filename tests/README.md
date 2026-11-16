@@ -22,6 +22,9 @@ The firmware tests run the real keyboard serial service with simulated GPIO,
 time and queues. They check the nonblocking startup handshake, queued key
 presses/releases, overflow recovery, and local/external resets during startup.
 The keyboard tests use the HID definitions from the `lib/tinyusb` submodule.
+Gamepad checks exercise the parser and mapping code with repeated X/Y/hat
+usages, implicit usage repetition, separate Input items and report IDs,
+truncated reports, and ordinary axes/buttons.
 
 These checks do not exercise the RP2350, electrical contacts, OLED, RM2,
 flash controller or Amiga hardware. Build the firmware separately as

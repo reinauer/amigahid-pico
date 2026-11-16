@@ -158,6 +158,7 @@ static bool parse(hid_gamepad_t *pad, uint8_t const *descriptor, size_t length)
                 if (layout->bits + bits > GAMEPAD_MAX_REPORT_BYTES * 8u)
                     return false;
                 if (controller && (value & 7u) == 2u && local.count) {
+                    unsigned first_field = pad->field_count;
                     for (uint32_t i = 0; i < global.count; i++) {
                         uint32_t usage = local.usages[i < local.count ? i : local.count - 1u];
                         uint16_t kind = field_kind(usage);
@@ -166,8 +167,23 @@ static bool parse(hid_gamepad_t *pad, uint8_t const *descriptor, size_t length)
                         if (range < 0 || (kind == FIELD_HAT && range != 3 && range != 7) ||
                             ((kind == FIELD_X || kind == FIELD_Y) && range < 2))
                             continue;
-                        if (pad->field_count == GAMEPAD_MAX_FIELDS) return false;
-                        pad->fields[pad->field_count++] = (gamepad_field_t) {
+                        unsigned field = pad->field_count;
+                        if (kind == FIELD_X || kind == FIELD_Y || kind == FIELD_HAT) {
+                            // Some pads repeat an axis usage with inert fields
+                            // before the real control. Keep its last occurrence
+                            // within this Input item, leaving other items and
+                            // report IDs independent.
+                            for (unsigned f = first_field; f < pad->field_count; f++)
+                                if (pad->fields[f].kind == kind) {
+                                    field = f;
+                                    break;
+                                }
+                        }
+                        if (field == pad->field_count) {
+                            if (pad->field_count == GAMEPAD_MAX_FIELDS) return false;
+                            pad->field_count++;
+                        }
+                        pad->fields[field] = (gamepad_field_t) {
                             .offset = (uint16_t)(layout->bits + i * global.size),
                             .size = (uint8_t)global.size,
                             .report = (uint8_t)report,
